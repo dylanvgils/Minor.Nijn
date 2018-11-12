@@ -20,7 +20,7 @@ namespace Minor.Nijn.TestBus
 
         public void DeclareQueue()
         {
-           _queue =  _context.TestBus.DeclareQueue(QueueName, TopicExpressions);
+           _queue =  _context.TestBuzz.DeclareQueue(QueueName, TopicExpressions);
         }
 
         public void StartReceivingMessages(EventMessageReceivedCallback Callback)

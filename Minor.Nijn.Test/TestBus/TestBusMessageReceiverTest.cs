@@ -26,12 +26,12 @@ namespace Minor.Nijn.Test.TestBus
         [TestMethod]
         public void DeclareQueue_ShouldDeclareAQueueOnTheEventBuzz()
         {
-            contextMock.Setup(context => context.TestBus.DeclareQueue(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
+            contextMock.Setup(context => context.TestBuzz.DeclareQueue(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
                 .Returns(new TestBuzzQueue(topicExpressions));
 
             target.DeclareQueue();
 
-            contextMock.Verify(context => context.TestBus.DeclareQueue(queueName, topicExpressions));
+            contextMock.Verify(context => context.TestBuzz.DeclareQueue(queueName, topicExpressions));
         }
 
         [TestMethod]
@@ -42,7 +42,7 @@ namespace Minor.Nijn.Test.TestBus
 
             EventMessage message = new EventMessage("a.b.c", "TestMessage");
             var queue = new TestBuzzQueue(topicExpressions);
-            contextMock.Setup(context => context.TestBus.DeclareQueue(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
+            contextMock.Setup(context => context.TestBuzz.DeclareQueue(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
                 .Returns(queue);
 
             target.DeclareQueue();

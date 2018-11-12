@@ -2,6 +2,6 @@
 {
     internal interface IBusContextExtension : IBusContext<object>
     {
-        ITestBuzz TestBus { get; }
+        ITestBuzz TestBuzz { get; }
     }
 }
