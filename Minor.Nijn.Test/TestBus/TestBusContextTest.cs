@@ -1,5 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Minor.Nijn.Test.TestBus.Mocks;
 using Minor.Nijn.TestBus;
+using Moq;
 using System.Collections.Generic;
 
 namespace Minor.Nijn.Test.TestBus
@@ -8,16 +10,19 @@ namespace Minor.Nijn.Test.TestBus
     public class TestBusContextTest
     {
         private TestBusContext target;
+        private Mock<ITestBuzz> mock;
 
         [TestInitialize]
         public void BeforeEach()
         {
-            target = new TestBusContext();
+            mock = new Mock<ITestBuzz>(MockBehavior.Strict);
+            target = new TestBusContext(mock.Object);
         }
 
         [TestMethod]
         public void CreateMessageReceiver_ShouldReturnTestBusMessageReceiver()
         {
+            mock.Setup(buzz => buzz.DeclareQueue(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()));
             string queueName = "TestQueue";
             IEnumerable<string> topicExpressions = new List<string>
             {
@@ -26,32 +31,23 @@ namespace Minor.Nijn.Test.TestBus
 
             var result = target.CreateMessageReceiver(queueName, topicExpressions);
 
+            mock.Verify(buzz => buzz.DeclareQueue(queueName, topicExpressions));
             Assert.IsInstanceOfType(result, typeof(IMessageReceiver));
             Assert.AreEqual(result.QueueName, queueName);
             Assert.AreEqual(result.TopicExpressions, topicExpressions);
         }
 
-        [TestMethod]
-        public void CreateMessageReceiver_QueueLengtShouldBe_1()
-        {
-            target.CreateMessageReceiver("TestQueue", new List<string> { "nijn.TestBus.TestTopic" });
-            Assert.AreEqual(target.QueueLenght, 1);
-        }
+        //[TestMethod]
+        //public void AddMessage_ShouldRaiseMessageAddedEvent()
+        //{
+        //    var mock = new MessageAddedMock();
+        //    EventMessage message = new EventMessage("nijn.TestBus.TestTopicAdded", "TestMessage");
+        //    target.MessageAdded += mock.HandleMessageAdded;
 
-        [TestMethod]
-        public void CreateMessageReceiver_WhenCalledTwiceQueueLenghtShouldBe_2()
-        {
-            target.CreateMessageReceiver("TestQueue1", new List<string> { "nijn.TestBus.TestTopic" });
-            target.CreateMessageReceiver("TestQueue2", new List<string> { "nijn.TestBus.TestTopic" });
-            Assert.AreEqual(target.QueueLenght, 2);
-        }
+        //    target.DispatchMessage(message);
 
-        [TestMethod]
-        public void CreateMessageReceiver_WhenCalledWithSameQueueNameTwiceLenghtShouldBe_1()
-        {
-            target.CreateMessageReceiver("TestQueue1", new List<string> { "nijn.TestBus.TestTopic" });
-            target.CreateMessageReceiver("TestQueue1", new List<string> { "nijn.TestBus.TestTopic" });
-            Assert.AreEqual(target.QueueLenght, 1);
-        }
+        //    Assert.IsTrue(mock.HandledMessageAddedHasBeenCalled);
+        //    Assert.AreEqual(mock.Args.Message, message);
+        //}
     }
 }
