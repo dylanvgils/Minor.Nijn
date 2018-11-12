@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minor.Nijn.Test.TestBus.Mocks;
+using Minor.Nijn.Test.TestBus.Mock;
 using Minor.Nijn.TestBus;
 using System.Collections.Generic;
 
