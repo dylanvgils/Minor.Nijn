@@ -7,14 +7,14 @@ namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQContextBuilder
     {
-        private string ExchangeName { get; set; }
-        private string Hostname{ get;  set; }
-        private int Port { get; set; }
+        public string ExchangeName { get; private set; }
+        public string Hostname{ get; private set; }
+        public int Port { get; private set; }
 
-        private string Username { get; set; }
-        private string Password { get; set; }
+        public string Username { get; private set; }
+        public string Password { get; private set; }
 
-        private string Type { get; set; }
+        public string Type { get; private set; }
 
         public RabbitMQContextBuilder WithExchange(string exchangeName)
         {

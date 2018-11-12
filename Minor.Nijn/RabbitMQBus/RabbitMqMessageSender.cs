@@ -10,7 +10,8 @@ namespace Minor.Nijn.RabbitMQBus
     {
         private RabbitMQBusContext Context { get; set; }
 
-        private IModel Channel { get; set; }
+        public IModel Channel { get; private set; }
+
         public RabbitMQMessageSender(RabbitMQBusContext context)
         {
             Context = context;
