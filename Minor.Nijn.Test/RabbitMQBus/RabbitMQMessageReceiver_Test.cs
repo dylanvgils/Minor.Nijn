@@ -24,7 +24,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
             {
                 channelMock.Setup(c => c.QueueBind(queueName, exchangeName, topic, null)).Verifiable();
             }
-
+            
             connectionMock.Setup(r => r.CreateModel())
                        .Returns(channelMock.Object)
                        .Verifiable();
@@ -37,7 +37,6 @@ namespace Minor.Nijn.RabbitMQBus.Test
             target.DeclareQueue();
 
             channelMock.VerifyAll();
-
         }
 
         [TestMethod]
@@ -59,8 +58,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
             Assert.IsNotNull(target);
             Assert.AreEqual("Queue1", target.QueueName);
             Assert.AreEqual(topicExpressions, target.TopicExpressions);
-            Assert.IsNotNull(target.Channel);
-           
+            Assert.IsNotNull(target.Channel);    
         }
     }
 }

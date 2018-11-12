@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Minor.Nijn.WebScale.Test", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Minor.Nijn.RabbitMQTest", "Minor.Nijn.RabbitMQTest\Minor.Nijn.RabbitMQTest.csproj", "{CCE58410-A357-4001-B2A7-609ADC3D3EC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitMQ", "RabbitMQ\RabbitMQ.csproj", "{FDFAB999-0151-4AD9-A407-90C79D889E12}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{CCE58410-A357-4001-B2A7-609ADC3D3EC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCE58410-A357-4001-B2A7-609ADC3D3EC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCE58410-A357-4001-B2A7-609ADC3D3EC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDFAB999-0151-4AD9-A407-90C79D889E12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDFAB999-0151-4AD9-A407-90C79D889E12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDFAB999-0151-4AD9-A407-90C79D889E12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDFAB999-0151-4AD9-A407-90C79D889E12}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
