@@ -21,11 +21,11 @@ namespace Minor.Nijn.Test.TestBus
         public void SendMessage_ShouldCallDispatchMessage()
         {
             var message = new EventMessage("a.b.c", "Test message.");
-            contextMock.Setup(context => context.TestBus.DispatchMessage(It.IsAny<EventMessage>()));
+            contextMock.Setup(context => context.TestBuzz.DispatchMessage(It.IsAny<EventMessage>()));
 
             target.SendMessage(message);
 
-            contextMock.Verify(context => context.TestBus.DispatchMessage(message));
+            contextMock.Verify(context => context.TestBuzz.DispatchMessage(message));
         }
     }
 }

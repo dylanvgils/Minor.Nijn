@@ -13,7 +13,7 @@ namespace Minor.Nijn.TestBus
 
         public void SendMessage(EventMessage message)
         {
-            _context.TestBus.DispatchMessage(message);
+            _context.TestBuzz.DispatchMessage(message);
         }
 
         public void Dispose()

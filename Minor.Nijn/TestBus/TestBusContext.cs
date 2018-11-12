@@ -6,15 +6,15 @@ namespace Minor.Nijn.TestBus
 {
     public sealed class TestBusContext : IBusContextExtension
     {
-        private ITestBuzz TestBus { get; }
-        ITestBuzz IBusContextExtension.TestBus => TestBus;
+        private readonly ITestBuzz _testBuzz;
+        ITestBuzz IBusContextExtension.TestBuzz => _testBuzz;
 
         public object Connection => throw new NotImplementedException();
         public string ExchangeName => throw new NotImplementedException();
 
         internal TestBusContext(ITestBuzz testBus)
         {
-            TestBus = testBus;
+            _testBuzz = testBus;
         }
 
         public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
@@ -34,7 +34,5 @@ namespace Minor.Nijn.TestBus
         {
             throw new NotImplementedException();
         }
-
-
     }
 }
