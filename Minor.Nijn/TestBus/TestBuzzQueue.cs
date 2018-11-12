@@ -7,16 +7,16 @@ namespace Minor.Nijn.TestBus
     public class TestBuzzQueue
     {
         public event EventHandler<MessageAddedEventArgs> MessageAdded;
-        public List<string> TopicExpressions { get; private set; }
+        private readonly List<string> _topicExpressions;
 
         public TestBuzzQueue(IEnumerable<string> topicExpressions)
         {
-            TopicExpressions = topicExpressions.ToList();
+            _topicExpressions = topicExpressions.ToList();
         }
 
         public void Enqueue(EventMessage message)
         {
-            if (TopicExpressions.Contains(message.RoutingKey))
+            if (_topicExpressions.Contains(message.RoutingKey))
             {
                 OnMessageAdded(new MessageAddedEventArgs(message));
             }

@@ -6,9 +6,9 @@ namespace Minor.Nijn.TestBus
 {
     public sealed class TestBusContext : IBusContextExtension
     {
-        public ITestBuzz TestBus { get; private set; }
-        public object Connection => throw new System.NotImplementedException();
-        public string ExchangeName => throw new System.NotImplementedException();
+        public ITestBuzz TestBus { get; }
+        public object Connection => throw new NotImplementedException();
+        public string ExchangeName => throw new NotImplementedException();
 
         public TestBusContext(ITestBuzz testBus)
         {
@@ -30,7 +30,7 @@ namespace Minor.Nijn.TestBus
 
         public void Dispose()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
 

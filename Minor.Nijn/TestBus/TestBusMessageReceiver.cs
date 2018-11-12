@@ -5,8 +5,8 @@ namespace Minor.Nijn.TestBus
 {
     public sealed class TestBusMessageReceiver : IMessageReceiver
     {
-        public string QueueName { get; private set; }
-        public IEnumerable<string> TopicExpressions { get; private set; }
+        public string QueueName { get; }
+        public IEnumerable<string> TopicExpressions { get; }
         private TestBuzzQueue _queue;
 
         private readonly IBusContextExtension _context;
