@@ -1,22 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RabbitMQ.Client;
 
 namespace Minor.Nijn.TestBus
 {
-    public sealed class TestBusContext : IBusContext<object>
+    public sealed class TestBusContext : IBusContextExtension
     {
-
-        private IDictionary<string, Queue<EventMessage>> _queues;
-        public int QueueLenght => _queues.Count;
-
-        public TestBusContext()
-        {
-            _queues = new Dictionary<string, Queue<EventMessage>>();
-        }
-
+        public ITestBuzz TestBus { get; private set; }
         public object Connection => throw new System.NotImplementedException();
-
         public string ExchangeName => throw new System.NotImplementedException();
+
+        public TestBusContext(ITestBuzz testBus)
+        {
+            TestBus = testBus;
+        }
 
         public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
         {
@@ -30,17 +27,11 @@ namespace Minor.Nijn.TestBus
             throw new System.NotImplementedException();
         }
 
-        public void DeclareQueue(string queueName)
-        {
-            if (!_queues.ContainsKey(queueName))
-            {
-                _queues.Add(queueName, new Queue<EventMessage>());
-            }
-        }
-
         public void Dispose()
         {
             throw new System.NotImplementedException();
         }
+
+
     }
 }

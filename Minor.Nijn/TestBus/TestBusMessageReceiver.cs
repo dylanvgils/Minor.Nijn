@@ -9,9 +9,9 @@ namespace Minor.Nijn.TestBus
         public string QueueName { get; private set; }
         public IEnumerable<string> TopicExpressions { get; private set; }
 
-        private readonly TestBusContext _context;
+        private readonly IBusContextExtension _context;
 
-        public TestBusMessageReceiver(TestBusContext context, string queueName, IEnumerable<string> topicExpressions)
+        public TestBusMessageReceiver(IBusContextExtension context, string queueName, IEnumerable<string> topicExpressions)
         {
             _context = context;
             QueueName = queueName;
@@ -20,7 +20,7 @@ namespace Minor.Nijn.TestBus
 
         public void DeclareQueue()
         {
-            _context.DeclareQueue(QueueName);
+            _context.TestBus.DeclareQueue(QueueName, TopicExpressions);
         }
 
         public void Dispose()
@@ -31,6 +31,10 @@ namespace Minor.Nijn.TestBus
         public void StartReceivingMessages(EventMessageReceivedCallback Callback)
         {
             throw new NotImplementedException();
+            //_context.MessageAdded += (object sender, MessageAddedEventArgs args) =>
+            //{
+            //    Callback(args.Message);
+            //};
         }
     }
 }
