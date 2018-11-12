@@ -6,29 +6,29 @@ using System.Text;
 namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQBusContext : IBusContext<IConnection>
-    {
-        public IConnection Connection => throw new NotImplementedException();
-        public string ExchangeName => throw new NotImplementedException();
+    {      
+        public IConnection Connection { get; set; }
+        public string ExchangeName { get; set; }
 
         public RabbitMQBusContext(IConnection connection, string exchangeName)
         {
-            throw new NotImplementedException();
-            // TODO
+            Connection = connection;
+            ExchangeName = exchangeName;
         }
 
         public IMessageSender CreateMessageSender()
         {
-            throw new NotImplementedException();
+            return new RabbitMQMessageSender(this);
         }
 
         public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
         {
-            throw new NotImplementedException();
+            return new RabbitMQMessageReceiver(this, queueName, topicExpressions);
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            Connection?.Dispose();
         }
     }
 }

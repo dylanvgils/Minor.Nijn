@@ -24,11 +24,13 @@ namespace Minor.Nijn.RabbitMQBus.Test
                                                   propsMock.Object,
                                                   It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "MyMessage")))
                        .Verifiable();
+
             channelMock.Setup(c => c.CreateBasicProperties())
                        .Returns(propsMock.Object)
                        .Verifiable();
 
             var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
+
             connectionMock.Setup(r => r.CreateModel())
                        .Returns(channelMock.Object)
                        .Verifiable();
@@ -43,6 +45,9 @@ namespace Minor.Nijn.RabbitMQBus.Test
             // Assert
             channelMock.VerifyAll();
         }
+
+        
+
 
         // TODO BasicProperties are Correctly Set
     }
