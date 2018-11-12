@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Minor.Nijn.TestBus
 {
@@ -8,6 +7,7 @@ namespace Minor.Nijn.TestBus
     {
         public string QueueName { get; private set; }
         public IEnumerable<string> TopicExpressions { get; private set; }
+        private TestBuzzQueue _queue;
 
         private readonly IBusContextExtension _context;
 
@@ -20,21 +20,20 @@ namespace Minor.Nijn.TestBus
 
         public void DeclareQueue()
         {
-            _context.TestBus.DeclareQueue(QueueName, TopicExpressions);
+           _queue =  _context.TestBus.DeclareQueue(QueueName, TopicExpressions);
+        }
+
+        public void StartReceivingMessages(EventMessageReceivedCallback Callback)
+        {
+            _queue.MessageAdded += (object sender, MessageAddedEventArgs args) =>
+            {
+                Callback(args.Message);
+            };
         }
 
         public void Dispose()
         {
             throw new NotImplementedException();
-        }
-
-        public void StartReceivingMessages(EventMessageReceivedCallback Callback)
-        {
-            throw new NotImplementedException();
-            //_context.MessageAdded += (object sender, MessageAddedEventArgs args) =>
-            //{
-            //    Callback(args.Message);
-            //};
         }
     }
 }

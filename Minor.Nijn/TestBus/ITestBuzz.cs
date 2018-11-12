@@ -7,6 +7,6 @@ namespace Minor.Nijn.TestBus
     public interface ITestBuzz
     {
         void DispatchMessage(EventMessage message);
-        void DeclareQueue(string queueName, IEnumerable<string> topicExpressions);
+        TestBuzzQueue DeclareQueue(string queueName, IEnumerable<string> topicExpressions);
     }
 }
