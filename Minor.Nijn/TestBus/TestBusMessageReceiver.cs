@@ -11,7 +11,7 @@ namespace Minor.Nijn.TestBus
 
         private readonly IBusContextExtension _context;
 
-        public TestBusMessageReceiver(IBusContextExtension context, string queueName, IEnumerable<string> topicExpressions)
+        internal TestBusMessageReceiver(IBusContextExtension context, string queueName, IEnumerable<string> topicExpressions)
         {
             _context = context;
             QueueName = queueName;

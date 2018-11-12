@@ -1,6 +1,6 @@
 ﻿namespace Minor.Nijn.TestBus
 {
-    public interface IBusContextExtension : IBusContext<object>
+    internal interface IBusContextExtension : IBusContext<object>
     {
         ITestBuzz TestBus { get; }
     }

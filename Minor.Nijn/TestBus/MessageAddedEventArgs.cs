@@ -2,7 +2,7 @@
 
 namespace Minor.Nijn.TestBus
 {
-    public class MessageAddedEventArgs : EventArgs
+    public sealed class MessageAddedEventArgs : EventArgs
     {
         public EventMessage Message { get; }
 

@@ -6,11 +6,13 @@ namespace Minor.Nijn.TestBus
 {
     public sealed class TestBusContext : IBusContextExtension
     {
-        public ITestBuzz TestBus { get; }
+        private ITestBuzz TestBus { get; }
+        ITestBuzz IBusContextExtension.TestBus => TestBus;
+
         public object Connection => throw new NotImplementedException();
         public string ExchangeName => throw new NotImplementedException();
 
-        public TestBusContext(ITestBuzz testBus)
+        internal TestBusContext(ITestBuzz testBus)
         {
             TestBus = testBus;
         }
