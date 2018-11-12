@@ -11,7 +11,7 @@ namespace Minor.Nijn.RabbitMQBus
         private RabbitMQBusContext Context;
         public string QueueName { get; set; }
         public IEnumerable<string> TopicExpressions { get; set; }
-        private IModel Channel { get; set; }
+        public IModel Channel { get; private set; }
 
         public RabbitMQMessageReceiver(RabbitMQBusContext context, 
                         string queueName, IEnumerable<string> topicExpressions)
@@ -35,7 +35,8 @@ namespace Minor.Nijn.RabbitMQBus
             {
                 Channel.QueueBind(queue: QueueName,
                             exchange: Context.ExchangeName,
-                            routingKey: topic);
+                            routingKey: topic, 
+                            arguments: null);
             }    
         }
 
@@ -51,6 +52,10 @@ namespace Minor.Nijn.RabbitMQBus
                                                 timestamp: 0,
                                                 correlationId: null));
             };
+
+            Channel.BasicConsume(queue: QueueName,
+                            autoAck: true,
+                            consumer: consumer);
         }
 
         public void Dispose()

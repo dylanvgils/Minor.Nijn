@@ -46,9 +46,24 @@ namespace Minor.Nijn.RabbitMQBus.Test
             channelMock.VerifyAll();
         }
 
-        
+        [TestMethod]
+        public void MessageSenderIsCreatedWithCorrectParameters()
+        {
+            var propsMock = new Mock<IBasicProperties>();
+            var channelMock = new Mock<IModel>(MockBehavior.Strict);
 
+            var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
 
-        // TODO BasicProperties are Correctly Set
+            connectionMock.Setup(r => r.CreateModel())
+                       .Returns(channelMock.Object)
+                       .Verifiable();
+
+            var context = new RabbitMQBusContext(connectionMock.Object, "Testxchange1");
+            var target = new RabbitMQMessageSender(context);
+
+            Assert.IsNotNull(target);
+            Assert.IsNotNull(target);
+        }
+
     }
 }
