@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minor.Nijn.Test.TestBus.Mocks;
+using Minor.Nijn.Test.TestBus.Mock;
 using Minor.Nijn.TestBus;
 using Moq;
 using System.Collections.Generic;
@@ -32,6 +32,13 @@ namespace Minor.Nijn.Test.TestBus
             Assert.IsInstanceOfType(result, typeof(IMessageReceiver));
             Assert.AreEqual(result.QueueName, queueName);
             Assert.AreEqual(result.TopicExpressions, topicExpressions);
+        }
+
+        [TestMethod]
+        public void CreateMessageSender_ShouldReturnMessageSender()
+        {
+            var result = target.CreateMessageSender();
+            Assert.IsInstanceOfType(result, typeof(IMessageSender));
         }
     }
 }

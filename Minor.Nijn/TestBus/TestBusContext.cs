@@ -24,7 +24,8 @@ namespace Minor.Nijn.TestBus
 
         public IMessageSender CreateMessageSender()
         {
-            throw new System.NotImplementedException();
+            var sender = new TestBusMessageSender(this);
+            return sender;
         }
 
         public void Dispose()
