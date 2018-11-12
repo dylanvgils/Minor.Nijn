@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Minor.Nijn.TestBus
 {
-    public sealed class TestBuzz : ITestBuzz
+    internal sealed class TestBuzz : ITestBuzz
     {
         private IDictionary<string, TestBuzzQueue> _queues;
         public int QueueLenght => _queues.Count;

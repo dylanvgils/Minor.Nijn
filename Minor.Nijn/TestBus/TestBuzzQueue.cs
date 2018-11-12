@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Minor.Nijn.TestBus
 {
-    public class TestBuzzQueue
+    internal class TestBuzzQueue
     {
         public event EventHandler<MessageAddedEventArgs> MessageAdded;
         private readonly List<string> _topicExpressions;
