@@ -23,7 +23,7 @@ namespace Minor.Nijn.Test.TestBus
         public void CreateMessageReceiver_ShouldReturnTestBusMessageReceiver()
         {
             string queueName = "TestQueue";
-            IEnumerable<string> topicExpressions = new List<string> { "nijn.TestBus.TestTopic" };
+            IEnumerable<string> topicExpressions = new List<string> { "a.b.c" };
             mock.Setup(buzz => buzz.DeclareQueue(It.IsAny<string>(), It.IsAny<IEnumerable<string>>())).Returns(new TestBuzzQueue(topicExpressions));
 
             var result = target.CreateMessageReceiver(queueName, topicExpressions);
