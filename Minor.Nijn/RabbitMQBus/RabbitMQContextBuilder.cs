@@ -7,21 +7,32 @@ namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQContextBuilder
     {
+        private string ExchangeName { get; set; }
+        private string Hostname{ get;  set; }
+        private int Port { get; set; }
+
+        private string Username { get; set; }
+        private string Password { get; set; }
+
+        private string Type { get; set; }
+
         public RabbitMQContextBuilder WithExchange(string exchangeName)
         {
-            // TODO
+            ExchangeName = exchangeName;
             return this;    // for method chaining
         }
 
         public RabbitMQContextBuilder WithAddress(string hostName, int port)
         {
-            // TODO
+            Hostname = hostName;
+            Port = port;
             return this;    // for method chaining
         }
 
         public RabbitMQContextBuilder WithCredentials(string userName, string password)
         {
-            // TODO
+            Username = userName;
+            Password = password;
             return this;    // for method chaining
         }
 
@@ -29,6 +40,12 @@ namespace Minor.Nijn.RabbitMQBus
         {
             // TODO
             return this;    // for method chaining
+        }
+
+        public RabbitMQContextBuilder WithType(string type)
+        {
+            Type = type;
+            return this;
         }
 
         /// <summary>
@@ -39,8 +56,15 @@ namespace Minor.Nijn.RabbitMQBus
         /// <returns></returns>
         public RabbitMQBusContext CreateContext()
         {
-            throw new NotImplementedException();
-            // TODO
+            var factory = new ConnectionFactory() { HostName = Hostname, Port = Port };
+            var connection = factory.CreateConnection();
+
+            using (var channel = connection.CreateModel())
+            {
+                channel.ExchangeDeclare(exchange: ExchangeName, type: Type);
+            }
+
+            return new RabbitMQBusContext(connection, ExchangeName);
         }
     }
 }
