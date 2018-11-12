@@ -6,7 +6,7 @@ namespace Minor.Nijn.TestBus
     {
         private IBusContextExtension _context;
 
-        public TestBusMessageSender(IBusContextExtension context)
+        internal TestBusMessageSender(IBusContextExtension context)
         {
             _context = context;
         }
