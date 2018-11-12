@@ -6,27 +6,32 @@ namespace Minor.Nijn.TestBus
 {
     public sealed class TestBuzz : ITestBuzz
     {
-        private IDictionary<string, Queue<EventMessage>> _queues;
+        private IDictionary<string, TestBuzzQueue> _queues;
         public int QueueLenght => _queues.Count;
-        public event EventHandler<MessageAddedEventArgs> MessageAdded;
 
         public TestBuzz()
         {
-            _queues = new Dictionary<string, Queue<EventMessage>>();
+            _queues = new Dictionary<string, TestBuzzQueue>();
         }
 
-        //TODO: ffgoeddoenofzo
         public void DispatchMessage(EventMessage message)
         {
-            MessageAdded?.Invoke(this, new MessageAddedEventArgs(message));
+            foreach (var queue in _queues)
+            {
+                queue.Value.Enqueue(message);
+            }
         }
 
-        public void DeclareQueue(string queueName, IEnumerable<string> topicExpressions)
+        public TestBuzzQueue DeclareQueue(string queueName, IEnumerable<string> topicExpressions)
         {
             if (!_queues.ContainsKey(queueName))
             {
-                _queues.Add(queueName, new Queue<EventMessage>());
+                var queue = new TestBuzzQueue(topicExpressions);
+                _queues.Add(queueName, queue);
+                return queue;
             }
+
+            return _queues[queueName];
         }
     }
 }
