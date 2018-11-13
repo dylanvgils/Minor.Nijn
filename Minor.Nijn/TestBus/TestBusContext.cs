@@ -34,12 +34,12 @@ namespace Minor.Nijn.TestBus
 
         public ICommandSender CreateCommandSender()
         {
-            throw new NotImplementedException();
+            return new TestBusCommandSender(this);
         }
 
         public ICommandReceiver CreateCommandReceiver()
         {
-            throw new NotImplementedException();
+            return new TestBusCommandReceiver(this);
         }
 
         public void Dispose() { }

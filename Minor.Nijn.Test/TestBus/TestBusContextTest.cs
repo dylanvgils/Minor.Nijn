@@ -40,5 +40,19 @@ namespace Minor.Nijn.Test.TestBus
             var result = target.CreateMessageSender();
             Assert.IsInstanceOfType(result, typeof(IMessageSender));
         }
+        
+        [TestMethod]
+        public void CreateCommandReceiver_ShouldReturnCommandReceiver()
+        {
+            var result = target.CreateCommandReceiver();
+            Assert.IsInstanceOfType(result, typeof(ICommandReceiver));
+        }
+        
+        [TestMethod]
+        public void CreateCommandSender_ShouldReturnCommandSender()
+        {
+            var result = target.CreateCommandSender();
+            Assert.IsInstanceOfType(result, typeof(ICommandSender));
+        }
     }
 }
