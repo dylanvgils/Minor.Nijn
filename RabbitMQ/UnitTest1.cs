@@ -11,7 +11,7 @@ namespace RabbitMQ
     public class UnitTest1
     {
         [TestMethod]
-        public void TestMethod1()
+        public void RabbitMQTest()
         {
             var connectionBuilder = new RabbitMQContextBuilder()
                     .WithExchange("MVM.EventExchange")
@@ -19,31 +19,26 @@ namespace RabbitMQ
                     .WithCredentials(userName: "guest", password: "guest")
                     .WithType("topic");
                     
-
             string queue = "testqueue";
             List<string> topics = new List<string> { "topic1", "topic2" };
 
             using (RabbitMQBusContext connection = connectionBuilder.CreateContext())
             {
                 var receiver = connection.CreateMessageReceiver(queue, topics);
+                receiver.DeclareQueue();
                 var sender = connection.CreateMessageSender();
 
                 bool test = false;
-                
 
                 EventMessageReceivedCallback e = new EventMessageReceivedCallback((EventMessage a) => test = true);
-                receiver.StartReceivingMessages(e);
-                
+                receiver.StartReceivingMessages(e);                
 
                 sender.SendMessage(new EventMessage("topic1", "berichtje"));
 
                 Thread.Sleep(5000);
 
                 Assert.IsTrue(test);
-
-            }
-
-            
+            }    
         }
     }
 }
