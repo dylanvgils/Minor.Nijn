@@ -4,7 +4,7 @@ namespace Minor.Nijn.TestBus
 {
     public sealed class TestBusMessageSender : IMessageSender
     {
-        private IBusContextExtension _context;
+        private readonly IBusContextExtension _context;
 
         private TestBusMessageSender() { }
 

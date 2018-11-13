@@ -7,7 +7,7 @@ namespace Minor.Nijn.TestBus
     internal sealed class TestBuzz : ITestBuzz
     {
         private IDictionary<string, TestBuzzQueue> _queues;
-        public int QueueLenght => _queues.Count;
+        public int QueueLength => _queues.Count;
 
         public TestBuzz()
         {
