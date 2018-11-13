@@ -39,6 +39,14 @@ namespace Minor.Nijn.Test.TestBus
             Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "q.y.z"), "'q.y.z' should match '*.y.z'");
             Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "solution.*.event"), "'solution.*.event' should match 'solution.*.event'");
 
+            topicExpressions = new List<string> { "*", "*.*", "*.*.*" };
+            Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "a"), "'a.b.c' should match '*'");
+            Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "x"), "'a.b.c' should match '*'");
+            Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "a.b"), "'a.b.c' should match '*.*'");
+            Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "y.z"), "'a.b.c' should match '*.*'");
+            Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "a.b.c"), "'a.b.c' should match '*.*.*'");
+            Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "solution.service.event"), "'solution.service.event' should match '*.*.*'");
+
             topicExpressions = new List<string> { "a.*.*", "*.*.z", "*.*.event" };
             Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "a.b.c"), "'k.a.b' should match 'a.*.*'");
             Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "a.f.g"), "'a.f.g' should match 'a.*.*'");
@@ -59,6 +67,14 @@ namespace Minor.Nijn.Test.TestBus
             Assert.IsFalse(TopicMatcher.IsMatch(topicExpressions, "x.y.c"), "'x.y.c' should not match expressions");
             Assert.IsFalse(TopicMatcher.IsMatch(topicExpressions, "event.service.solution"), "'event.service.solution' should not match expressions");
 
+            topicExpressions = new List<string> { "*" };
+            Assert.IsFalse(TopicMatcher.IsMatch(topicExpressions, "a.b"), "'a.b' should not match expressions");
+            Assert.IsFalse(TopicMatcher.IsMatch(topicExpressions, "a.b.c"), "'a.b.c' should not match expressions");
+
+            topicExpressions = new List<string> { "*.*" };
+            Assert.IsFalse(TopicMatcher.IsMatch(topicExpressions, "a"), "'a' should not match expressions");
+            Assert.IsFalse(TopicMatcher.IsMatch(topicExpressions, "a.b.c"), "'a.b.c' should not match expressions");
+
             topicExpressions = new List<string> { "a.*.*", "*.*.z", "*.*.event" };
             Assert.IsFalse(TopicMatcher.IsMatch(topicExpressions, "b.c.d"), "'b.c.d' should not match expressions");
             Assert.IsFalse(TopicMatcher.IsMatch(topicExpressions, "c.c.d"), "'c.c.d' should not match expressions");
@@ -74,6 +90,12 @@ namespace Minor.Nijn.Test.TestBus
             Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "a.b.c"), "'a.b.c' should match 'a.#'");
             Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "a.b.c"), "'a.b.c' should match 'a.#'");
             Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "solution.service.event"), "'solution.service.event' should match 'solution.#'");
+
+            topicExpressions = new List<string> { "#" };
+            Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "a"), "'a'  should match '#'");
+            Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "a.b"), "'a.b'  should match '#'");
+            Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "a.b.c"), "'a.b.c'  should match '#'");
+            Assert.IsTrue(TopicMatcher.IsMatch(topicExpressions, "solution.service.event"), "'solution.service.event'  should match '#'");
         }
 
         [TestMethod]
