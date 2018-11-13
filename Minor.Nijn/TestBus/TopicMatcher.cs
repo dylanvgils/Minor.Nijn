@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -69,7 +68,7 @@ namespace Minor.Nijn.TestBus
                     break;
             }
 
-            return isLast ? result : result += @"\."; ;
+            return isLast ? result : result + @"\."; ;
         }
     }
 }
