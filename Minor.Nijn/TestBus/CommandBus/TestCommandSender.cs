@@ -1,14 +1,14 @@
 using System.Threading.Tasks;
 
-namespace Minor.Nijn.TestBus
+namespace Minor.Nijn.TestBus.CommandBus
 {
-    public class TestBusCommandSender : ICommandSender
+    public sealed class TestCommandSender : ICommandSender
     {
         private IBusContextExtension _context;
         
-        private TestBusCommandSender() { }
+        private TestCommandSender() { }
 
-        internal TestBusCommandSender(IBusContextExtension context)
+        internal TestCommandSender(IBusContextExtension context)
         {
             _context = context;
         }

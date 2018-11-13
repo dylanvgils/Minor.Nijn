@@ -1,31 +1,32 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.TestBus;
+using Minor.Nijn.TestBus.EventBus;
 using Moq;
 
 namespace Minor.Nijn.Test.TestBus
 {
     [TestClass]
-    public class TestBusMessageSenderTest
+    public class TestMessageSenderTest
     {
         private Mock<IBusContextExtension> contextMock;
-        private TestBusMessageSender target;
+        private TestMessageSender target;
 
         [TestInitialize]
         public void BeforeEach()
         {
             contextMock = new Mock<IBusContextExtension>(MockBehavior.Strict);
-            target = new TestBusMessageSender(contextMock.Object);
+            target = new TestMessageSender(contextMock.Object);
         }
         
         [TestMethod]
         public void SendMessage_ShouldCallDispatchMessage()
         {
             var message = new EventMessage("a.b.c", "Test message.");
-            contextMock.Setup(context => context.TestBuzz.DispatchMessage(It.IsAny<EventMessage>()));
+            contextMock.Setup(context => context.EventBus.DispatchMessage(It.IsAny<EventMessage>()));
 
             target.SendMessage(message);
 
-            contextMock.Verify(context => context.TestBuzz.DispatchMessage(message));
+            contextMock.Verify(context => context.EventBus.DispatchMessage(message));
         }
     }
 }
