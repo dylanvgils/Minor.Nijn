@@ -42,6 +42,16 @@ namespace Minor.Nijn.RabbitMQBus
             return new RabbitMQMessageSender(this);
         }
 
+        public ICommandSender CreateCommandSender()
+        {
+            throw new NotImplementedException();
+        }
+
+        public ICommandReceiver CreateCommandReceiver()
+        {
+            throw new NotImplementedException();
+        }
+
         public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
         {
             return new RabbitMQMessageReceiver(this, queueName, topicExpressions);
