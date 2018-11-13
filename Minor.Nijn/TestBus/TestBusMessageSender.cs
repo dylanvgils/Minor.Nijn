@@ -18,9 +18,6 @@ namespace Minor.Nijn.TestBus
             _context.TestBuzz.DispatchMessage(message);
         }
 
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
+        public void Dispose() { }
     }
 }

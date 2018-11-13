@@ -32,9 +32,6 @@ namespace Minor.Nijn.TestBus
             return sender;
         }
 
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
+        public void Dispose() { }
     }
 }
