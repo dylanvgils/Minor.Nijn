@@ -1,4 +1,5 @@
-﻿using RabbitMQ.Client;
+﻿using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,8 @@ namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQMessageReceiver : IMessageReceiver
     {
+        private readonly ILogger _log;
+
         private RabbitMQBusContext Context;
         public string QueueName { get; set; }
         public IEnumerable<string> TopicExpressions { get; set; }
@@ -20,6 +23,9 @@ namespace Minor.Nijn.RabbitMQBus
             QueueName = queueName;
             TopicExpressions = topicExpressions;
             Channel = Context.Connection.CreateModel();
+
+            _log = NijnLogging.CreateLogger<RabbitMQMessageReceiver>();
+
         }
 
         public void DeclareQueue()
@@ -46,8 +52,12 @@ namespace Minor.Nijn.RabbitMQBus
 
             consumer.Received += (model, ea) =>
             {
+                string msg = Encoding.UTF8.GetString(ea.Body);
+
+                _log.LogInformation($"Bericht ontvangen: {msg}");
+
                 Callback.Invoke(new EventMessage(routingKey: ea.RoutingKey,
-                                                message: Encoding.UTF8.GetString(ea.Body),
+                                                message: msg,
                                                 eventType: null,
                                                 timestamp: 0,
                                                 correlationId: null));

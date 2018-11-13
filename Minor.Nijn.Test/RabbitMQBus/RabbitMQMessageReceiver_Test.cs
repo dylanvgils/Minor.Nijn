@@ -29,7 +29,6 @@ namespace Minor.Nijn.RabbitMQBus.Test
                        .Returns(channelMock.Object)
                        .Verifiable();
 
-
             var context = new RabbitMQBusContext(connectionMock.Object, exchangeName);
 
             var target = new RabbitMQMessageReceiver(context, queueName, topicExpressions);
