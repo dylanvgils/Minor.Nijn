@@ -42,7 +42,7 @@ namespace Minor.Nijn.TestBus
 
         private static void IsValidExpression(string expressionPart)
         {
-            Regex regex = new Regex(ValidTopicExpressionExpression);
+            Regex regex = new Regex(ValidTopicExpressionExpression, RegexOptions.Compiled);
 
             if (regex.IsMatch(expressionPart))
             {
