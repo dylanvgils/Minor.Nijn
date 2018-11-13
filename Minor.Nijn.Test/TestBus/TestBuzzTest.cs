@@ -19,7 +19,7 @@ namespace Minor.Nijn.Test.TestBus
         public void CreateMessageReceiver_QueueLengtShouldBe_1()
         {
             target.DeclareQueue("TestQueue", new List<string> { "a.b.c" });
-            Assert.AreEqual(target.QueueLenght, 1);
+            Assert.AreEqual(target.QueueLength, 1);
         }
 
         [TestMethod]
@@ -27,7 +27,7 @@ namespace Minor.Nijn.Test.TestBus
         {
             target.DeclareQueue("TestQueue1", new List<string> { "a.b.c" });
             target.DeclareQueue("TestQueue2", new List<string> { "a.b.c" });
-            Assert.AreEqual(target.QueueLenght, 2);
+            Assert.AreEqual(target.QueueLength, 2);
         }
 
         [TestMethod]
@@ -35,7 +35,7 @@ namespace Minor.Nijn.Test.TestBus
         {
             target.DeclareQueue("TestQueue1", new List<string> { "a.b.c" });
             target.DeclareQueue("TestQueue1", new List<string> { "a.b.c" });
-            Assert.AreEqual(target.QueueLenght, 1);
+            Assert.AreEqual(target.QueueLength, 1);
         }
 
         [TestMethod]
