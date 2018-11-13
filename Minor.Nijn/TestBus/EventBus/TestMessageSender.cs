@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Minor.Nijn.TestBus.EventBus
+﻿namespace Minor.Nijn.TestBus.EventBus
 {
     public sealed class TestMessageSender : IMessageSender
     {
