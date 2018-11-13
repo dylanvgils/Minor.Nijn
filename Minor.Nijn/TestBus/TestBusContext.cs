@@ -1,45 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
+using Minor.Nijn.TestBus.CommandBus;
+using Minor.Nijn.TestBus.EventBus;
 using RabbitMQ.Client;
 
 namespace Minor.Nijn.TestBus
 {
     public sealed class TestBusContext : IBusContextExtension
     {
-        private readonly ITestBuzz _testBuzz;
-        ITestBuzz IBusContextExtension.TestBuzz => _testBuzz;
+        private const string CommandQueueName = "RpcQueue";
+        
+        private readonly IEventBus _eventBus;
+        IEventBus IBusContextExtension.EventBus => _eventBus;
+
+        private readonly ICommandBus _commandBus;
+        ICommandBus IBusContextExtension.CommandBus => _commandBus;
 
         public object Connection => throw new NotImplementedException();
         public string ExchangeName => throw new NotImplementedException();
 
         private TestBusContext() { }
 
-        internal TestBusContext(ITestBuzz testBus)
+        internal TestBusContext(IEventBus testBus, ICommandBus commandBus)
         {
-            _testBuzz = testBus;
+            _eventBus = testBus;
+            _commandBus = commandBus;
         }
 
         public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
         {
-            var receiver = new TestBusMessageReceiver(this, queueName, topicExpressions);
+            var receiver = new TestMessageReceiver(this, queueName, topicExpressions);
             receiver.DeclareQueue();
             return receiver;
         }
 
         public IMessageSender CreateMessageSender()
         {
-            var sender = new TestBusMessageSender(this);
+            var sender = new TestMessageSender(this);
             return sender;
-        }
-
-        public ICommandSender CreateCommandSender()
-        {
-            return new TestBusCommandSender(this);
         }
 
         public ICommandReceiver CreateCommandReceiver()
         {
-            return new TestBusCommandReceiver(this);
+            return new TestCommandReceiver(this, CommandQueueName);
+        }
+        
+        public ICommandSender CreateCommandSender()
+        {
+            return new TestCommandSender(this);
         }
 
         public void Dispose() { }

@@ -1,7 +1,11 @@
-﻿namespace Minor.Nijn.TestBus
+﻿using Minor.Nijn.TestBus.CommandBus;
+using Minor.Nijn.TestBus.EventBus;
+
+namespace Minor.Nijn.TestBus
 {
     internal interface IBusContextExtension : IBusContext<object>
     {
-        ITestBuzz TestBuzz { get; }
+        IEventBus EventBus { get; }
+        ICommandBus CommandBus { get; }
     }
 }

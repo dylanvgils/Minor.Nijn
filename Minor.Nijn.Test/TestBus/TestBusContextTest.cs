@@ -1,22 +1,26 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minor.Nijn.Test.TestBus.Mock;
 using Minor.Nijn.TestBus;
 using Moq;
 using System.Collections.Generic;
+using Minor.Nijn.TestBus.CommandBus;
+using Minor.Nijn.TestBus.EventBus;
 
 namespace Minor.Nijn.Test.TestBus
 {
     [TestClass]
     public class TestBusContextTest
     {
+        private Mock<IEventBus> eventBusMock;
+        private Mock<ICommandBus> commandBusMock;
         private TestBusContext target;
-        private Mock<ITestBuzz> mock;
 
         [TestInitialize]
         public void BeforeEach()
         {
-            mock = new Mock<ITestBuzz>(MockBehavior.Strict);
-            target = new TestBusContext(mock.Object);
+            eventBusMock = new Mock<IEventBus>(MockBehavior.Strict);
+            commandBusMock = new Mock<ICommandBus>(MockBehavior.Strict);;
+            
+            target = new TestBusContext(eventBusMock.Object, commandBusMock.Object);
         }
 
         [TestMethod]
@@ -24,11 +28,14 @@ namespace Minor.Nijn.Test.TestBus
         {
             string queueName = "TestQueue";
             IEnumerable<string> topicExpressions = new List<string> { "a.b.c" };
-            mock.Setup(buzz => buzz.DeclareQueue(It.IsAny<string>(), It.IsAny<IEnumerable<string>>())).Returns(new TestBuzzQueue(topicExpressions));
+            
+            eventBusMock.Setup(eventBus => eventBus.DeclareQueue(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
+                .Returns(new EventBusQueue(queueName, topicExpressions));    
 
             var result = target.CreateMessageReceiver(queueName, topicExpressions);
 
-            mock.Verify(buzz => buzz.DeclareQueue(queueName, topicExpressions));
+            eventBusMock.Verify(eventBus => eventBus.DeclareQueue(queueName, topicExpressions));
+            
             Assert.IsInstanceOfType(result, typeof(IMessageReceiver));
             Assert.AreEqual(result.QueueName, queueName);
             Assert.AreEqual(result.TopicExpressions, topicExpressions);

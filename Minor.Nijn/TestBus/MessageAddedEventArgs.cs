@@ -2,11 +2,11 @@
 
 namespace Minor.Nijn.TestBus
 {
-    internal sealed class MessageAddedEventArgs : EventArgs
+    internal sealed class MessageAddedEventArgs<T> : EventArgs
     {
-        public EventMessage Message { get; }
+        public T Message { get; }
 
-        public MessageAddedEventArgs(EventMessage message)
+        public MessageAddedEventArgs(T message)
         {
             Message = message;
         }

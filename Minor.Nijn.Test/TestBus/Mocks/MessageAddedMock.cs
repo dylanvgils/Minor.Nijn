@@ -5,12 +5,12 @@ using System.Text;
 
 namespace Minor.Nijn.Test.TestBus.Mock
 {
-    internal class MessageAddedMock
+    internal class MessageAddedMock<T>
     {
         public bool HandledMessageAddedHasBeenCalled;
-        public MessageAddedEventArgs Args;
+        public MessageAddedEventArgs<T> Args;
 
-        public void HandleMessageAdded(object sender, MessageAddedEventArgs args)
+        public void HandleMessageAdded(object sender, MessageAddedEventArgs<T> args)
         {
             HandledMessageAddedHasBeenCalled = true;
             Args = args;
