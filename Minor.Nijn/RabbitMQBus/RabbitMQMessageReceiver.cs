@@ -25,7 +25,7 @@ namespace Minor.Nijn.RabbitMQBus
         public void DeclareQueue()
         {
             Channel.QueueDeclare(queue: QueueName,
-                            durable: false,
+                            durable: true,
                             exclusive: false,
                             autoDelete: false,
                             arguments: null);
