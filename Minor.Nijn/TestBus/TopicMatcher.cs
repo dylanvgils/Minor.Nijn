@@ -8,7 +8,7 @@ namespace Minor.Nijn.TestBus
 {
     internal static class TopicMatcher
     {
-        private const string ValidTopicExpressionExpression = @"^(?:(?:\w+|\*|\#)\.)+(?:\w+|\*|\#)|\+$";
+        private const string ValidTopicExpressionExpression = @"^(?:(?:\w+|\*|\#)\.)*(?:\w+|\*|\#)$";
         private const string AsteriskCaptureGroup = @"(?:\w+)";
         private const string HashTagCaptureGroup  = @"(?:\w+\.?)+";
 
