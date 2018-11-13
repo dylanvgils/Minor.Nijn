@@ -18,7 +18,7 @@ namespace RabbitMQ
                     .WithAddress("localhost", 5672)
                     .WithCredentials(userName: "guest", password: "guest")
                     .WithType("topic");
-                    
+
             string queue = "testqueue";
             List<string> topics = new List<string> { "topic1", "topic2" };
 
@@ -28,17 +28,85 @@ namespace RabbitMQ
                 receiver.DeclareQueue();
                 var sender = connection.CreateMessageSender();
 
-                bool test = false;
+                bool callbackGingAf = false;
 
-                EventMessageReceivedCallback e = new EventMessageReceivedCallback((EventMessage a) => test = true);
-                receiver.StartReceivingMessages(e);                
+                EventMessageReceivedCallback e = new EventMessageReceivedCallback((EventMessage a) => callbackGingAf = true);
+                receiver.StartReceivingMessages(e);
 
                 sender.SendMessage(new EventMessage("topic1", "berichtje"));
 
                 Thread.Sleep(5000);
 
-                Assert.IsTrue(test);
-            }    
+                Assert.IsTrue(callbackGingAf);
+            }
+        }
+
+        [TestMethod]
+        public void CorrectMessageReceived()
+        {
+            var connectionBuilder = new RabbitMQContextBuilder()
+                    .WithExchange("MVM.EventExchange")
+                    .WithAddress("localhost", 5672)
+                    .WithCredentials(userName: "guest", password: "guest")
+                    .WithType("topic");
+
+            string queue = "testqueue";
+            List<string> topics = new List<string> { "topic1", "topic2" };
+
+            using (RabbitMQBusContext connection = connectionBuilder.CreateContext())
+            {
+                var receiver = connection.CreateMessageReceiver(queue, topics);
+                receiver.DeclareQueue();
+                var sender = connection.CreateMessageSender();
+
+                string msg = "";
+
+                EventMessageReceivedCallback e = new EventMessageReceivedCallback((EventMessage a) => msg = a.Message);
+                receiver.StartReceivingMessages(e);
+
+                sender.SendMessage(new EventMessage("topic1", "berichtje"));
+
+                Thread.Sleep(5000);
+
+                Assert.AreEqual("berichtje", msg);
+            }
+        }
+
+        [TestMethod]
+        public void ReceiverListeningToCorrectTopics()
+        {
+            var connectionBuilder = new RabbitMQContextBuilder()
+                    .WithExchange("MVM.EventExchange")
+                    .WithAddress("localhost", 5672)
+                    .WithCredentials(userName: "guest", password: "guest")
+                    .WithType("topic");
+
+            string queue = "testqueue";
+            List<string> topics = new List<string> { "topic1", "topic2" };
+
+            using (RabbitMQBusContext connection = connectionBuilder.CreateContext())
+            {
+                var receiver = connection.CreateMessageReceiver(queue, topics);
+                receiver.DeclareQueue();
+                var sender = connection.CreateMessageSender();
+
+                string msg = "";
+
+                EventMessageReceivedCallback e = new EventMessageReceivedCallback((EventMessage a) => msg = a.Message);
+                receiver.StartReceivingMessages(e);
+
+                sender.SendMessage(new EventMessage("topic1", "berichtTopic1"));
+              
+                Thread.Sleep(3000);
+
+                Assert.AreEqual("berichtTopic1", msg);
+
+                sender.SendMessage(new EventMessage("topic2", "BerichtTopic2"));
+
+                Thread.Sleep(3000);
+
+                Assert.AreEqual("BerichtTopic2", msg);
+            }
         }
     }
 }

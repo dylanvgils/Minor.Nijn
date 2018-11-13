@@ -10,13 +10,14 @@ namespace Minor.Nijn.WebScale
     /// (the event wil possibly also handled by other methods with a matching 
     /// topicExpression)
     /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
     public class TopicAttribute : Attribute
     {
+        public string TopicPattern { get; set; }
+
         public TopicAttribute(string topicPattern)
         {
-            // TODO
+            TopicPattern = topicPattern;
         }
-
-        // TODO
     }
 }

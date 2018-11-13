@@ -11,13 +11,14 @@ namespace Minor.Nijn.WebScale
     /// A MicroserviceHost cannot have two EventListeners that 
     /// listen to the same queue name.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
     public class EventListenerAttribute : Attribute
     {
+        public string QueueName { get; set; }
+
         public EventListenerAttribute(string queueName)
         {
-            // TODO
+            QueueName = queueName;
         }
-
-        // TODO
     }
 }
