@@ -7,9 +7,10 @@ namespace Minor.Nijn.TestBus
     {
         public string QueueName { get; }
         public IEnumerable<string> TopicExpressions { get; }
+        private readonly IBusContextExtension _context;
         private TestBuzzQueue _queue;
 
-        private readonly IBusContextExtension _context;
+        private TestBusMessageReceiver() { }
 
         internal TestBusMessageReceiver(IBusContextExtension context, string queueName, IEnumerable<string> topicExpressions)
         {

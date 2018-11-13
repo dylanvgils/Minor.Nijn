@@ -12,6 +12,8 @@ namespace Minor.Nijn.TestBus
         public object Connection => throw new NotImplementedException();
         public string ExchangeName => throw new NotImplementedException();
 
+        private TestBusContext() { }
+
         internal TestBusContext(ITestBuzz testBus)
         {
             _testBuzz = testBus;
