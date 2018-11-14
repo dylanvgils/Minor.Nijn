@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.TestBus;
+using Minor.Nijn.TestBus.CommandBus;
 
 namespace Minor.Nijn.TestBus.Test
 {
@@ -41,12 +43,25 @@ namespace Minor.Nijn.TestBus.Test
             receiver.StartReceivingMessages(eventMessage => result = eventMessage);
             sender.SendMessage(message);
             
-            Assert.AreEqual(result, message);
+            Assert.AreEqual(message, result);
         }
         
         [TestMethod]
         public void IntegrationTestCommand()
         {
+            IBusContextExtension taraget = TestBusContextBuilder.CreateContext();
+            
+            var response = new CommandMessage("Reply message", "type", "id");
+            var request = new CommandMessage("Test message", "type", "id");
+            request.ReplyTo = "ReplyQueue1";
+
+            var sender = taraget.CreateTestCommandSender();
+            sender.ReplyMessage = response;
+            
+            var result = sender.SendCommandAsync(request);
+            Console.WriteLine(result.Result);
+            
+            Assert.AreEqual(response,  result.Result);
         }
     }
 }

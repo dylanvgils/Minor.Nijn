@@ -7,5 +7,7 @@ namespace Minor.Nijn.TestBus
     {
         IEventBus EventBus { get; }
         ICommandBus CommandBus { get; }
+
+        ITestCommandSender CreateTestCommandSender();
     }
 }

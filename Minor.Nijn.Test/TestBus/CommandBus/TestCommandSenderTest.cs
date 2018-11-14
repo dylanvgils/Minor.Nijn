@@ -21,42 +21,14 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         [TestMethod]
         public void SendCommandAsync_ShouldCallDispatchMessage()
         {
-            var message = new CommandMessage("Test message.", "type", "id");
+            var request = new CommandMessage("Test message.", "type", "id");
+            request.ReplyTo = "ReplyQueue1";            
+            var response = new CommandMessage("Reply message", "type", "id");
+            target.ReplyMessage = response;
             
-            var queueMock = new Mock<CommandBusQueue>(MockBehavior.Strict);
-            contextMock.Setup(context => context.CommandBus.DeclareCommandQueue(It.IsAny<string>())).Returns(queueMock.Object);
-            contextMock.Setup(context => context.CommandBus.DispatchMessage(It.IsAny<CommandMessage>())).Callback(() =>
-            {
-                queueMock.Raise(queue => queue.MessageAdded += null, this, new MessageAddedEventArgs<CommandMessage>(message));
-            });
-            
-            var result = target.SendCommandAsync(message);
+            var result = target.SendCommandAsync(request);
 
-            contextMock.Verify(context => context.CommandBus.DispatchMessage(message));
-            contextMock.Verify(context => context.CommandBus.DeclareCommandQueue(result.Result.ReplyTo));
-            
-            Assert.AreEqual(message, result.Result);
-        }
-        
-        [TestMethod]
-        public void SendCommandAsync_ShouldCallDispatchMessageWithReplyToQueueName()
-        {
-            var message = new CommandMessage("Test message.", "type", "id");
-            message.ReplyTo = "ReplyQueue1";
-            
-            var queueMock = new Mock<CommandBusQueue>(MockBehavior.Strict);
-            contextMock.Setup(context => context.CommandBus.DeclareCommandQueue(It.IsAny<string>())).Returns(queueMock.Object);
-            contextMock.Setup(context => context.CommandBus.DispatchMessage(It.IsAny<CommandMessage>())).Callback(() =>
-            {
-                queueMock.Raise(queue => queue.MessageAdded += null, this, new MessageAddedEventArgs<CommandMessage>(message));
-            });
-            
-            var result = target.SendCommandAsync(message);
-
-            contextMock.Verify(context => context.CommandBus.DispatchMessage(message));
-            contextMock.Verify(context => context.CommandBus.DeclareCommandQueue("ReplyQueue1"));
-            
-            Assert.AreEqual(message, result.Result);
+            Assert.AreEqual(result.Result, response);
         }
         
         [TestMethod]
