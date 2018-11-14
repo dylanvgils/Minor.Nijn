@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Minor.Nijn.TestBus.CommandBus
 {
-    public sealed class TestCommandSender : ITestCommandSender
+    public sealed class TestCommandSender : IMockCommandSender
     {
         public CommandMessage ReplyMessage { get; set; }
         private IBusContextExtension _context;
