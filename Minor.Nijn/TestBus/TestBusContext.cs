@@ -47,6 +47,11 @@ namespace Minor.Nijn.TestBus
         
         public ICommandSender CreateCommandSender()
         {
+            return CreateTestCommandSender();
+        }
+        
+        public ITestCommandSender CreateTestCommandSender()
+        {
             return new TestCommandSender(this);
         }
 
