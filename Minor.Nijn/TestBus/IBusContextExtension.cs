@@ -8,6 +8,7 @@ namespace Minor.Nijn.TestBus
         IEventBus EventBus { get; }
         ICommandBus CommandBus { get; }
 
-        ITestCommandSender CreateTestCommandSender();
+        IMockCommandSender CreateMockCommandSender();
+        void SendMockCommand(CommandMessage request);
     }
 }

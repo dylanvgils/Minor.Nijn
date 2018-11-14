@@ -24,44 +24,5 @@ namespace Minor.Nijn.TestBus.Test
 
             Assert.AreEqual(context1, context2);
         }
-        
-        [TestMethod]
-        public void IntegrationTestEvent()
-        {
-            var target = TestBusContextBuilder.CreateContext();
-            
-            string routingKey = "a.b.c";
-            string queueName = "TestQueue";
-            IEnumerable<string> topicExpressions = new List<string> { routingKey };
-            
-            var sender = target.CreateMessageSender();
-            var receiver = target.CreateMessageReceiver(queueName, topicExpressions);
-            var message = new EventMessage(routingKey, "Test message");
-
-            EventMessage result = null;
-            receiver.DeclareQueue();
-            receiver.StartReceivingMessages(eventMessage => result = eventMessage);
-            sender.SendMessage(message);
-            
-            Assert.AreEqual(message, result);
-        }
-        
-        [TestMethod]
-        public void IntegrationTestCommand()
-        {
-            IBusContextExtension taraget = TestBusContextBuilder.CreateContext();
-            
-            var response = new CommandMessage("Reply message", "type", "id");
-            var request = new CommandMessage("Test message", "type", "id");
-            request.ReplyTo = "ReplyQueue1";
-
-            var sender = taraget.CreateTestCommandSender();
-            sender.ReplyMessage = response;
-            
-            var result = sender.SendCommandAsync(request);
-            Console.WriteLine(result.Result);
-            
-            Assert.AreEqual(response,  result.Result);
-        }
     }
 }
