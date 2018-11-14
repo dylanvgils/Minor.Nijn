@@ -6,7 +6,7 @@ namespace Minor.Nijn.TestBus
 {
     internal abstract class TestBusQueue<T>
     {
-        internal virtual event EventHandler<MessageAddedEventArgs<T>> MessageAdded;
+        private event EventHandler<MessageAddedEventArgs<T>> MessageAdded;
         private readonly Queue<T> _messageQueue;
 
         public string QueueName { get; }

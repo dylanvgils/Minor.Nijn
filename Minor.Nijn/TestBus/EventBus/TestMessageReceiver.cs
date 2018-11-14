@@ -25,7 +25,7 @@ namespace Minor.Nijn.TestBus.EventBus
 
         public void StartReceivingMessages(EventMessageReceivedCallback callback)
         {
-            _queue.MessageAdded += (sender, args) => callback(args.Message);
+            _queue.Subscribe((sender, args) => callback(args.Message));
         }
 
         public void Dispose() { }

@@ -22,7 +22,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
             
             var mock = new MessageAddedMock<CommandMessage>();
             var queue = target.DeclareCommandQueue("ReplyQueue1");
-            queue.MessageAdded += mock.HandleMessageAdded;
+            queue.Subscribe(mock.HandleMessageAdded);
 
             target.DispatchMessage(message);
 
@@ -38,11 +38,11 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
 
             var mock1 = new MessageAddedMock<CommandMessage>();
             var queue1 = target.DeclareCommandQueue("ReplyQueue1");
-            queue1.MessageAdded += mock1.HandleMessageAdded;
+            queue1.Subscribe(mock1.HandleMessageAdded);
 
             var mock2 = new MessageAddedMock<CommandMessage>();
             var queue2 = target.DeclareCommandQueue("ReplyQueue2");
-            queue2.MessageAdded += mock2.HandleMessageAdded;
+            queue2.Subscribe(mock2.HandleMessageAdded);
 
             target.DispatchMessage(message);
 
