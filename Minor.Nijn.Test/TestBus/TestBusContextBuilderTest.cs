@@ -10,19 +10,18 @@ namespace Minor.Nijn.TestBus.Test
     public class TestBusContextBuilderTest
     {
         [TestMethod]
-        public void CreateContext_ShouldReturnNewTestBusContextInstance()
+        public void CreateTestContext_ShouldReturnTestBusContext()
         {
-            var target = TestBusContextBuilder.CreateContext();
+            var target = new TestBusContextBuilder().CreateTestContext();
             Assert.IsInstanceOfType(target, typeof(TestBusContext));
         }
 
         [TestMethod]
-        public void CreateContext_ShouldReturnSameInstanceWhenCalledTheSecondTime()
+        public void WithCommandQueue_ShouldSetTheCommandQueueName()
         {
-            var context1 = TestBusContextBuilder.CreateContext();
-            var context2 = TestBusContextBuilder.CreateContext();
+            IBusContextExtension target = new TestBusContextBuilder().WithCommandQueue("CommandQueue").CreateTestContext();
 
-            Assert.AreEqual(context1, context2);
+            Assert.AreEqual("CommandQueue", target.CommandQueueName);
         }
     }
 }

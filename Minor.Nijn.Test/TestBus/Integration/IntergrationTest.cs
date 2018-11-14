@@ -9,7 +9,7 @@ namespace Minor.Nijn.TestBus.Integration.Test
         [TestMethod]
         public void IntegrationTestEvent()
         {
-            var target = TestBusContextBuilder.CreateContext();
+            var target = new TestBusContextBuilder().CreateTestContext();
 
             string routingKey = "a.b.c";
             string queueName = "TestQueue";
@@ -30,7 +30,7 @@ namespace Minor.Nijn.TestBus.Integration.Test
         [TestMethod]
         public void IntegrationTestCommandSend()
         {
-            IBusContextExtension taraget = TestBusContextBuilder.CreateContext();
+            var taraget = new TestBusContextBuilder().WithCommandQueue("CommandQueue").CreateTestContext();
 
             var response = new CommandMessage("Reply message", "type", "id");
             var request = new CommandMessage("Test message", "type", "id")
@@ -48,7 +48,7 @@ namespace Minor.Nijn.TestBus.Integration.Test
         [TestMethod]
         public void IntegrationTestCommandReceive()
         {
-            IBusContextExtension taraget = TestBusContextBuilder.CreateContext();
+            var taraget = new TestBusContextBuilder().WithCommandQueue("CommandQueue").CreateTestContext();
 
             var receiver = taraget.CreateCommandReceiver();
             receiver.DeclareCommandQueue();

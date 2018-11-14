@@ -19,7 +19,7 @@ namespace Minor.Nijn.TestBus.Test
             eventBusMock = new Mock<IEventBus>(MockBehavior.Strict);
             commandBusMock = new Mock<ICommandBus>(MockBehavior.Strict);;
             
-            target = new TestBusContext(eventBusMock.Object, commandBusMock.Object);
+            target = new TestBusContext(eventBusMock.Object, commandBusMock.Object, "CommandQueue");
         }
 
         [TestMethod]

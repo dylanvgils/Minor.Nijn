@@ -5,6 +5,7 @@ namespace Minor.Nijn.TestBus
 {
     internal interface IBusContextExtension : IBusContext<object>
     {
+        string CommandQueueName { get; }
         IEventBus EventBus { get; }
         ICommandBus CommandBus { get; }
 
