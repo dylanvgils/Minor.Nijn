@@ -1,9 +1,6 @@
-﻿using Minor.Nijn.TestBus.CommandBus;
-using Minor.Nijn.TestBus.EventBus;
-
-namespace Minor.Nijn.TestBus
+﻿namespace Minor.Nijn.TestBus
 {
-    public sealed class TestBusContextBuilder
+    public static class TestBusContextBuilder
     {
         private static readonly TestBusContext _instance;
 

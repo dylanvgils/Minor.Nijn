@@ -3,7 +3,7 @@ using Minor.Nijn.TestBus;
 using System;
 using System.Collections.Generic;
 
-namespace Minor.Nijn.Test.TestBus
+namespace Minor.Nijn.TestBus.Test
 {
     [TestClass]
     public class TopicMatcherTest

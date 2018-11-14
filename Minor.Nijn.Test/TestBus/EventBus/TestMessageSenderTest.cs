@@ -3,7 +3,7 @@ using Minor.Nijn.TestBus;
 using Minor.Nijn.TestBus.EventBus;
 using Moq;
 
-namespace Minor.Nijn.Test.TestBus
+namespace Minor.Nijn.TestBus.EventBus.Test
 {
     [TestClass]
     public class TestMessageSenderTest
@@ -27,6 +27,12 @@ namespace Minor.Nijn.Test.TestBus
             target.SendMessage(message);
 
             contextMock.Verify(context => context.EventBus.DispatchMessage(message));
+        }
+        
+        [TestMethod]
+        public void Dispose_ShouldNotThrowException()
+        {
+            target.Dispose();
         }
     }
 }

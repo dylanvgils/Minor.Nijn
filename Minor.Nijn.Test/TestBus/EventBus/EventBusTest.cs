@@ -1,9 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minor.Nijn.Test.TestBus.Mock;
 using System.Collections.Generic;
-using Minor.Nijn.TestBus.EventBus;
+using Minor.Nijn.TestBus.Mocks.Test;
 
-namespace Minor.Nijn.Test.TestBus
+namespace Minor.Nijn.TestBus.EventBus.Test
 {
     [TestClass]
     public class TestBusTest
@@ -40,7 +39,7 @@ namespace Minor.Nijn.Test.TestBus
 
             var mock2 = new MessageAddedMock<EventMessage>();
             var queue2 = target.DeclareQueue("TestQueue2", new List<string> { "a.b.c" });
-            queue1.MessageAdded += mock2.HandleMessageAdded;
+            queue2.MessageAdded += mock2.HandleMessageAdded;
 
             target.DispatchMessage(message);
 
@@ -60,7 +59,7 @@ namespace Minor.Nijn.Test.TestBus
             var result = target.DeclareQueue(queueName, topicExpressions);
             
             Assert.IsInstanceOfType(result, typeof(EventBusQueue));
-            Assert.AreEqual(queueName, result.Name);
+            Assert.AreEqual(queueName, result.QueueName);
             Assert.AreEqual(topicExpressions, result.TopicExpressions);
             Assert.AreEqual(target.QueueLength, 1);
         }

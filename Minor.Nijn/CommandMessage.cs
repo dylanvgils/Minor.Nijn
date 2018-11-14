@@ -2,6 +2,8 @@
 {
     public class CommandMessage
     {
+        internal string ReplyTo { get; set; }
+        
         public string Message { get; }
         public string Type { get; }
         public string CorrelationId { get; }
