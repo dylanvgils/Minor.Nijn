@@ -1,19 +1,22 @@
-﻿namespace Minor.Nijn.TestBus
-{
-    public static class TestBusContextBuilder
-    {
-        private static readonly TestBusContext _instance;
+﻿using System;
 
-        static TestBusContextBuilder()
+namespace Minor.Nijn.TestBus
+{
+    public sealed class TestBusContextBuilder
+    {
+        public string CommandQueueName { get; private set; } = "RpcQueue";
+
+        public TestBusContextBuilder WithCommandQueue(string queueName)
+        {
+            CommandQueueName = queueName;
+            return this;
+        }
+
+        public TestBusContext CreateTestContext()
         {
             var eventBus = new EventBus.EventBus();
             var commandBus = new CommandBus.CommandBus();
-            _instance = new TestBusContext(eventBus, commandBus);
-        }
-
-        public static TestBusContext CreateContext()
-        {
-            return _instance;
+            return new TestBusContext(eventBus, commandBus, CommandQueueName);
         }
     }
 }
