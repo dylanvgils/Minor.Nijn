@@ -8,11 +8,13 @@ namespace Minor.Nijn.TestBus.Mocks.Test
     internal class MessageAddedMock<T>
     {
         public bool HandledMessageAddedHasBeenCalled;
+        public int HandleMessageAddedCount;
         public MessageAddedEventArgs<T> Args;
 
         public void HandleMessageAdded(object sender, MessageAddedEventArgs<T> args)
         {
             HandledMessageAddedHasBeenCalled = true;
+            HandleMessageAddedCount++;
             Args = args;
         }
     }

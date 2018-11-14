@@ -5,9 +5,10 @@ using Minor.Nijn.TestBus.Mocks.Test;
 namespace Minor.Nijn.TestBus.EventBus.Test
 {
     [TestClass]
-    public class TestBusTest
+    public class EventBusTest
     {
         private EventBus target;
+
         [TestInitialize]
         public void BeforeEach()
         {

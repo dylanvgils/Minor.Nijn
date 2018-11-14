@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Minor.Nijn.TestBus.CommandBus;
 using Minor.Nijn.TestBus.EventBus;
-using RabbitMQ.Client;
 
 namespace Minor.Nijn.TestBus
 {

@@ -18,6 +18,67 @@ namespace Minor.Nijn.TestBus.EventBus.Test
         }
 
         [TestMethod]
+        public void Subscribe_ShouldSubscribeToTheMessageAddedEvent()
+        {
+            var mock = new MessageAddedMock<EventMessage>();
+            target.Subscribe(mock.HandleMessageAdded);
+            Assert.AreEqual(1, target.SubscriberCount);
+        }
+
+        [TestMethod]
+        public void Subscribe_ShouldSubscribeMultipleEvents()
+        {
+            var mock1 = new MessageAddedMock<EventMessage>();
+            var mock2 = new MessageAddedMock<EventMessage>();
+
+            target.Subscribe(mock1.HandleMessageAdded);
+            target.Subscribe(mock2.HandleMessageAdded);
+
+            Assert.AreEqual(2, target.SubscriberCount);
+        }
+
+        [TestMethod]
+        public void Unsubscribe_ShouldUnsubscribeEvent()
+        {
+            var mock1 = new MessageAddedMock<EventMessage>();
+            var mock2 = new MessageAddedMock<EventMessage>();
+            target.Subscribe(mock1.HandleMessageAdded);
+            target.Subscribe(mock2.HandleMessageAdded);
+
+            target.Unsubscribe(mock1.HandleMessageAdded);
+
+            Assert.AreEqual(1, target.SubscriberCount);
+        }
+
+        [TestMethod]
+        public void Enqueue_ShouldQueueMessagesWhenNoEventHandlersAreSubscribed()
+        {
+            var message1 = new EventMessage("a.b.c", "Test message 1");
+            var message2 = new EventMessage("a.b.c", "Test message 2");
+
+            target.Enqueue(message1);
+            target.Enqueue(message2);
+
+            Assert.AreEqual(2, target.MessageQueueLength);
+        }
+
+        [TestMethod]
+        public void Subscribe_ShouldDequeueAllExistingMessagesInMessageQueue()
+        {
+            var message1 = new EventMessage("a.b.c", "Test message 1");
+            var message2 = new EventMessage("a.b.c", "Test message 2");
+            target.Enqueue(message1);
+            target.Enqueue(message2);
+
+            var mock = new MessageAddedMock<EventMessage>();
+            target.Subscribe(mock.HandleMessageAdded);
+
+            Assert.IsTrue(mock.HandledMessageAddedHasBeenCalled);
+            Assert.AreEqual(2, mock.HandleMessageAddedCount);
+            Assert.AreEqual(0, target.MessageQueueLength);
+        }
+
+        [TestMethod]
         public void Enqueue_ShouldRaiseMessageAddedEventWhenMessageAdded()
         {
             var mock = new MessageAddedMock<EventMessage>();
