@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace AuditlogMicroservice.DAL
 {
-    public class EventMessageContext : DbContext
+    public class EventContext : DbContext
     {
-        public EventMessageContext(DbContextOptions options) : base(options)
+        public EventContext(DbContextOptions options) : base(options)
         {
         }
 
-        public DbSet<EventMessage> Messages { get; set; }
+        public DbSet<Event> Messages { get; set; }
     }
 }

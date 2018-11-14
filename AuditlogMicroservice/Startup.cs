@@ -14,12 +14,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Minor.Nijn;
 using Minor.Nijn.RabbitMQBus;
 
 namespace AuditlogMicroservice
 {
     public class Startup
     {
+        private RabbitMQBusContext rabbitMqContext;
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -33,11 +35,11 @@ namespace AuditlogMicroservice
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             string connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
-            var dBOptions = new DbContextOptionsBuilder<EventMessageContext>()
+            var dBOptions = new DbContextOptionsBuilder<EventContext>()
                 .UseSqlServer(connectionString)
                 .Options;
 
-            using (var context = new EventMessageContext(dBOptions))
+            using (var context = new EventContext(dBOptions))
             {
                 try
                 {
@@ -53,18 +55,18 @@ namespace AuditlogMicroservice
             }
 
             services.AddSingleton(dBOptions);
-            services.AddTransient<IDataMapper<EventMessage, long>, EventMessageDataMapper>();
+            services.AddTransient<IDataMapper<Event, long>, EventDataMapper>();
 
             var connectionBuilder = new RabbitMQContextBuilder()
-                    .WithExchange("MVM.EventExchange")
-                    .WithAddress("localhost", 5672)
-                    .WithCredentials(userName: "guest", password: "guest")
-                    .WithType("topic")
+                    .WithExchange("RABBITMQ_EXCHANGE_NAME")
+                    .WithAddress("RABBITMQ_HOST", 5672)
+                    .WithCredentials(userName: "RABBITMQ_USER", password: "RABBITMQ_PASSWORD")
+                    .WithType("RABBITMQ_TYPE")
                     .ReadFromEnvironmentVariables();
 
-            MessageEventListener handler = new MessageEventListener();
+            MessageEventListener handler = new MessageEventListener(new EventDataMapper(dBOptions));
 
-            var rabbitMqContext = connectionBuilder.CreateContext();
+            rabbitMqContext = connectionBuilder.CreateContext();
 
             IEnumerable<string> topic = new List<string> { "#" };
 
@@ -75,14 +77,21 @@ namespace AuditlogMicroservice
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
+            applicationLifetime.ApplicationStopping.Register(OnShutdown);
+
             app.UseMvc();
+        }
+
+        private void OnShutdown()
+        {
+            rabbitMqContext.Dispose();
         }
     }
 }

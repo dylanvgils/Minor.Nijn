@@ -1,4 +1,5 @@
-﻿using Minor.Nijn;
+﻿using AuditlogMicroservice.DAL;
+using AuditlogMicroservice.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +9,16 @@ namespace AuditlogMicroservice.EventListeners
 {
     public class MessageEventListener
     {
+        private IDataMapper<Event, long> _dataMapper;
 
-        public void HandleEvent(EventMessage message)
+        public MessageEventListener(IDataMapper<Event, long> dataMapper)
         {
-            Console.WriteLine(message.Message);
+            _dataMapper = dataMapper;
+        }
+
+        public void HandleEvent(Minor.Nijn.EventMessage message)
+        {
+            _dataMapper.Insert(new Event { RoutingKey = message.RoutingKey, Message = message.Message, Timestamp = message.Timestamp });
         }
     }
 }

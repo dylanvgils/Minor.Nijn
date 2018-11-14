@@ -11,17 +11,17 @@ namespace AuditlogMicroservice.Test
     public class EventMessageDataMapperTest
     {
         SqliteConnection connection;
-        DbContextOptions<EventMessageContext> options;
+        DbContextOptions<EventContext> options;
 
         [TestInitialize]
         public void Initialize()
         {
             connection = new SqliteConnection("DataSource=:memory:");
             connection.Open();
-            options = new DbContextOptionsBuilder<EventMessageContext>()
+            options = new DbContextOptionsBuilder<EventContext>()
                             .UseSqlite(connection)
                             .Options;
-            using (var context = new EventMessageContext(options))
+            using (var context = new EventContext(options))
             {
                 context.Database.EnsureCreated();
             }
@@ -31,14 +31,14 @@ namespace AuditlogMicroservice.Test
         public void Insert_ShouldInsertEventMessage()
         {
 
-            var target = new EventMessageDataMapper(options);
-            var message = new EventMessage { Id = 1, RoutingKey = "a.b.c", Message = "TestBericht" };
+            var target = new EventDataMapper(options);
+            var message = new Event { Id = 1, RoutingKey = "a.b.c", Message = "TestBericht" };
 
             target.Insert(message);
 
-            using (var context = new EventMessageContext(options))
+            using (var context = new EventContext(options))
             {
-                EventMessage resultEvent = context.Messages.SingleOrDefault(m => m.Id == 1);
+                Event resultEvent = context.Messages.SingleOrDefault(m => m.Id == 1);
                 Assert.IsNotNull(resultEvent);
             }
         }

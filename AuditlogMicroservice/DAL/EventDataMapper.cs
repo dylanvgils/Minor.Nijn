@@ -7,18 +7,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AuditlogMicroservice.DAL
 {
-    public class EventMessageDataMapper : IDataMapper<EventMessage, long>
+    public class EventDataMapper : IDataMapper<Event, long>
     {
-        private DbContextOptions<EventMessageContext> options;
+        private DbContextOptions<EventContext> options;
 
-        public EventMessageDataMapper(DbContextOptions<EventMessageContext> options)
+        public EventDataMapper(DbContextOptions<EventContext> options)
         {
             this.options = options;
         }
 
-        public void Insert(EventMessage item)
+        public void Insert(Event item)
         {
-            using (var context = new EventMessageContext(options))
+            using (var context = new EventContext(options))
             {
                 context.Messages.Add(item);
                 context.SaveChanges();
