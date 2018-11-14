@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Minor.Nijn.TestBus.CommandBus;
 using Minor.Nijn.TestBus.EventBus;
 
-namespace Minor.Nijn.Test.TestBus
+namespace Minor.Nijn.TestBus.Test
 {
     [TestClass]
     public class TestBusContextTest
@@ -60,6 +60,12 @@ namespace Minor.Nijn.Test.TestBus
         {
             var result = target.CreateCommandSender();
             Assert.IsInstanceOfType(result, typeof(ICommandSender));
+        }
+        
+        [TestMethod]
+        public void Dispose_ShouldNotThrowException()
+        {
+            target.Dispose();
         }
     }
 }

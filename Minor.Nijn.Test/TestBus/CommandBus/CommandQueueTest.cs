@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Minor.Nijn.Test.TestBus
+namespace Minor.Nijn.TestBus.CommandBus.Test
 {
     [TestClass]
     public class CommandQueueTest

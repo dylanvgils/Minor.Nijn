@@ -1,11 +1,9 @@
-using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.TestBus;
 using Minor.Nijn.TestBus.CommandBus;
-using Minor.Nijn.TestBus.EventBus;
 using Moq;
 
-namespace Minor.Nijn.Test.TestBus
+namespace Minor.Nijn.TestBus.CommandBus.Test
 {
     [TestClass]
     public class TestCommandReceiverTest
@@ -35,9 +33,10 @@ namespace Minor.Nijn.Test.TestBus
         }
         
         [TestMethod]
-        public void StartReceivingMessages_ShouldStartListeningForMessages()
+        public void StartReceivingMessages_ShouldStartListeningForMessagesOnRpcQueue()
         {
             CommandMessage message = new CommandMessage("TestMessage", "type" ,"id");
+            message.ReplyTo = queueName;
             
             var queue = new CommandBusQueue(queueName);
             contextMock.Setup(context => context.CommandBus.DeclareCommandQueue(It.IsAny<string>()))
@@ -51,6 +50,12 @@ namespace Minor.Nijn.Test.TestBus
             queue.Enqueue(message);
 
             callbackMock.Verify(callback => callback(message));
+        }
+        
+        [TestMethod]
+        public void Dispose_ShouldNotThrowException()
+        {
+            target.Dispose();
         }
     }
 }

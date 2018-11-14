@@ -4,7 +4,7 @@ using Moq;
 using System.Collections.Generic;
 using Minor.Nijn.TestBus.EventBus;
 
-namespace Minor.Nijn.Test.TestBus
+namespace Minor.Nijn.TestBus.EventBus.Test
 {
     [TestClass]
     public class TestMessageReceiverTest
@@ -51,6 +51,12 @@ namespace Minor.Nijn.Test.TestBus
             queue.Enqueue(message);
 
             callbackMock.Verify(callback => callback(message));
+        }
+        
+        [TestMethod]
+        public void Dispose_ShouldNotThrowException()
+        {
+            target.Dispose();
         }
     }
 }

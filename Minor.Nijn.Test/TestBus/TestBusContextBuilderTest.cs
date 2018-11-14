@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.TestBus;
 
-namespace Minor.Nijn.Test.TestBus
+namespace Minor.Nijn.TestBus.Test
 {
     [TestClass]
     public class TestBusContextBuilderTest
@@ -24,7 +24,7 @@ namespace Minor.Nijn.Test.TestBus
         }
         
         [TestMethod]
-        public void IntegrationTest()
+        public void IntegrationTestEvent()
         {
             var target = TestBusContextBuilder.CreateContext();
             
@@ -42,6 +42,11 @@ namespace Minor.Nijn.Test.TestBus
             sender.SendMessage(message);
             
             Assert.AreEqual(result, message);
+        }
+        
+        [TestMethod]
+        public void IntegrationTestCommand()
+        {
         }
     }
 }

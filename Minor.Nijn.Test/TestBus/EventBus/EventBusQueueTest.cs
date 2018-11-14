@@ -1,9 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minor.Nijn.Test.TestBus.Mock;
 using System.Collections.Generic;
-using Minor.Nijn.TestBus.EventBus;
+using Minor.Nijn.TestBus.Mocks.Test;
 
-namespace Minor.Nijn.Test.TestBus
+namespace Minor.Nijn.TestBus.EventBus.Test
 {
     [TestClass]
     public class EventBusQueueTest
