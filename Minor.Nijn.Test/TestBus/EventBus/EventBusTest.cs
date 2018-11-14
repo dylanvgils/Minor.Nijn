@@ -21,7 +21,7 @@ namespace Minor.Nijn.TestBus.EventBus.Test
             var mock = new MessageAddedMock<EventMessage>();
             var message = new EventMessage("a.b.c", "Test message");
             var queue = target.DeclareQueue("TestQueue1", new List<string> { "a.b.c" });
-            queue.MessageAdded += mock.HandleMessageAdded;
+            queue.Subscribe(mock.HandleMessageAdded);
 
             target.DispatchMessage(message);
 
@@ -36,11 +36,11 @@ namespace Minor.Nijn.TestBus.EventBus.Test
 
             var mock1 = new MessageAddedMock<EventMessage>();
             var queue1 = target.DeclareQueue("TestQueue1", new List<string> { "a.b.c" });
-            queue1.MessageAdded += mock1.HandleMessageAdded;
+            queue1.Subscribe(mock1.HandleMessageAdded);
 
             var mock2 = new MessageAddedMock<EventMessage>();
             var queue2 = target.DeclareQueue("TestQueue2", new List<string> { "a.b.c" });
-            queue2.MessageAdded += mock2.HandleMessageAdded;
+            queue2.Subscribe(mock2.HandleMessageAdded);
 
             target.DispatchMessage(message);
 

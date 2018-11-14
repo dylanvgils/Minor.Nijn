@@ -83,7 +83,7 @@ namespace Minor.Nijn.TestBus.EventBus.Test
         {
             var mock = new MessageAddedMock<EventMessage>();
             var message = new EventMessage("a.b.c", "Test message.");
-            target.MessageAdded += mock.HandleMessageAdded;
+            target.Subscribe(mock.HandleMessageAdded);
 
             target.Enqueue(message);
 
@@ -96,7 +96,7 @@ namespace Minor.Nijn.TestBus.EventBus.Test
         {
             var mock = new MessageAddedMock<EventMessage>();
             var message = new EventMessage("a.b.d", "Test message.");
-            target.MessageAdded += mock.HandleMessageAdded;
+            target.Subscribe(mock.HandleMessageAdded);
 
             target.Enqueue(message);
 
