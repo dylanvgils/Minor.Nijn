@@ -11,9 +11,9 @@ namespace Minor.Nijn.RabbitMQBus
     {
         private readonly ILogger _log;
         
-        public string QueueName { get; set; }
-        public IEnumerable<string> TopicExpressions { get; set; }
-        public IModel Channel { get; private set; }
+        public string QueueName { get; }
+        public IEnumerable<string> TopicExpressions { get; }
+        public IModel Channel { get; }
         
         private readonly IRabbitMQBusContext _context;
 

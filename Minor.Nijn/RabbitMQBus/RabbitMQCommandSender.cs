@@ -1,4 +1,3 @@
-using System;
 using RabbitMQ.Client;
 using System.Text;
 using System.Threading;
@@ -11,14 +10,10 @@ namespace Minor.Nijn.RabbitMQBus
     {
         public IModel Channel { get; }
 
-        private readonly IRabbitMQBusContext _context;
-
         private RabbitMQCommandSender() { }
 
         internal RabbitMQCommandSender(IRabbitMQBusContext context)
         {
-            _context = context;
-
             Channel = context.Connection.CreateModel();
         }
 
@@ -65,7 +60,7 @@ namespace Minor.Nijn.RabbitMQBus
             return task;
         }
 
-        private Task<CommandMessage> StartResponseAwaiterTask(EventingBasicConsumer consumer)
+        private static Task<CommandMessage> StartResponseAwaiterTask(EventingBasicConsumer consumer)
         {               
             return Task.Run(() => {
                 var flag = new ManualResetEvent(false);

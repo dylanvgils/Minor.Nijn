@@ -7,13 +7,12 @@ using Serilog.Formatting.Json;
 using System;
 using System.Collections.Generic;
 
-
 namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQBusContext : IRabbitMQBusContext
     {
-        public IConnection Connection { get; private set; }
-        public string ExchangeName { get; private set; }
+        public IConnection Connection { get; }
+        public string ExchangeName { get; }
 
         public  RabbitMQBusContext(IConnection connection, string exchangeName)
         {
