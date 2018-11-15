@@ -9,22 +9,26 @@ namespace Minor.Nijn.RabbitMQBus.Test
     public class RabbitMQbusContextTest
     {
         private string exchangeName = "ExchangeName";
+
         private Mock<IConnection> connectionMock;
+        private Mock<IModel> channelMock;
+
         private RabbitMQBusContext target;
 
         [TestInitialize]
         public void BeforeEach()
         {
             connectionMock = new Mock<IConnection>(MockBehavior.Strict);
+            channelMock = new Mock<IModel>(MockBehavior.Strict);
+
+            connectionMock.Setup(conn => conn.CreateModel()).Returns(channelMock.Object);
+
             target = new RabbitMQBusContext(connectionMock.Object, exchangeName);
         }
         
         [TestMethod]
         public void CreateMessageSender_ShouldReturnIMessageSender()
-        {
-            var modelMock = new Mock<IModel>(MockBehavior.Strict);
-            connectionMock.Setup(conn => conn.CreateModel()).Returns(modelMock.Object);
-            
+        {            
             var result = target.CreateMessageSender();
             
             connectionMock.VerifyAll();
@@ -37,9 +41,6 @@ namespace Minor.Nijn.RabbitMQBus.Test
             var queueName = "queueName";
             IEnumerable<string> topicExpressions = new List<string> { "a.b.c" };
             
-            var modelMock = new Mock<IModel>(MockBehavior.Strict);
-            connectionMock.Setup(conn => conn.CreateModel()).Returns(modelMock.Object);
-            
             var result = target.CreateMessageReceiver(queueName, topicExpressions);
             
             connectionMock.VerifyAll();
@@ -50,6 +51,8 @@ namespace Minor.Nijn.RabbitMQBus.Test
         public void CreateCommandSender_ShouldReturnICommandSender()
         {
             var result = target.CreateCommandSender();
+
+            connectionMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(ICommandSender));
         }
         
@@ -57,6 +60,8 @@ namespace Minor.Nijn.RabbitMQBus.Test
         public void CreateCommandReceiver_ShouldReturnICommandReceiver()
         {
             var result = target.CreateCommandReceiver();
+
+            connectionMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(ICommandReceiver));
         }
     }

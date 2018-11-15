@@ -37,7 +37,7 @@ namespace Minor.Nijn.RabbitMQBus
                 exclusive: false,
                 autoDelete: false,
                 arguments: null
-                );
+            );
 
             foreach (var topic in TopicExpressions)
             {
@@ -65,8 +65,8 @@ namespace Minor.Nijn.RabbitMQBus
                     message: msg,
                     eventType: null,
                     timestamp: 0,
-                    correlationId: null)
-                );
+                    correlationId: null
+                ));
             };
 
             Channel.BasicConsume(
