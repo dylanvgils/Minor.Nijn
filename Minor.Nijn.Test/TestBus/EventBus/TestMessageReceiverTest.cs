@@ -11,7 +11,7 @@ namespace Minor.Nijn.TestBus.EventBus.Test
     {
         private string queueName;
         private IEnumerable<string> topicExpressions;
-        private Mock<IBusContextExtension> contextMock;
+        private Mock<ITestBusContext> contextMock;
         private TestMessageReceiver target;
 
         [TestInitialize]
@@ -20,7 +20,7 @@ namespace Minor.Nijn.TestBus.EventBus.Test
             queueName = "TestQueue";
             topicExpressions = new List<string> { "a.b.c" };
 
-            contextMock = new Mock<IBusContextExtension>(MockBehavior.Strict);
+            contextMock = new Mock<ITestBusContext>(MockBehavior.Strict);
             target = new TestMessageReceiver(contextMock.Object, queueName, topicExpressions);
         }
 

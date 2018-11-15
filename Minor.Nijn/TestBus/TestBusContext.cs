@@ -5,16 +5,16 @@ using Minor.Nijn.TestBus.EventBus;
 
 namespace Minor.Nijn.TestBus
 {
-    public sealed class TestBusContext : IBusContextExtension
+    public sealed class TestBusContext : ITestBusContext
     {
         private readonly string _commandQueueName;
-        string IBusContextExtension.CommandQueueName => _commandQueueName;
+        string ITestBusContext.CommandQueueName => _commandQueueName;
 
         private readonly IEventBus _eventBus;
-        IEventBus IBusContextExtension.EventBus => _eventBus;
+        IEventBus ITestBusContext.EventBus => _eventBus;
 
         private readonly ICommandBus _commandBus;
-        ICommandBus IBusContextExtension.CommandBus => _commandBus;
+        ICommandBus ITestBusContext.CommandBus => _commandBus;
 
         public object Connection => throw new NotImplementedException();
         public string ExchangeName => throw new NotImplementedException();

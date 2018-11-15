@@ -7,11 +7,11 @@ namespace Minor.Nijn.TestBus.CommandBus
     public sealed class TestCommandSender : IMockCommandSender
     {
         public CommandMessage ReplyMessage { get; set; }
-        private IBusContextExtension _context;
+        private ITestBusContext _context;
         
         private TestCommandSender() { }
 
-        internal TestCommandSender(IBusContextExtension context)
+        internal TestCommandSender(ITestBusContext context)
         {
             _context = context;
         }
