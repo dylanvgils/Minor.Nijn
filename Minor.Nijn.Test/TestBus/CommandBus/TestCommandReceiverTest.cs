@@ -9,7 +9,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
     public class TestCommandReceiverTest
     {
         private string queueName;
-        private Mock<IBusContextExtension> contextMock;
+        private Mock<ITestBusContext> contextMock;
         private TestCommandReceiver target;
         
         [TestInitialize]
@@ -17,7 +17,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         {
             queueName = "RpcQueue";
             
-            contextMock = new Mock<IBusContextExtension>(MockBehavior.Strict);
+            contextMock = new Mock<ITestBusContext>(MockBehavior.Strict);
             target = new TestCommandReceiver(contextMock.Object, queueName);
         }
         

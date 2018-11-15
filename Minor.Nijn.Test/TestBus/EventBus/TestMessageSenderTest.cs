@@ -8,13 +8,13 @@ namespace Minor.Nijn.TestBus.EventBus.Test
     [TestClass]
     public class TestMessageSenderTest
     {
-        private Mock<IBusContextExtension> contextMock;
+        private Mock<ITestBusContext> contextMock;
         private TestMessageSender target;
 
         [TestInitialize]
         public void BeforeEach()
         {
-            contextMock = new Mock<IBusContextExtension>(MockBehavior.Strict);
+            contextMock = new Mock<ITestBusContext>(MockBehavior.Strict);
             target = new TestMessageSender(contextMock.Object);
         }
         

@@ -3,7 +3,7 @@ using Minor.Nijn.TestBus.EventBus;
 
 namespace Minor.Nijn.TestBus
 {
-    internal interface IBusContextExtension : IBusContext<object>
+    internal interface ITestBusContext : IBusContext<object>
     {
         string CommandQueueName { get; }
         IEventBus EventBus { get; }

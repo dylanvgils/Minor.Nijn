@@ -3,12 +3,12 @@ namespace Minor.Nijn.TestBus.CommandBus
     public sealed class TestCommandReceiver : ICommandReceiver
     {
         public string QueueName { get; }
-        private readonly IBusContextExtension _context;
+        private readonly ITestBusContext _context;
         private CommandBusQueue _queue;
         
         private TestCommandReceiver() { }
 
-        internal TestCommandReceiver(IBusContextExtension context, string queueName)
+        internal TestCommandReceiver(ITestBusContext context, string queueName)
         {
             QueueName = queueName;
             _context = context;

@@ -6,12 +6,12 @@ namespace Minor.Nijn.TestBus.EventBus
     {
         public string QueueName { get; }
         public IEnumerable<string> TopicExpressions { get; }
-        private readonly IBusContextExtension _context;
+        private readonly ITestBusContext _context;
         private EventBusQueue _queue;
 
         private TestMessageReceiver() { }
 
-        internal TestMessageReceiver(IBusContextExtension context, string queueName, IEnumerable<string> topicExpressions)
+        internal TestMessageReceiver(ITestBusContext context, string queueName, IEnumerable<string> topicExpressions)
         {
             _context = context;
             QueueName = queueName;

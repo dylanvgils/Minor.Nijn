@@ -19,7 +19,7 @@ namespace Minor.Nijn.TestBus.Test
         [TestMethod]
         public void WithCommandQueue_ShouldSetTheCommandQueueName()
         {
-            IBusContextExtension target = new TestBusContextBuilder().WithCommandQueue("CommandQueue").CreateTestContext();
+            ITestBusContext target = new TestBusContextBuilder().WithCommandQueue("CommandQueue").CreateTestContext();
             Assert.AreEqual("CommandQueue", target.CommandQueueName);
         }
     }

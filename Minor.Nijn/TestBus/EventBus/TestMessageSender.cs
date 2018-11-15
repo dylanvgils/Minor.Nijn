@@ -2,11 +2,11 @@
 {
     public sealed class TestMessageSender : IMessageSender
     {
-        private readonly IBusContextExtension _context;
+        private readonly ITestBusContext _context;
 
         private TestMessageSender() { }
 
-        internal TestMessageSender(IBusContextExtension context)
+        internal TestMessageSender(ITestBusContext context)
         {
             _context = context;
         }
