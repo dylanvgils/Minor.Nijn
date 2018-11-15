@@ -121,17 +121,18 @@ namespace RabbitMQ
             using (IRabbitMQBusContext context = connectionBuilder.CreateContext())
             {
                 var commandSender = context.CreateCommandSender();
-                var commandReceiver = context.CreateCommandReceiver();
+                var commandReceiver = context.CreateCommandReceiver("CommandQueue");
 
                 ManualResetEvent flag = new ManualResetEvent(false);
                 commandReceiver.DeclareCommandQueue();
-                commandReceiver.StartReceivingCommands((args, sender) =>
+                commandReceiver.StartReceivingCommands(args =>
                 {
                     Console.WriteLine(args.Message);
                     flag.Set();
+                    return new CommandMessage("Command reply", "type", "id");
                 });
 
-                commandSender.SendCommandAsync(new CommandMessage("Test message", "type", "id", "commandQueueName"));
+                commandSender.SendCommandAsync(new CommandMessage("Test message", "type", "id", "CommandQueue"));
 
                 flag.WaitOne(5000);
             }

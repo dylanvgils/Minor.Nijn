@@ -47,12 +47,12 @@ namespace Minor.Nijn.TestBus.Integration.Test
         {
             var taraget = new TestBusContextBuilder().WithCommandQueue("CommandQueue").CreateTestContext();
 
-            var receiver = taraget.CreateCommandReceiver();
+            var receiver = taraget.CreateCommandReceiver("CommandQueue");
             receiver.DeclareCommandQueue();
             var command = new CommandMessage("Reply message", "type", "id");
 
             CommandMessage result = null;
-            receiver.StartReceivingCommands((c, sender) => result = c);
+            receiver.StartReceivingCommands(c => result = c);
             taraget.SendMockCommand(command);
 
             Assert.AreEqual(command, result);

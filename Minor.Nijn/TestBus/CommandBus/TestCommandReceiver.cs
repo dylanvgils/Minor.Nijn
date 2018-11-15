@@ -21,7 +21,7 @@ namespace Minor.Nijn.TestBus.CommandBus
 
         public void StartReceivingCommands(CommandReceivedCallback callback)
         {
-            _queue.Subscribe((sender, args) => callback(args.Message, null));
+            _queue.Subscribe((sender, args) => callback(args.Message));
         }
         
         public void Dispose() { }

@@ -41,18 +41,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void StartReceivingCommands(CommandReceivedCallback callback)
         {
-            var consumer = new EventingBasicConsumer(Channel);
-
-            consumer.Received += (model, args) =>
-            {
-                string message = Encoding.UTF8.GetString(args.Body);
-
-                callback(new CommandMessage(
-                    message: message,
-                    type: args.BasicProperties.Type,
-                    correlationId: args.BasicProperties.CorrelationId
-                ), _context.CreateCommandReplySender(args.BasicProperties.ReplyTo));
-            };
+            var consumer = CreateBasicConsumer(callback);
 
             Channel.BasicConsume(
                 queue: QueueName,
@@ -62,6 +51,45 @@ namespace Minor.Nijn.RabbitMQBus
                 exclusive: false,
                 arguments: null,
                 consumer: consumer
+            );
+        }
+
+        private EventingBasicConsumer CreateBasicConsumer(CommandReceivedCallback callback)
+        {
+            var consumer = new EventingBasicConsumer(Channel);
+            
+            consumer.Received += (model, args) =>
+            {   
+                string requestBody = Encoding.UTF8.GetString(args.Body);
+                
+                var replyMessage = callback(new CommandMessage(
+                    message: requestBody,
+                    type: args.BasicProperties.Type,
+                    correlationId: args.BasicProperties.CorrelationId
+                ));
+                
+                PublishResponse(args, replyMessage);
+            };
+
+            return consumer;
+        }
+
+        private void PublishResponse(BasicDeliverEventArgs args, CommandMessage replyMessage)
+        {
+            var replyProps = Channel.CreateBasicProperties();
+            replyProps.CorrelationId = args.BasicProperties.CorrelationId;
+            
+            Channel.BasicPublish(
+                exchange: "",
+                routingKey: args.BasicProperties.ReplyTo,
+                mandatory: false,
+                basicProperties: replyProps,
+                body: Encoding.UTF8.GetBytes(replyMessage.Message)
+            );
+                
+            Channel.BasicAck(
+                deliveryTag: args.DeliveryTag,
+                multiple: false
             );
         }
         

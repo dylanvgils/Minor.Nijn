@@ -41,7 +41,7 @@ namespace Minor.Nijn.TestBus
             return sender;
         }
 
-        public ICommandReceiver CreateCommandReceiver()
+        public ICommandReceiver CreateCommandReceiver(string queueName)
         {
             return new TestCommandReceiver(this, _commandQueueName);
         }
@@ -54,11 +54,6 @@ namespace Minor.Nijn.TestBus
         public IMockCommandSender CreateMockCommandSender()
         {
             return new TestCommandSender(this);
-        }
-
-        public ICommandReplySender CreateCommandReplySender(string replyTo)
-        {
-            throw new NotImplementedException();
         }
 
         public void SendMockCommand(CommandMessage request)

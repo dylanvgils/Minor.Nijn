@@ -59,7 +59,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
         [TestMethod]
         public void CreateCommandReceiver_ShouldReturnICommandReceiver()
         {
-            var result = target.CreateCommandReceiver();
+            var result = target.CreateCommandReceiver("queueName");
 
             connectionMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(ICommandReceiver));
