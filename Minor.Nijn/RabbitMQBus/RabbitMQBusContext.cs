@@ -52,6 +52,11 @@ namespace Minor.Nijn.RabbitMQBus
             return new RabbitMQCommandSender(this);
         }
 
+        public ICommandReplySender CreateCommandReplySender(string replyTo)
+        {
+            return new RabbitMQCommandReplySender(this, replyTo);
+        }
+
         public ICommandReceiver CreateCommandReceiver()
         {
             return new RabbitMQCommandReceiver(this, "commandQueueName");

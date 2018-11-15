@@ -22,7 +22,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         public void SendCommandAsync_ShouldCallDispatchMessage()
         {
             var request = new CommandMessage("Test message.", "type", "id");
-            request.ReplyTo = "ReplyQueue1";            
+            request.RoutingKey = "ReplyQueue1";            
             var response = new CommandMessage("Reply message", "type", "id");
             target.ReplyMessage = response;
             

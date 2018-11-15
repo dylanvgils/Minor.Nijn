@@ -33,10 +33,7 @@ namespace Minor.Nijn.TestBus.Integration.Test
             var taraget = new TestBusContextBuilder().WithCommandQueue("CommandQueue").CreateTestContext();
 
             var response = new CommandMessage("Reply message", "type", "id");
-            var request = new CommandMessage("Test message", "type", "id")
-            {
-                ReplyTo = "ReplyQueue1"
-            };
+            var request = new CommandMessage("Test message", "type", "id");
 
             var sender = taraget.CreateMockCommandSender();
             sender.ReplyMessage = response;
@@ -55,7 +52,7 @@ namespace Minor.Nijn.TestBus.Integration.Test
             var command = new CommandMessage("Reply message", "type", "id");
 
             CommandMessage result = null;
-            receiver.StartReceivingCommands(c => result = c);
+            receiver.StartReceivingCommands((c, sender) => result = c);
             taraget.SendMockCommand(command);
 
             Assert.AreEqual(command, result);
