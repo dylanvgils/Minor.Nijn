@@ -4,6 +4,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Impl;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Minor.Nijn.RabbitMQBus.Test
@@ -41,20 +42,38 @@ namespace Minor.Nijn.RabbitMQBus.Test
         [TestMethod]
         public void SendMessage_ShouldCallBasicPublishWithCorrectMessage()
         {
-            var propsMock = new Mock<IBasicProperties>();
+            var type = "type";
+            var correlationId = "correlationId";
+            var routingKey = "routingKey";
+            var timestamp = DateTime.Now.Ticks;
+            var messageBody = "Test message";
+            
+            var message = new EventMessage(
+                routingKey: routingKey,
+                message: messageBody,
+                eventType: type,
+                timestamp: timestamp,
+                correlationId: correlationId
+            );
+            
+            var propsMock = new Mock<BasicProperties>(MockBehavior.Loose);
+            // propsMock.VerifySet(props => props.Type = type);
+            // propsMock.VerifySet(props => props.ClusterId = correlationId);
+            // propsMock.VerifySet(props => props.Timestamp = new AmqpTimestamp(timestamp));
 
             contextMock.Setup(ctx => ctx.ExchangeName).Returns(exchangeName);
             channelMock.Setup(chan => chan.CreateBasicProperties()).Returns(propsMock.Object);
             channelMock.Setup(chan => chan.BasicPublish(
                 exchangeName,
-                "MyRoutingKey",
+                routingKey,
                 false,
                 propsMock.Object,
-                It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "MyMessage")
+                It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == messageBody)
              ));
 
-            target.SendMessage(new EventMessage("MyRoutingKey", "MyMessage"));
+            target.SendMessage(message);
 
+            // propsMock.VerifyAll();
             contextMock.VerifyAll();
             channelMock.VerifyAll();
         }

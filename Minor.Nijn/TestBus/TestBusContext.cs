@@ -7,9 +7,6 @@ namespace Minor.Nijn.TestBus
 {
     public sealed class TestBusContext : ITestBusContext
     {
-        private readonly string _commandQueueName;
-        string ITestBusContext.CommandQueueName => _commandQueueName;
-
         private readonly IEventBus _eventBus;
         IEventBus ITestBusContext.EventBus => _eventBus;
 
@@ -21,11 +18,10 @@ namespace Minor.Nijn.TestBus
 
         private TestBusContext() { }
 
-        internal TestBusContext(IEventBus testBus, ICommandBus commandBus, string commandQueueName)
+        internal TestBusContext(IEventBus testBus, ICommandBus commandBus)
         {
             _eventBus = testBus;
             _commandBus = commandBus;
-            _commandQueueName = commandQueueName;
         }
 
         public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
@@ -43,7 +39,7 @@ namespace Minor.Nijn.TestBus
 
         public ICommandReceiver CreateCommandReceiver(string queueName)
         {
-            return new TestCommandReceiver(this, _commandQueueName);
+            return new TestCommandReceiver(this, queueName);
         }
         
         public ICommandSender CreateCommandSender()
@@ -58,7 +54,6 @@ namespace Minor.Nijn.TestBus
 
         public void SendMockCommand(CommandMessage request)
         {
-            request.RoutingKey = _commandQueueName;
             _commandBus.DispatchMessage(request);
         }
 

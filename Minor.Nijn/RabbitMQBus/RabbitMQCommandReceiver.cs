@@ -10,14 +10,26 @@ namespace Minor.Nijn.RabbitMQBus
         public string QueueName { get; }
         public IModel Channel { get; }
 
+        private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
+
         private RabbitMQCommandReceiver() { }
 
+        internal RabbitMQCommandReceiver(
+            IRabbitMQBusContext context,
+            string queueName,
+            EventingBasicConsumerFactory factory
+        ) : this(context, queueName)
+        {
+            _eventingBasicConsumerFactory = factory;
+        }
+        
         internal RabbitMQCommandReceiver(IRabbitMQBusContext context, string queueName)
         {
             QueueName = queueName;
             Channel = context.Connection.CreateModel();
+            _eventingBasicConsumerFactory = new EventingBasicConsumerFactory();
         }
-        
+
         public void DeclareCommandQueue()
         {
             Channel.QueueDeclare(
@@ -52,7 +64,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         private EventingBasicConsumer CreateBasicConsumer(CommandReceivedCallback callback)
         {
-            var consumer = new EventingBasicConsumer(Channel);
+            var consumer = _eventingBasicConsumerFactory.CreateEventingBasicConsumer(Channel);
             
             consumer.Received += (model, args) =>
             {   
@@ -82,7 +94,7 @@ namespace Minor.Nijn.RabbitMQBus
                 basicProperties: replyProps,
                 body: Encoding.UTF8.GetBytes(replyMessage.Message)
             );
-                
+            
             Channel.BasicAck(
                 deliveryTag: args.DeliveryTag,
                 multiple: false

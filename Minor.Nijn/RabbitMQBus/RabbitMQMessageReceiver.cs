@@ -16,8 +16,15 @@ namespace Minor.Nijn.RabbitMQBus
         public IModel Channel { get; }
         
         private readonly IRabbitMQBusContext _context;
+        private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
 
         private RabbitMQMessageReceiver() { }
+
+        internal RabbitMQMessageReceiver(IRabbitMQBusContext context, string queueName,
+            IEnumerable<string> topicExpressions, EventingBasicConsumerFactory factory) : this(context, queueName, topicExpressions)
+        {
+            _eventingBasicConsumerFactory = factory;
+        }
         
         internal RabbitMQMessageReceiver(IRabbitMQBusContext context, string queueName, IEnumerable<string> topicExpressions)
         {
@@ -27,6 +34,7 @@ namespace Minor.Nijn.RabbitMQBus
             Channel = _context.Connection.CreateModel();
 
             _log = NijnLogging.CreateLogger<RabbitMQMessageReceiver>();
+            _eventingBasicConsumerFactory = new EventingBasicConsumerFactory();
         }
 
         public void DeclareQueue()
@@ -52,20 +60,20 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void StartReceivingMessages(EventMessageReceivedCallback Callback)
         {
-            var consumer = new EventingBasicConsumer(Channel);
+            var consumer = _eventingBasicConsumerFactory.CreateEventingBasicConsumer(Channel);
 
             consumer.Received += (model, ea) =>
             {
-                string msg = Encoding.UTF8.GetString(ea.Body);
+                string body = Encoding.UTF8.GetString(ea.Body);
 
-                _log.LogInformation($"Bericht ontvangen: {msg}");
+                _log.LogInformation($"Bericht ontvangen: {ea.Body}");
 
                 Callback.Invoke(new EventMessage(
                     routingKey: ea.RoutingKey,
-                    message: msg,
-                    eventType: null,
-                    timestamp: 0,
-                    correlationId: null
+                    message: body,
+                    eventType: ea.BasicProperties.Type,
+                    timestamp: ea.BasicProperties.Timestamp.UnixTime,
+                    correlationId: ea.BasicProperties.CorrelationId
                 ));
             };
 
