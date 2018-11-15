@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace Minor.Nijn.RabbitMQBus
 {
-    public class RabbitMQBusContext : IBusContext<IConnection>
+    public class RabbitMQBusContext : IRabbitMQBusContext
     {
         public IConnection Connection { get; private set; }
         public string ExchangeName { get; private set; }
@@ -42,6 +42,11 @@ namespace Minor.Nijn.RabbitMQBus
             return new RabbitMQMessageSender(this);
         }
 
+        public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
+        {
+            return new RabbitMQMessageReceiver(this, queueName, topicExpressions);
+        }
+        
         public ICommandSender CreateCommandSender()
         {
             throw new NotImplementedException();
@@ -50,11 +55,6 @@ namespace Minor.Nijn.RabbitMQBus
         public ICommandReceiver CreateCommandReceiver()
         {
             throw new NotImplementedException();
-        }
-
-        public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
-        {
-            return new RabbitMQMessageReceiver(this, queueName, topicExpressions);
         }
 
         public void Dispose()

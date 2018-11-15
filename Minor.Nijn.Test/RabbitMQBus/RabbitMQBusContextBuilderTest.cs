@@ -1,13 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minor.Nijn.RabbitMQBus;
-using System;
 using System.Collections.Generic;
-using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using RabbitMQ.Client;
 
-namespace Minor.Nijn.Test.RabbitMQBus
+namespace Minor.Nijn.RabbitMQBus.Test
 {
     [TestClass]
-    public class ContextTest
+    public class RabbitMQBusContextBuilderTest
     {
         [TestMethod]
         public void ContextHasRightExchangeName()
@@ -40,15 +39,15 @@ namespace Minor.Nijn.Test.RabbitMQBus
             Assert.AreEqual("guest", connectionBuilder.Username);
             Assert.AreEqual("password", connectionBuilder.Password);
         }
-
+        
         [TestMethod]
         public void BuildingWithMethodChainingWorks()
         {
             var connectionBuilder = new RabbitMQContextBuilder();
 
             connectionBuilder.WithExchange("MVM.EventExchange")
-                    .WithAddress("localhost", 1234)
-                    .WithCredentials(userName: "guest", password: "password");
+                .WithAddress("localhost", 1234)
+                .WithCredentials(userName: "guest", password: "password");
 
             Assert.AreEqual("MVM.EventExchange", connectionBuilder.ExchangeName);
 
@@ -57,6 +56,32 @@ namespace Minor.Nijn.Test.RabbitMQBus
 
             Assert.AreEqual("guest", connectionBuilder.Username);
             Assert.AreEqual("password", connectionBuilder.Password);
+        }
+        
+        [TestMethod]
+        public void CreateContext_ShouldReturnRabbitMQContext()
+        {            
+            var modelMock = new Mock<IModel>(MockBehavior.Strict);
+            modelMock.Setup(chan => chan.Dispose());
+            modelMock.Setup(chan => chan.ExchangeDeclare("ExchangeName", "type", false, false, null));
+            
+            var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
+            connectionMock.Setup(conn => conn.CreateModel()).Returns(modelMock.Object);
+            
+            var factoryMock = new Mock<IConnectionFactory>(MockBehavior.Strict);
+            factoryMock.Setup(fact => fact.CreateConnection()).Returns(connectionMock.Object);
+            
+            var result = new RabbitMQContextBuilder(factoryMock.Object)
+                .WithExchange("ExchangeName")
+                .WithAddress(hostName: "localhost", port: 5642)
+                .WithCredentials(userName: "username", password: "password")
+                .WithType("type")
+                .CreateContext();
+            
+            factoryMock.VerifyAll();
+            connectionMock.VerifyAll();
+            modelMock.VerifyAll();
+            Assert.IsInstanceOfType(result, typeof(RabbitMQBusContext));
         }
     }
 }
