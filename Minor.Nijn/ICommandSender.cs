@@ -7,5 +7,4 @@ namespace Minor.Nijn
     {
         Task<CommandMessage> SendCommandAsync(CommandMessage request);
     }
-
 }

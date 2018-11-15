@@ -14,5 +14,13 @@
             Type = type;
             CorrelationId = correlationId;
         }
+
+        internal CommandMessage(string message, string type, string correlationId, string replyTo)
+        {
+            Message = message;
+            Type = type;
+            CorrelationId = correlationId;
+            ReplyTo = replyTo;
+        }
     }
 }

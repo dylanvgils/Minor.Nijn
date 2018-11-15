@@ -28,7 +28,16 @@ namespace Minor.Nijn.RabbitMQBus.Test
             
             target = new RabbitMQMessageSender(contextMock.Object);
         }
-        
+
+        [TestMethod]
+        public void MessageSenderIsCreatedWithCorrectParameters()
+        {
+            contextMock.VerifyAll();
+
+            Assert.IsNotNull(target);
+            Assert.IsNotNull(target.Channel);
+        }
+
         [TestMethod]
         public void SendMessage_ShouldCallBasicPublishWithCorrectMessage()
         {

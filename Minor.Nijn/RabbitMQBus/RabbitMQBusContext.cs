@@ -49,12 +49,12 @@ namespace Minor.Nijn.RabbitMQBus
         
         public ICommandSender CreateCommandSender()
         {
-            throw new NotImplementedException();
+            return new RabbitMQCommandSender(this);
         }
 
         public ICommandReceiver CreateCommandReceiver()
         {
-            throw new NotImplementedException();
+            return new RabbitMQCommandReceiver(this, "commandQueueName");
         }
 
         public void Dispose()

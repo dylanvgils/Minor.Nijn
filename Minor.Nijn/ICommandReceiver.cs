@@ -11,5 +11,5 @@ namespace Minor.Nijn
         void StartReceivingCommands(CommandReceivedCallback callback);
     }
 
-    public delegate CommandMessage CommandReceivedCallback(CommandMessage commandMessage);
+    public delegate void CommandReceivedCallback(CommandMessage commandMessage);
 }

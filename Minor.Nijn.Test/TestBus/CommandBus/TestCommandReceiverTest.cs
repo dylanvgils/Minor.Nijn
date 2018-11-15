@@ -43,7 +43,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
                 .Returns(queue);
             
             var callbackMock = new Mock<CommandReceivedCallback>(MockBehavior.Strict);
-            callbackMock.Setup(callback => callback(It.IsAny<CommandMessage>())).Returns(message);
+            callbackMock.Setup(callback => callback(It.IsAny<CommandMessage>()));
 
             target.DeclareCommandQueue();
             target.StartReceivingCommands(callbackMock.Object);
