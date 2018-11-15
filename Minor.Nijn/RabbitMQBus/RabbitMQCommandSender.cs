@@ -1,14 +1,15 @@
-using RabbitMQ.Client;
 using System;
+using RabbitMQ.Client;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using RabbitMQ.Client.Events;
 
 namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQCommandSender : ICommandSender
     {
-        public IModel Channel { get; private set; }
+        public IModel Channel { get; }
 
         private readonly IRabbitMQBusContext _context;
 
@@ -23,25 +24,12 @@ namespace Minor.Nijn.RabbitMQBus
 
         public Task<CommandMessage> SendCommandAsync(CommandMessage request)
         {
-            var replyQueue = _context.CreateCommandReceiver();
-            replyQueue.DeclareCommandQueue();
+            string replyQueueName = Channel.QueueDeclare().QueueName;;
 
             var props = Channel.CreateBasicProperties();
-            props.ReplyTo = replyQueue.QueueName;
+            props.ReplyTo = replyQueueName;
 
-            var task = Task.Run(() => {
-                var flag = new ManualResetEvent(false);
-
-                CommandMessage response = null;
-                replyQueue.StartReceivingCommands((args, sender) => {
-                    response = args;
-                    flag.Set();
-                });
-
-                flag.WaitOne(5000);
-
-                return response;
-            });
+            var task = SubscribeToResponseQueue(replyQueueName);
 
             Channel.BasicPublish(
                 exchange: "",
@@ -57,6 +45,48 @@ namespace Minor.Nijn.RabbitMQBus
             );
 
             return task;
+        }
+
+        private Task<CommandMessage> SubscribeToResponseQueue(string replyQueueName)
+        {
+            var consumer = new EventingBasicConsumer(Channel);
+            var task = StartResponseAwaiterTask(consumer);
+            
+            Channel.BasicConsume(
+                queue: replyQueueName,
+                autoAck: true,
+                consumerTag: "",
+                noLocal: false,
+                exclusive: false,
+                arguments: null,
+                consumer: consumer
+            );
+
+            return task;
+        }
+
+        private Task<CommandMessage> StartResponseAwaiterTask(EventingBasicConsumer consumer)
+        {               
+            return Task.Run(() => {
+                var flag = new ManualResetEvent(false);
+
+                CommandMessage response = null;
+                consumer.Received += (sender, args) => {
+                    string body = Encoding.UTF8.GetString(args.Body);
+                    
+                    response = new CommandMessage(
+                        body, 
+                        args.BasicProperties.Type, 
+                        args.BasicProperties.CorrelationId
+                    );
+                    
+                    flag.Set();
+                };
+
+                flag.WaitOne(5000);
+
+                return response;
+            });
         }
         
         public void Dispose()

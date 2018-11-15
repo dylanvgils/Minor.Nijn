@@ -50,7 +50,7 @@ namespace Minor.Nijn.TestBus.Test
         [TestMethod]
         public void CreateCommandReceiver_ShouldReturnCommandReceiver()
         {
-            var result = target.CreateCommandReceiver();
+            var result = target.CreateCommandReceiver("CommandQueue");
             Assert.IsInstanceOfType(result, typeof(ICommandReceiver));
         }
         
