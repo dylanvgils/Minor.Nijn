@@ -8,7 +8,7 @@ namespace Minor.Nijn.RabbitMQBus
     {
         private readonly ILogger _log;
 
-        public IModel Channel { get; private set; }
+        public IModel Channel { get; }
         private readonly IRabbitMQBusContext _context;
 
         private RabbitMQMessageSender() { }

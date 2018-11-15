@@ -8,17 +8,13 @@ namespace Minor.Nijn.RabbitMQBus
     public class RabbitMQCommandReceiver : ICommandReceiver
     {
         public string QueueName { get; }
-        public IModel Channel { get; private set; }
-
-        private readonly IRabbitMQBusContext _context;
+        public IModel Channel { get; }
 
         private RabbitMQCommandReceiver() { }
 
         internal RabbitMQCommandReceiver(IRabbitMQBusContext context, string queueName)
         {
-            _context = context;
             QueueName = queueName;
-
             Channel = context.Connection.CreateModel();
         }
         
