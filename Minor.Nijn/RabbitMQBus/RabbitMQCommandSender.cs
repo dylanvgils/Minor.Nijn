@@ -1,3 +1,4 @@
+using System;
 using RabbitMQ.Client;
 using System.Text;
 using System.Threading;
@@ -9,12 +10,20 @@ namespace Minor.Nijn.RabbitMQBus
     public class RabbitMQCommandSender : ICommandSender
     {
         public IModel Channel { get; }
+        
+        private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
 
         private RabbitMQCommandSender() { }
 
+        internal RabbitMQCommandSender(IRabbitMQBusContext context, EventingBasicConsumerFactory factory) : this(context)
+        {
+            _eventingBasicConsumerFactory = factory;
+        }
+        
         internal RabbitMQCommandSender(IRabbitMQBusContext context)
         {
             Channel = context.Connection.CreateModel();
+            _eventingBasicConsumerFactory = new EventingBasicConsumerFactory();
         }
 
         public Task<CommandMessage> SendCommandAsync(CommandMessage request)
@@ -24,7 +33,7 @@ namespace Minor.Nijn.RabbitMQBus
             var props = Channel.CreateBasicProperties();
             props.ReplyTo = replyQueueName;
 
-            var task = SubscribeToResponseQueue(replyQueueName);
+            var task = SubscribeToResponseQueue(replyQueueName, request.CorrelationId);
 
             Channel.BasicPublish(
                 exchange: "",
@@ -34,18 +43,13 @@ namespace Minor.Nijn.RabbitMQBus
                 body: Encoding.UTF8.GetBytes(request.Message)
             );
 
-            Channel.BasicAck(
-                deliveryTag: 0,
-                multiple: false
-            );
-
             return task;
         }
 
-        private Task<CommandMessage> SubscribeToResponseQueue(string replyQueueName)
+        private Task<CommandMessage> SubscribeToResponseQueue(string replyQueueName, string correlationId)
         {
-            var consumer = new EventingBasicConsumer(Channel);
-            var task = StartResponseAwaiterTask(consumer);
+            var consumer = _eventingBasicConsumerFactory.CreateEventingBasicConsumer(Channel);
+            var task = StartResponseAwaiterTask(consumer, correlationId);
             
             Channel.BasicConsume(
                 queue: replyQueueName,
@@ -60,21 +64,23 @@ namespace Minor.Nijn.RabbitMQBus
             return task;
         }
 
-        private static Task<CommandMessage> StartResponseAwaiterTask(EventingBasicConsumer consumer)
+        private static Task<CommandMessage> StartResponseAwaiterTask(EventingBasicConsumer consumer, string correlationId)
         {               
             return Task.Run(() => {
                 var flag = new ManualResetEvent(false);
 
                 CommandMessage response = null;
                 consumer.Received += (sender, args) => {
+                    if (args.BasicProperties.CorrelationId != correlationId) return;
+                  
                     string body = Encoding.UTF8.GetString(args.Body);
                     
                     response = new CommandMessage(
-                        body, 
-                        args.BasicProperties.Type, 
+                        body,
+                        args.BasicProperties.Type,
                         args.BasicProperties.CorrelationId
                     );
-                    
+
                     flag.Set();
                 };
 

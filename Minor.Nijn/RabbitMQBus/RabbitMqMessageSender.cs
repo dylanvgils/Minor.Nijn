@@ -21,18 +21,22 @@ namespace Minor.Nijn.RabbitMQBus
             _log = NijnLogging.CreateLogger<RabbitMQMessageSender>();
         }
 
-        // TODO: logica adhv eventtype
         public void SendMessage(EventMessage message)
         {
             _log.LogInformation("Send message");
 
-           Channel.BasicPublish(
-               exchange: _context.ExchangeName,
-               routingKey: message.RoutingKey,
-               mandatory: false,
-               basicProperties: Channel.CreateBasicProperties(),
-               body: Encoding.UTF8.GetBytes(message.Message
-           ));
+            var props = Channel.CreateBasicProperties();
+            props.Type = message.EventType;
+            props.CorrelationId = message.CorrelationId;
+            props.Timestamp = new AmqpTimestamp(message.Timestamp);
+
+            Channel.BasicPublish(
+                exchange: _context.ExchangeName,
+                routingKey: message.RoutingKey,
+                mandatory: false,
+                basicProperties: props,
+                body: Encoding.UTF8.GetBytes(message.Message)
+            );
         }
 
         public void Dispose()

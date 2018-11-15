@@ -30,7 +30,7 @@ namespace Minor.Nijn.TestBus.Integration.Test
         [TestMethod]
         public void IntegrationTestCommandSend()
         {
-            var taraget = new TestBusContextBuilder().WithCommandQueue("CommandQueue").CreateTestContext();
+            var taraget = new TestBusContextBuilder().CreateTestContext();
 
             var response = new CommandMessage("Reply message", "type", "id");
             var request = new CommandMessage("Test message", "type", "id");
@@ -45,11 +45,11 @@ namespace Minor.Nijn.TestBus.Integration.Test
         [TestMethod]
         public void IntegrationTestCommandReceive()
         {
-            var taraget = new TestBusContextBuilder().WithCommandQueue("CommandQueue").CreateTestContext();
+            var taraget = new TestBusContextBuilder().CreateTestContext();
 
             var receiver = taraget.CreateCommandReceiver("CommandQueue");
             receiver.DeclareCommandQueue();
-            var command = new CommandMessage("Reply message", "type", "id");
+            var command = new CommandMessage("Reply message", "type", "id", "CommandQueue");
 
             CommandMessage result = null;
             receiver.StartReceivingCommands(c => result = c);

@@ -1,7 +1,9 @@
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using RabbitMQ.Client;
 using System.Collections.Generic;
+using System.Text;
 using RabbitMQ.Client.Events;
 
 namespace Minor.Nijn.RabbitMQBus.Test
@@ -15,6 +17,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
         
         private Mock<IRabbitMQBusContext> contextMock;
         private Mock<IModel> channelMock;
+        private Mock<EventingBasicConsumerFactory> eventingBasicConsumerFactoryMock;
         
         private RabbitMQMessageReceiver target;
         
@@ -23,10 +26,11 @@ namespace Minor.Nijn.RabbitMQBus.Test
         {
             contextMock = new Mock<IRabbitMQBusContext>(MockBehavior.Strict);
             channelMock = new Mock<IModel>(MockBehavior.Strict);
+            eventingBasicConsumerFactoryMock = new Mock<EventingBasicConsumerFactory>(MockBehavior.Strict);
 
             contextMock.Setup(ctx => ctx.Connection.CreateModel()).Returns(channelMock.Object);
             
-            target = new RabbitMQMessageReceiver(contextMock.Object, queueName, topicExpressions);
+            target = new RabbitMQMessageReceiver(contextMock.Object, queueName, topicExpressions, eventingBasicConsumerFactoryMock.Object);
         }
 
         [TestMethod]
@@ -61,14 +65,40 @@ namespace Minor.Nijn.RabbitMQBus.Test
         [TestMethod]
         public void StartReceivingMessages_ShouldStartListeningForMessages()
         {
+            var consumer = new EventingBasicConsumer(channelMock.Object);
+
+            var replyCommandMessage = "Reply message";
+            var routingKey = "a.b.c";
+            var type = "type";
+            var timestamp = new AmqpTimestamp();
+            var correlationId = "correlationId";
+            
+            var propsMock = new Mock<IBasicProperties>(MockBehavior.Strict);
+            propsMock.SetupGet(props => props.Type).Returns(type);
+            propsMock.SetupGet(props => props.Timestamp).Returns(timestamp);
+            propsMock.SetupGet(props => props.CorrelationId).Returns(correlationId);
+            
             channelMock.Setup(chan =>
-                    chan.BasicConsume(queueName, true, "", false, false, null, It.IsAny<EventingBasicConsumer>()))
+                    chan.BasicConsume(queueName, true, "", false, false, null, consumer))
                 .Returns("Ok");
             
-            EventMessage message = null;
-            target.StartReceivingMessages(eventMessage => message = eventMessage);
+            eventingBasicConsumerFactoryMock.Setup(fact => fact.CreateEventingBasicConsumer(channelMock.Object))
+                .Returns(consumer);
+            
+            EventMessage result = null;
+            target.StartReceivingMessages(eventMessage => result = eventMessage);
+            consumer.HandleBasicDeliver("", 1, false, "",  routingKey,  propsMock.Object, Encoding.UTF8.GetBytes(replyCommandMessage));
             
             channelMock.VerifyAll();
+            contextMock.VerifyAll();
+            eventingBasicConsumerFactoryMock.VerifyAll();
+            propsMock.VerifyAll();
+            
+            Assert.AreEqual(result.Message, replyCommandMessage);
+            Assert.AreEqual(result.RoutingKey, routingKey);
+            Assert.AreEqual(result.Timestamp, timestamp.UnixTime);
+            Assert.AreEqual(result.EventType, type);
+            Assert.AreEqual(result.CorrelationId, correlationId);
         }
         
         [TestMethod]

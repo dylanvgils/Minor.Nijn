@@ -15,12 +15,5 @@ namespace Minor.Nijn.TestBus.Test
             var target = new TestBusContextBuilder().CreateTestContext();
             Assert.IsInstanceOfType(target, typeof(TestBusContext));
         }
-
-        [TestMethod]
-        public void WithCommandQueue_ShouldSetTheCommandQueueName()
-        {
-            ITestBusContext target = new TestBusContextBuilder().WithCommandQueue("CommandQueue").CreateTestContext();
-            Assert.AreEqual("CommandQueue", target.CommandQueueName);
-        }
     }
 }
