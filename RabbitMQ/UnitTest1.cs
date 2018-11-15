@@ -22,7 +22,7 @@ namespace RabbitMQ
             string queue = "testqueue";
             List<string> topics = new List<string> { "topic1", "topic2" };
 
-            using (RabbitMQBusContext connection = connectionBuilder.CreateContext())
+            using (IRabbitMQBusContext connection = connectionBuilder.CreateContext())
             {
                 var receiver = connection.CreateMessageReceiver(queue, topics);
                 receiver.DeclareQueue();
@@ -53,7 +53,7 @@ namespace RabbitMQ
             string queue = "testqueue";
             List<string> topics = new List<string> { "topic1", "topic2" };
 
-            using (RabbitMQBusContext connection = connectionBuilder.CreateContext())
+            using (IRabbitMQBusContext connection = connectionBuilder.CreateContext())
             {
                 var receiver = connection.CreateMessageReceiver(queue, topics);
                 receiver.DeclareQueue();
@@ -84,7 +84,7 @@ namespace RabbitMQ
             string queue = "testqueue";
             List<string> topics = new List<string> { "topic1", "topic2" };
 
-            using (RabbitMQBusContext connection = connectionBuilder.CreateContext())
+            using (IRabbitMQBusContext connection = connectionBuilder.CreateContext())
             {
                 var receiver = connection.CreateMessageReceiver(queue, topics);
                 receiver.DeclareQueue();

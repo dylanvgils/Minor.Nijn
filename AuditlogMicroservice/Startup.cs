@@ -21,7 +21,7 @@ namespace AuditlogMicroservice
 {
     public class Startup
     {
-        private RabbitMQBusContext rabbitMqContext;
+        private IRabbitMQBusContext rabbitMqContext;
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;

@@ -1,0 +1,61 @@
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Impl;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Minor.Nijn.RabbitMQBus.Test
+{
+    [TestClass]
+    public class RabbitMQMessageSenderTest
+    {
+        private string exchangeName = "exchangeName";
+        
+        private Mock<IRabbitMQBusContext> contextMock;
+        private Mock<IModel> channelMock;
+        
+        private RabbitMQMessageSender target;
+        
+        [TestInitialize]
+        public void BeforeEach()
+        {
+            contextMock = new Mock<IRabbitMQBusContext>(MockBehavior.Strict);
+            channelMock = new Mock<IModel>(MockBehavior.Strict);
+
+            contextMock.Setup(ctx => ctx.Connection.CreateModel()).Returns(channelMock.Object);
+            
+            target = new RabbitMQMessageSender(contextMock.Object);
+        }
+        
+        [TestMethod]
+        public void SendMessage_ShouldCallBasicPublishWithCorrectMessage()
+        {
+            var propsMock = new Mock<IBasicProperties>();
+
+            contextMock.Setup(ctx => ctx.ExchangeName).Returns(exchangeName);
+            channelMock.Setup(chan => chan.CreateBasicProperties()).Returns(propsMock.Object);
+            channelMock.Setup(chan => chan.BasicPublish(
+                exchangeName,
+                "MyRoutingKey",
+                false,
+                propsMock.Object,
+                It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "MyMessage")
+             ));
+
+            target.SendMessage(new EventMessage("MyRoutingKey", "MyMessage"));
+
+            contextMock.VerifyAll();
+            channelMock.VerifyAll();
+        }
+
+        [TestMethod]
+        public void Dispose_ShouldCallDisposeOnResources()
+        {
+            channelMock.Setup(chan => chan.Dispose());
+            target.Dispose();
+            channelMock.VerifyAll();
+        }
+    }
+}

@@ -26,7 +26,7 @@ namespace VoorbeeldMicroservice
             IMessageSender sender;
             IMessageReceiver receiver;
 
-            using (RabbitMQBusContext connection = connectionBuilder.CreateContext())
+            using (IRabbitMQBusContext connection = connectionBuilder.CreateContext())
             {
                 receiver = connection.CreateMessageReceiver(queue, topics);
                 receiver.DeclareQueue();

@@ -1,8 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Minor.Nijn.RabbitMQBus
@@ -11,13 +8,14 @@ namespace Minor.Nijn.RabbitMQBus
     {
         private readonly ILogger _log;
 
-        private RabbitMQBusContext Context { get; set; }
-
         public IModel Channel { get; private set; }
+        private readonly IRabbitMQBusContext _context;
 
-        public RabbitMQMessageSender(RabbitMQBusContext context)
+        private RabbitMQMessageSender() { }
+        
+        internal RabbitMQMessageSender(IRabbitMQBusContext context)
         {
-            Context = context;
+            _context = context;
             Channel = context.Connection.CreateModel();
 
             _log = NijnLogging.CreateLogger<RabbitMQMessageSender>();
@@ -28,11 +26,13 @@ namespace Minor.Nijn.RabbitMQBus
         {
             _log.LogInformation("Send message");
 
-           Channel.BasicPublish(exchange: Context.ExchangeName,
-                                   routingKey: message.RoutingKey,
-                                   mandatory: false,
-                                   basicProperties: Channel.CreateBasicProperties(),
-                                   body: Encoding.UTF8.GetBytes(message.Message));
+           Channel.BasicPublish(
+               exchange: _context.ExchangeName,
+               routingKey: message.RoutingKey,
+               mandatory: false,
+               basicProperties: Channel.CreateBasicProperties(),
+               body: Encoding.UTF8.GetBytes(message.Message
+           ));
         }
 
         public void Dispose()
