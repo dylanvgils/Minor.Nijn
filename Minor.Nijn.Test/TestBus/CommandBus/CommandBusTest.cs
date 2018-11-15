@@ -18,7 +18,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         public void DispatchMessage_ShouldTriggerEvent()
         {
             var message = new CommandMessage("Test message", "type", "id");
-            message.ReplyTo = "ReplyQueue1";
+            message.RoutingKey = "ReplyQueue1";
             
             var mock = new MessageAddedMock<CommandMessage>();
             var queue = target.DeclareCommandQueue("ReplyQueue1");
@@ -34,7 +34,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         public void DispatchMessage_ShouldNotQueueMessageWhenReplyToNotMatches()
         {
             var message = new CommandMessage("Test message", "type", "id");
-            message.ReplyTo = "ReplyQueue1";
+            message.RoutingKey = "ReplyQueue1";
 
             var mock1 = new MessageAddedMock<CommandMessage>();
             var queue1 = target.DeclareCommandQueue("ReplyQueue1");

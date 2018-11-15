@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Minor.Nijn
 {
@@ -11,5 +9,5 @@ namespace Minor.Nijn
         void StartReceivingCommands(CommandReceivedCallback callback);
     }
 
-    public delegate void CommandReceivedCallback(CommandMessage commandMessage);
+    public delegate void CommandReceivedCallback(CommandMessage commandMessage, ICommandReplySender sender);
 }

@@ -2,11 +2,11 @@
 {
     public class CommandMessage
     {
-        internal string ReplyTo { get; set; }
-        
-        public string Message { get; }
+        public string RoutingKey { get; set; }
         public string Type { get; }
         public string CorrelationId { get; }
+
+        public string Message { get; }
 
         public CommandMessage(string message, string type, string correlationId)
         {
@@ -15,12 +15,12 @@
             CorrelationId = correlationId;
         }
 
-        internal CommandMessage(string message, string type, string correlationId, string replyTo)
+        public CommandMessage(string message, string type, string correlationId, string routingKey)
         {
             Message = message;
             Type = type;
             CorrelationId = correlationId;
-            ReplyTo = replyTo;
+            RoutingKey = routingKey;
         }
     }
 }

@@ -57,7 +57,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
                 .Returns("Ok");
 
             CommandMessage message = null;
-            target.StartReceivingCommands(eventMessage => message = eventMessage);
+            target.StartReceivingCommands((eventMessage, sender) => message = eventMessage);
 
             channelMock.VerifyAll();
         }

@@ -13,6 +13,7 @@ namespace Minor.Nijn
         IMessageSender CreateMessageSender();
         IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions);
         ICommandSender CreateCommandSender();
+        ICommandReplySender CreateCommandReplySender(string replyTo);
         ICommandReceiver CreateCommandReceiver();
     }
 }

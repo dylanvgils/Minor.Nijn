@@ -8,7 +8,7 @@ namespace Minor.Nijn.TestBus.CommandBus
              
         public override void Enqueue(CommandMessage message)
         {
-            if (QueueName == message.ReplyTo)
+            if (QueueName == message.RoutingKey)
             {
                 base.Enqueue(message);   
             }

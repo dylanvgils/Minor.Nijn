@@ -8,7 +8,6 @@ using System.Threading;
 namespace RabbitMQ
 {
     [TestClass]
-    [Ignore]
     public class UnitTest1
     {
         [TestMethod]
@@ -107,6 +106,34 @@ namespace RabbitMQ
                 Thread.Sleep(3000);
 
                 Assert.AreEqual("BerichtTopic2", msg);
+            }
+        }
+
+        [TestMethod]
+        public void MyTestMethod()
+        {
+            var connectionBuilder = new RabbitMQContextBuilder()
+                .WithExchange("MVM.EventExchange")
+                .WithAddress("localhost", 5672)
+                .WithCredentials(userName: "guest", password: "guest")
+                .WithType("topic");
+
+            using (IRabbitMQBusContext context = connectionBuilder.CreateContext())
+            {
+                var commandSender = context.CreateCommandSender();
+                var commandReceiver = context.CreateCommandReceiver();
+
+                ManualResetEvent flag = new ManualResetEvent(false);
+                commandReceiver.DeclareCommandQueue();
+                commandReceiver.StartReceivingCommands((args, sender) =>
+                {
+                    Console.WriteLine(args.Message);
+                    flag.Set();
+                });
+
+                commandSender.SendCommandAsync(new CommandMessage("Test message", "type", "id", "commandQueueName"));
+
+                flag.WaitOne(5000);
             }
         }
     }

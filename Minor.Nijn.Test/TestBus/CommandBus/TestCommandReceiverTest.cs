@@ -36,20 +36,20 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         public void StartReceivingMessages_ShouldStartListeningForMessagesOnRpcQueue()
         {
             CommandMessage message = new CommandMessage("TestMessage", "type" ,"id");
-            message.ReplyTo = queueName;
+            message.RoutingKey = queueName;
             
             var queue = new CommandBusQueue(queueName);
             contextMock.Setup(context => context.CommandBus.DeclareCommandQueue(It.IsAny<string>()))
                 .Returns(queue);
             
             var callbackMock = new Mock<CommandReceivedCallback>(MockBehavior.Strict);
-            callbackMock.Setup(callback => callback(It.IsAny<CommandMessage>()));
+            callbackMock.Setup(callback => callback(It.IsAny<CommandMessage>(), It.IsAny<ICommandReplySender>()));
 
             target.DeclareCommandQueue();
             target.StartReceivingCommands(callbackMock.Object);
             queue.Enqueue(message);
 
-            callbackMock.Verify(callback => callback(message));
+            callbackMock.Verify(callback => callback(message, null));
         }
         
         [TestMethod]

@@ -1,5 +1,6 @@
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System;
 using System.Text;
 
 namespace Minor.Nijn.RabbitMQBus
@@ -49,9 +50,8 @@ namespace Minor.Nijn.RabbitMQBus
                 callback(new CommandMessage(
                     message: message,
                     type: args.BasicProperties.Type,
-                    correlationId: args.BasicProperties.CorrelationId,
-                    replyTo: args.BasicProperties.ReplyTo
-                ));
+                    correlationId: args.BasicProperties.CorrelationId
+                ), _context.CreateCommandReplySender(args.BasicProperties.ReplyTo));
             };
 
             Channel.BasicConsume(

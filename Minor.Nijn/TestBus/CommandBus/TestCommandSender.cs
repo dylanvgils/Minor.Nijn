@@ -18,7 +18,7 @@ namespace Minor.Nijn.TestBus.CommandBus
         
         public Task<CommandMessage> SendCommandAsync(CommandMessage request)
         {
-            ReplyMessage.ReplyTo = request.ReplyTo;
+            ReplyMessage.RoutingKey = request.RoutingKey;
             return Task.Run(() => ReplyMessage);
         }
         

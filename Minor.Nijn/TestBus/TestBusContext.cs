@@ -56,9 +56,14 @@ namespace Minor.Nijn.TestBus
             return new TestCommandSender(this);
         }
 
+        public ICommandReplySender CreateCommandReplySender(string replyTo)
+        {
+            throw new NotImplementedException();
+        }
+
         public void SendMockCommand(CommandMessage request)
         {
-            request.ReplyTo = _commandQueueName;
+            request.RoutingKey = _commandQueueName;
             _commandBus.DispatchMessage(request);
         }
 
