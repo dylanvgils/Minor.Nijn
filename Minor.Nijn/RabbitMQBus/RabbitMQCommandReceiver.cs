@@ -1,16 +1,17 @@
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQCommandReceiver : ICommandReceiver
     {
+        private readonly ILogger _log;
+        private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
+        
         public string QueueName { get; }
         public IModel Channel { get; }
-
-        private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
 
         private RabbitMQCommandReceiver() { }
 
@@ -28,10 +29,14 @@ namespace Minor.Nijn.RabbitMQBus
             QueueName = queueName;
             Channel = context.Connection.CreateModel();
             _eventingBasicConsumerFactory = new EventingBasicConsumerFactory();
+
+            _log = NijnLogging.CreateLogger<RabbitMQCommandReceiver>();
         }
 
         public void DeclareCommandQueue()
         {
+            _log.LogInformation("Declaring command queue with name: {0}", QueueName);
+            
             Channel.QueueDeclare(
                 queue: QueueName, 
                 durable: false,
@@ -49,6 +54,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void StartReceivingCommands(CommandReceivedCallback callback)
         {
+            _log.LogInformation("Start listening for commands on queue: {0}", QueueName);
             var consumer = CreateBasicConsumer(callback);
 
             Channel.BasicConsume(
@@ -68,6 +74,7 @@ namespace Minor.Nijn.RabbitMQBus
             
             consumer.Received += (model, args) =>
             {   
+                _log.LogInformation("Received command with id: {0}", args.BasicProperties.MessageId);
                 string requestBody = Encoding.UTF8.GetString(args.Body);
                 
                 var replyMessage = callback(new CommandMessage(
@@ -84,6 +91,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         private void PublishResponse(BasicDeliverEventArgs args, CommandMessage replyMessage)
         {
+            _log.LogInformation("Sending command reply to: {0}", args.BasicProperties.ReplyTo);
             var replyProps = Channel.CreateBasicProperties();
             replyProps.CorrelationId = args.BasicProperties.CorrelationId;
             

@@ -1,12 +1,16 @@
 ﻿using RabbitMQ.Client;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Json;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQContextBuilder
     {
+        private readonly ILogger _log;
         private readonly IConnectionFactory _factory;
         
         public string ExchangeName { get; private set; }
@@ -17,10 +21,28 @@ namespace Minor.Nijn.RabbitMQBus
         public string Password { get; private set; }
 
         public string Type { get; private set; }
+
+        public RabbitMQContextBuilder()
+        {
+            ILoggerFactory loggerFactory = new LoggerFactory();
+
+            loggerFactory.AddProvider(
+                new ConsoleLoggerProvider(
+                    (text, logLevel) => logLevel >= LogLevel.Debug, true));
+
+            loggerFactory
+                .AddSerilog(new LoggerConfiguration()
+                    .MinimumLevel.Verbose()
+                    .Enrich.FromLogContext()
+                    .WriteTo.Console()
+                    .WriteTo.File(new JsonFormatter(), "log.json", LogEventLevel.Warning)
+                    .CreateLogger());
+
+            NijnLogging.LoggerFactory = loggerFactory;
+            _log = loggerFactory.CreateLogger<RabbitMQContextBuilder>();
+        }
         
-        public RabbitMQContextBuilder() { }
-        
-        internal RabbitMQContextBuilder(IConnectionFactory factory)
+        internal RabbitMQContextBuilder(IConnectionFactory factory) : this()
         {
             _factory = factory;
         }
@@ -65,6 +87,9 @@ namespace Minor.Nijn.RabbitMQBus
         /// <returns></returns>
         public IRabbitMQBusContext CreateContext()
         {
+            _log.LogInformation("Creating RabbitMQBusContext for exchange: {0} on host {1}:{2}", ExchangeName, Hostname, Port);
+            _log.LogDebug("Context configuration: type={1}, username={2}, password={3}", Type, Username, Password);
+            
             var factory = _factory ?? new ConnectionFactory{ HostName = Hostname, Port = Port };
             var connection = factory.CreateConnection();
 

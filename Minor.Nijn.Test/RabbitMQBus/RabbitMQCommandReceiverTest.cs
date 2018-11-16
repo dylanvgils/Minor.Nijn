@@ -59,6 +59,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
 
             var type = "Type";
             var correlationId = "CorrelationId";
+            var messageId = "messageId";
             var replyToQueueName = "ReplyToQueueName";
             var requestMessageBody = "Test message";
             var replyMessageBody = "Reply message";
@@ -68,6 +69,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
             propsRequestMock.SetupGet(props => props.Type).Returns(type);
             propsRequestMock.SetupGet(props => props.ReplyTo).Returns(replyToQueueName);
             propsRequestMock.SetupGet(props => props.CorrelationId).Returns(correlationId);
+            propsRequestMock.SetupGet(props => props.MessageId).Returns(messageId);
 
             var propsReplyMock = new Mock<IBasicProperties>(MockBehavior.Strict);
             propsReplyMock.SetupSet(props => props.CorrelationId = correlationId);
