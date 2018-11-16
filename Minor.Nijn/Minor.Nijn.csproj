@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Dylan van Gils, Dion de Koning, Justin Moor, Martine Mulder</Authors>
+    <Company>_</Company>
+    <Version>0.0.2</Version>
+    <PackageId>Minor.Nijn.Bloem</PackageId>
+    <Product>Minor.Nijn</Product>
+    <Description>Wrapper around RabbitMQ</Description>
   </PropertyGroup>
 
   <ItemGroup>
