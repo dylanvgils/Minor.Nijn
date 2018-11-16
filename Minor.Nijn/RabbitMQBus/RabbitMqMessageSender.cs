@@ -23,7 +23,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void SendMessage(EventMessage message)
         {
-            _log.LogInformation("Send message");
+            _log.LogInformation("Send message to routing key: {0}", message.RoutingKey);
 
             var props = Channel.CreateBasicProperties();
             props.Type = message.EventType;

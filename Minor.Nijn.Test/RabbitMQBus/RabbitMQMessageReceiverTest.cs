@@ -67,6 +67,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
         {
             var consumer = new EventingBasicConsumer(channelMock.Object);
 
+            var messageId = "messageId";
             var replyCommandMessage = "Reply message";
             var routingKey = "a.b.c";
             var type = "type";
@@ -77,6 +78,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
             propsMock.SetupGet(props => props.Type).Returns(type);
             propsMock.SetupGet(props => props.Timestamp).Returns(timestamp);
             propsMock.SetupGet(props => props.CorrelationId).Returns(correlationId);
+            propsMock.SetupGet(props => props.MessageId).Returns(messageId);
             
             channelMock.Setup(chan =>
                     chan.BasicConsume(queueName, true, "", false, false, null, consumer))

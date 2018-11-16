@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -33,12 +31,15 @@ namespace Minor.Nijn.RabbitMQBus
             TopicExpressions = topicExpressions;
             Channel = _context.Connection.CreateModel();
 
-            _log = NijnLogging.CreateLogger<RabbitMQMessageReceiver>();
             _eventingBasicConsumerFactory = new EventingBasicConsumerFactory();
+            
+            _log = NijnLogging.CreateLogger<RabbitMQMessageReceiver>();
         }
 
         public void DeclareQueue()
         {
+            _log.LogInformation("Declare queue on exchange with name: {0}", QueueName);
+            
             Channel.QueueDeclare(
                 queue: QueueName,
                 durable: true,
@@ -49,6 +50,8 @@ namespace Minor.Nijn.RabbitMQBus
 
             foreach (var topic in TopicExpressions)
             {
+                _log.LogInformation("Bind queue {0} to exchange {1} with with topic {2}", QueueName, _context.ExchangeName, topic);
+                
                 Channel.QueueBind(
                     queue: QueueName,
                     exchange: _context.ExchangeName,
@@ -58,17 +61,17 @@ namespace Minor.Nijn.RabbitMQBus
             }    
         }
 
-        public void StartReceivingMessages(EventMessageReceivedCallback Callback)
+        public void StartReceivingMessages(EventMessageReceivedCallback callback)
         {
+            _log.LogInformation("Start listening for messages on queue: {1}", QueueName);
             var consumer = _eventingBasicConsumerFactory.CreateEventingBasicConsumer(Channel);
 
             consumer.Received += (model, ea) =>
             {
+                _log.LogInformation("Received message {0}", ea.BasicProperties.MessageId);
                 string body = Encoding.UTF8.GetString(ea.Body);
 
-                _log.LogInformation($"Bericht ontvangen: {ea.Body}");
-
-                Callback.Invoke(new EventMessage(
+                callback.Invoke(new EventMessage(
                     routingKey: ea.RoutingKey,
                     message: body,
                     eventType: ea.BasicProperties.Type,
@@ -90,6 +93,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void Dispose()
         {
+            _log.LogInformation("Disposing message receiver for queue: {0}", QueueName);
             Channel?.Dispose();
         }
     }

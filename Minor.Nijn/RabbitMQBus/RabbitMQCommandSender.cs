@@ -3,15 +3,17 @@ using RabbitMQ.Client;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client.Events;
 
 namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQCommandSender : ICommandSender
     {
-        public IModel Channel { get; }
-        
+        private readonly ILogger _log;
         private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
+        
+        public IModel Channel { get; }
 
         private RabbitMQCommandSender() { }
 
@@ -24,10 +26,13 @@ namespace Minor.Nijn.RabbitMQBus
         {
             Channel = context.Connection.CreateModel();
             _eventingBasicConsumerFactory = new EventingBasicConsumerFactory();
+
+            _log = NijnLogging.CreateLogger<RabbitMQCommandSender>();
         }
 
         public Task<CommandMessage> SendCommandAsync(CommandMessage request)
         {
+            _log.LogInformation("Sending command to {0}", request.RoutingKey);
             string replyQueueName = Channel.QueueDeclare().QueueName;;
 
             var props = Channel.CreateBasicProperties();
@@ -64,14 +69,23 @@ namespace Minor.Nijn.RabbitMQBus
             return task;
         }
 
-        private static Task<CommandMessage> StartResponseAwaiterTask(EventingBasicConsumer consumer, string correlationId)
+        private Task<CommandMessage> StartResponseAwaiterTask(EventingBasicConsumer consumer, string correlationId)
         {               
             return Task.Run(() => {
                 var flag = new ManualResetEvent(false);
 
                 CommandMessage response = null;
                 consumer.Received += (sender, args) => {
-                    if (args.BasicProperties.CorrelationId != correlationId) return;
+                    _log.LogInformation("Received response message, with id {0}", args.BasicProperties.MessageId);
+                    if (args.BasicProperties.CorrelationId != correlationId)
+                    {
+                        _log.LogDebug("Received response with wrong correlationId, id was {0}, expected {1}", 
+                            args.BasicProperties.CorrelationId, 
+                            correlationId
+                        );
+                        
+                        return;
+                    }
                   
                     string body = Encoding.UTF8.GetString(args.Body);
                     
