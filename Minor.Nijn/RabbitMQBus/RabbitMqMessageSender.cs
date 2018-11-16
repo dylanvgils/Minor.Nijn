@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using System.Text;
 
@@ -26,8 +27,8 @@ namespace Minor.Nijn.RabbitMQBus
             _log.LogInformation("Send message to routing key: {0}", message.RoutingKey);
 
             var props = Channel.CreateBasicProperties();
-            props.Type = message.EventType;
-            props.CorrelationId = message.CorrelationId;
+            props.Type = message.EventType ?? "";
+            props.CorrelationId = message?.CorrelationId ?? "";
             props.Timestamp = new AmqpTimestamp(message.Timestamp);
 
             Channel.BasicPublish(
