@@ -8,7 +8,6 @@ using System.Threading;
 namespace RabbitMQ
 {
     [TestClass]
-    [Ignore]
     public class UnitTest1
     {
         [TestMethod]
