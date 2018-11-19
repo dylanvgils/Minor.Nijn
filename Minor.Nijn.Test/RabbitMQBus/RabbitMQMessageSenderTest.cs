@@ -56,10 +56,10 @@ namespace Minor.Nijn.RabbitMQBus.Test
                 correlationId: correlationId
             );
             
-            var propsMock = new Mock<BasicProperties>(MockBehavior.Loose);
-            // propsMock.VerifySet(props => props.Type = type);
-            // propsMock.VerifySet(props => props.ClusterId = correlationId);
-            // propsMock.VerifySet(props => props.Timestamp = new AmqpTimestamp(timestamp));
+            var propsMock = new Mock<BasicProperties>(MockBehavior.Strict);
+            propsMock.SetupSet(props => props.Type = type);
+            propsMock.SetupSet(props => props.CorrelationId = correlationId);
+            propsMock.SetupSet(props => props.Timestamp = new AmqpTimestamp(timestamp));
 
             contextMock.Setup(ctx => ctx.ExchangeName).Returns(exchangeName);
             channelMock.Setup(chan => chan.CreateBasicProperties()).Returns(propsMock.Object);
@@ -73,7 +73,40 @@ namespace Minor.Nijn.RabbitMQBus.Test
 
             target.SendMessage(message);
 
-            // propsMock.VerifyAll();
+            propsMock.VerifyAll();
+            contextMock.VerifyAll();
+            channelMock.VerifyAll();
+        }
+
+        [TestMethod]
+        public void SendMessage_ShouldUseDefaultValuesInBasicPropertiesWhenNotProvided()
+        {
+            var routingKey = "routingKey";
+            var messageBody = "Test message";
+
+            var message = new EventMessage(
+                routingKey: routingKey,
+                message: messageBody
+            );
+
+            var propsMock = new Mock<BasicProperties>(MockBehavior.Strict);
+            propsMock.SetupSet(props => props.Type = "");
+            propsMock.SetupSet(props => props.CorrelationId = "");
+            propsMock.SetupSet(props => props.Timestamp = It.IsAny<AmqpTimestamp>());
+
+            contextMock.Setup(ctx => ctx.ExchangeName).Returns(exchangeName);
+            channelMock.Setup(chan => chan.CreateBasicProperties()).Returns(propsMock.Object);
+            channelMock.Setup(chan => chan.BasicPublish(
+                exchangeName,
+                routingKey,
+                false,
+                propsMock.Object,
+                It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == messageBody)
+             ));
+
+            target.SendMessage(message);
+
+            propsMock.VerifyAll();
             contextMock.VerifyAll();
             channelMock.VerifyAll();
         }

@@ -1,9 +1,6 @@
 ﻿using RabbitMQ.Client;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using Serilog;
-using Serilog.Events;
-using Serilog.Formatting.Json;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Minor.Nijn.RabbitMQBus
@@ -26,16 +23,11 @@ namespace Minor.Nijn.RabbitMQBus
         {
             ILoggerFactory loggerFactory = new LoggerFactory();
 
-            loggerFactory.AddProvider(
-                new ConsoleLoggerProvider(
-                    (text, logLevel) => logLevel >= LogLevel.Debug, true));
-
             loggerFactory
                 .AddSerilog(new LoggerConfiguration()
                     .MinimumLevel.Verbose()
                     .Enrich.FromLogContext()
                     .WriteTo.Console()
-                    .WriteTo.File(new JsonFormatter(), "log.json", LogEventLevel.Warning)
                     .CreateLogger());
 
             NijnLogging.LoggerFactory = loggerFactory;

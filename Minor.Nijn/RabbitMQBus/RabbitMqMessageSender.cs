@@ -29,7 +29,9 @@ namespace Minor.Nijn.RabbitMQBus
             var props = Channel.CreateBasicProperties();
             props.Type = message.EventType ?? "";
             props.CorrelationId = message?.CorrelationId ?? "";
-            props.Timestamp = new AmqpTimestamp(message.Timestamp);
+            props.Timestamp = message.Timestamp == 0 
+                ? new AmqpTimestamp(DateTime.Now.Ticks) 
+                : new AmqpTimestamp(message.Timestamp);
 
             Channel.BasicPublish(
                 exchange: _context.ExchangeName,
