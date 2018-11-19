@@ -8,7 +8,7 @@ using System.Threading;
 namespace RabbitMQ
 {
     [TestClass]
-    public class UnitTest1
+    public class IntegrationTest
     {
         [TestMethod]
         public void RabbitMQTest()
