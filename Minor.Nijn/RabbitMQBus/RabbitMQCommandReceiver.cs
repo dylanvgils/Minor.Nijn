@@ -1,16 +1,12 @@
-using System;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQCommandReceiver : ICommandReceiver
-    {
-        private ManualResetEvent flag = new ManualResetEvent(false);
-        
+    {   
         private readonly ILogger _log;
         private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
         

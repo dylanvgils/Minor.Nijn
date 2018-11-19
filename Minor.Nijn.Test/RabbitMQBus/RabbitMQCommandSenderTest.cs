@@ -97,7 +97,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
         
                 
         [TestMethod]
-        public void SendCommandAsync_ShouldReturnNullWhenCorrelationIdNotMatchesAfter_5Seconds()
+        public void SendCommandAsync_ShouldThrowCommandTimeOutExceptionAfter_5Seconds()
         {
             var consumer = new EventingBasicConsumer(channelMock.Object);
 
@@ -141,14 +141,14 @@ namespace Minor.Nijn.RabbitMQBus.Test
             var result = target.SendCommandAsync(requestCommand);
             Thread.Sleep(50);
             consumer.HandleBasicDeliver("", deliveryTag, false, "",  routingKey,  replyPropsMock.Object, Encoding.UTF8.GetBytes(replyCommandMessage));
-            var replyCommand = result.Result;
-            
+                
             basicPropsMock.VerifyAll();
             replyPropsMock.VerifyAll();
             channelMock.VerifyAll();
             contextMock.VerifyAll();
-            
-            Assert.IsNull(replyCommand);
+
+            while (!result.IsCompleted) { }
+            Assert.IsTrue(result.IsFaulted);
         }
 
         [TestMethod]
