@@ -100,7 +100,11 @@ namespace Minor.Nijn.RabbitMQBus
                     flag.Set();
                 };
 
-                flag.WaitOne(5000);
+                bool isSet = flag.WaitOne(5000);
+                if (!isSet)
+                {
+                    throw new TimeoutException("No response received after 5 seconds");
+                }
 
                 return response;
             });
