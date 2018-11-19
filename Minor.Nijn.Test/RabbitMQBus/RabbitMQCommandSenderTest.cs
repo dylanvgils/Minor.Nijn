@@ -54,6 +54,8 @@ namespace Minor.Nijn.RabbitMQBus.Test
 
             var basicPropsMock = new Mock<IBasicProperties>(MockBehavior.Strict);
             basicPropsMock.SetupSet(props => props.ReplyTo = replyQueueName);
+            basicPropsMock.SetupSet(props => props.CorrelationId = correlationId);
+            basicPropsMock.SetupSet(props => props.Type = type);
             
             var replyPropsMock = new Mock<IBasicProperties>();
             replyPropsMock.SetupGet(props => props.CorrelationId).Returns(correlationId);
@@ -110,9 +112,12 @@ namespace Minor.Nijn.RabbitMQBus.Test
 
             var basicPropsMock = new Mock<IBasicProperties>(MockBehavior.Strict);
             basicPropsMock.SetupSet(props => props.ReplyTo = replyQueueName);
+            basicPropsMock.SetupSet(props => props.CorrelationId = correlationId);
+            basicPropsMock.SetupSet(props => props.Type = type);
             
             var replyPropsMock = new Mock<IBasicProperties>();
             replyPropsMock.SetupGet(props => props.CorrelationId).Returns("wrongId");
+
             
             channelMock.Setup(chan => chan.QueueDeclare("", false, true, true, null))
                 .Returns(new QueueDeclareOk(replyQueueName, 0, 0));
