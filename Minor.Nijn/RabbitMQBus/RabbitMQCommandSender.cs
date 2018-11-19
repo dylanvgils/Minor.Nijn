@@ -37,6 +37,8 @@ namespace Minor.Nijn.RabbitMQBus
 
             var props = Channel.CreateBasicProperties();
             props.ReplyTo = replyQueueName;
+            props.CorrelationId = request.CorrelationId;
+            props.Type = request.Type;
 
             var task = SubscribeToResponseQueue(replyQueueName, request.CorrelationId);
 
@@ -76,7 +78,7 @@ namespace Minor.Nijn.RabbitMQBus
 
                 CommandMessage response = null;
                 consumer.Received += (sender, args) => {
-                    _log.LogInformation("Received response message, with id {0}", args.BasicProperties.MessageId);
+                    _log.LogInformation("Received response message, with correlationId {0}", args.BasicProperties.CorrelationId);
                     if (args.BasicProperties.CorrelationId != correlationId)
                     {
                         _log.LogDebug("Received response with wrong correlationId, id was {0}, expected {1}", 
