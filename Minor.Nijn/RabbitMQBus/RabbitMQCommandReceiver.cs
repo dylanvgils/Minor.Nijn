@@ -1,12 +1,16 @@
+using System;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQCommandReceiver : ICommandReceiver
     {
+        private ManualResetEvent flag = new ManualResetEvent(false);
+        
         private readonly ILogger _log;
         private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
         
@@ -55,6 +59,7 @@ namespace Minor.Nijn.RabbitMQBus
         public void StartReceivingCommands(CommandReceivedCallback callback)
         {
             _log.LogInformation("Start listening for commands on queue: {0}", QueueName);
+
             var consumer = CreateBasicConsumer(callback);
 
             Channel.BasicConsume(
@@ -71,10 +76,10 @@ namespace Minor.Nijn.RabbitMQBus
         private EventingBasicConsumer CreateBasicConsumer(CommandReceivedCallback callback)
         {
             var consumer = _eventingBasicConsumerFactory.CreateEventingBasicConsumer(Channel);
-            
+                
             consumer.Received += (model, args) =>
-            {   
-                _log.LogInformation("Received command with id: {0}", args.BasicProperties.MessageId);
+            {
+                _log.LogInformation("Received command with correlationId: {0}", args.BasicProperties.CorrelationId);
                 string requestBody = Encoding.UTF8.GetString(args.Body);
                 
                 var replyMessage = callback(new CommandMessage(
@@ -82,7 +87,7 @@ namespace Minor.Nijn.RabbitMQBus
                     type: args.BasicProperties.Type,
                     correlationId: args.BasicProperties.CorrelationId
                 ));
-                
+
                 PublishResponse(args, replyMessage);
             };
 
@@ -92,9 +97,11 @@ namespace Minor.Nijn.RabbitMQBus
         private void PublishResponse(BasicDeliverEventArgs args, CommandMessage replyMessage)
         {
             _log.LogInformation("Sending command reply to: {0}", args.BasicProperties.ReplyTo);
+            
             var replyProps = Channel.CreateBasicProperties();
             replyProps.CorrelationId = args.BasicProperties.CorrelationId;
-            
+            replyProps.Type = replyMessage.Type ?? "";
+
             Channel.BasicPublish(
                 exchange: "",
                 routingKey: args.BasicProperties.ReplyTo,
@@ -102,7 +109,7 @@ namespace Minor.Nijn.RabbitMQBus
                 basicProperties: replyProps,
                 body: Encoding.UTF8.GetBytes(replyMessage.Message)
             );
-            
+
             Channel.BasicAck(
                 deliveryTag: args.DeliveryTag,
                 multiple: false

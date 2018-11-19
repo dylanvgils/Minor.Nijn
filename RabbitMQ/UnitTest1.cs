@@ -108,5 +108,34 @@ namespace RabbitMQ
                 Assert.AreEqual("BerichtTopic2", msg);
             }
         }
+        
+        [TestMethod]
+        public void CommandCanBeSentAndReceived()
+        {
+            var queueName = "TestCommandQueue";
+            var requestCommand = new CommandMessage("Request message", "type", "correlationId",  queueName);
+            var responseCommand = new CommandMessage("Reply message", "type", requestCommand.CorrelationId);
+            
+            var connectionBuilder = new RabbitMQContextBuilder()
+                .WithExchange("MVM.EventExchange")
+                .WithAddress("localhost", 5672)
+                .WithCredentials(userName: "guest", password: "guest")
+                .WithType("topic");
+
+            using (IRabbitMQBusContext context = connectionBuilder.CreateContext())
+            {
+                var receiver = context.CreateCommandReceiver(queueName);
+                receiver.DeclareCommandQueue();
+                receiver.StartReceivingCommands(request => responseCommand);
+
+                var sender = context.CreateCommandSender();
+                var result = sender.SendCommandAsync(requestCommand);
+
+                Assert.IsNull(responseCommand.RoutingKey);
+                Assert.AreEqual(responseCommand.CorrelationId, result.Result.CorrelationId);
+                Assert.AreEqual(responseCommand.Type, result.Result.Type);
+                Assert.AreEqual(responseCommand.Message, result.Result.Message);
+            }
+        }
     }
 }
