@@ -1,0 +1,29 @@
+sudo: required
+
+language: csharp
+mono: none
+dotnet: 2.1
+
+services:
+  - rabbitmq
+  
+install:
+  - dotnet tool install --global dotnet-sonarscanner
+  - dotnet restore
+
+before_script:
+  - export PATH="$PATH:$HOME/.dotnet/tools"
+
+script:
+  - dotnet sonarscanner begin /k:"Minor.Nijn" /n:"Minor.Nijn" /o:"dylanvgils-github" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login="$SONAR_TOKEN" /d:sonar.language="cs" /d:sonar.exclusions="**/bin/**/*,**/obj/**/*" /d:sonar.cs.opencover.reportsPaths="**\*.opencover.xml"
+  - dotnet build
+  - dotnet test Minor.Nijn.Test/Minor.Nijn.Test.csproj --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+  - dotnet test Minor.Nijn.RabbitMQTest/Minor.Nijn.RabbitMQTest.csproj --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+  - dotnet test Minor.Nijn.WebScale.Test/Minor.Nijn.WebScale.Test.csproj --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+  - dotnet sonarscanner end /d:sonar.login="$SONAR_TOKEN"
+
+cache:
+  directories:
+    - '$HOME/.nuget/packages'
+    - '$HOME/.local/share/NuGet/Cache'
+    - '$HOME/.sonar/cache'
