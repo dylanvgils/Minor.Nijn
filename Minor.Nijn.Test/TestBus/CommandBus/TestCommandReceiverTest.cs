@@ -1,7 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minor.Nijn.TestBus;
-using Minor.Nijn.TestBus.CommandBus;
 using Moq;
+using System;
 
 namespace Minor.Nijn.TestBus.CommandBus.Test
 {
@@ -52,7 +51,22 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
 
             callbackMock.Verify(callback => callback(message));
         }
-        
+
+        [TestMethod]
+        public void StartReceivingMessages_ShouldThrowBusConfiguratioinExceptionWhenQueueIsNotDeclared()
+        {
+            CommandMessage message = new CommandMessage("TestMessage", "type", "id");
+            var callbackMock = new Mock<CommandReceivedCallback>(MockBehavior.Strict);
+
+            Action action = () =>
+            {
+                target.StartReceivingCommands(callbackMock.Object);
+            };
+
+            var ex = Assert.ThrowsException<BusConfigurationException>(action);
+            Assert.AreEqual($"Queue with name: {queueName} is not declared", ex.Message);
+        }
+
         [TestMethod]
         public void Dispose_ShouldNotThrowException()
         {

@@ -12,6 +12,7 @@ namespace Minor.Nijn.RabbitMQBus
         public string QueueName { get; }
         public IEnumerable<string> TopicExpressions { get; }
         public IModel Channel { get; }
+        private bool _queueDeclared;
         
         private readonly IRabbitMQBusContext _context;
         private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
@@ -58,11 +59,15 @@ namespace Minor.Nijn.RabbitMQBus
                     routingKey: topic, 
                     arguments: null
                 );
-            }    
+            }
+
+            _queueDeclared = true;
         }
 
         public void StartReceivingMessages(EventMessageReceivedCallback callback)
         {
+            CheckQueueDeclared();
+
             _log.LogInformation("Start listening for messages on queue: {1}", QueueName);
             var consumer = _eventingBasicConsumerFactory.CreateEventingBasicConsumer(Channel);
 
@@ -89,6 +94,14 @@ namespace Minor.Nijn.RabbitMQBus
                 arguments: null,
                 consumer: consumer
             );
+        }
+
+        private void CheckQueueDeclared()
+        {
+            if (!_queueDeclared)
+            {
+                throw new BusConfigurationException($"Queue with name: {QueueName} is not declared");
+            }
         }
 
         public void Dispose()

@@ -5,6 +5,7 @@ using RabbitMQ.Client;
 using System.Collections.Generic;
 using System.Text;
 using RabbitMQ.Client.Events;
+using System.Linq;
 
 namespace Minor.Nijn.RabbitMQBus.Test
 {
@@ -79,15 +80,21 @@ namespace Minor.Nijn.RabbitMQBus.Test
             propsMock.SetupGet(props => props.Timestamp).Returns(timestamp);
             propsMock.SetupGet(props => props.CorrelationId).Returns(correlationId);
             propsMock.SetupGet(props => props.MessageId).Returns(messageId);
-            
+
+            contextMock.SetupGet(ctx => ctx.ExchangeName).Returns(exchangeName);
+
             channelMock.Setup(chan =>
                     chan.BasicConsume(queueName, true, "", false, false, null, consumer))
                 .Returns("Ok");
-            
+            channelMock.Setup(chan => chan.QueueDeclare(queueName, true, false, false, null)).Returns(new QueueDeclareOk(queueName, 0, 0));
+            channelMock.Setup(chan => chan.QueueBind(queueName, exchangeName, topicExpressions.ElementAt(0), null));
+            channelMock.Setup(chan => chan.QueueBind(queueName, exchangeName, topicExpressions.ElementAt(1), null));
+
             eventingBasicConsumerFactoryMock.Setup(fact => fact.CreateEventingBasicConsumer(channelMock.Object))
                 .Returns(consumer);
             
             EventMessage result = null;
+            target.DeclareQueue();
             target.StartReceivingMessages(eventMessage => result = eventMessage);
             consumer.HandleBasicDeliver("", 1, false, "",  routingKey,  propsMock.Object, Encoding.UTF8.GetBytes(replyCommandMessage));
             
@@ -102,7 +109,21 @@ namespace Minor.Nijn.RabbitMQBus.Test
             Assert.AreEqual(result.EventType, type);
             Assert.AreEqual(result.CorrelationId, correlationId);
         }
-        
+
+        [TestMethod]
+        public void StartReceivingMessages_ShouldThrowBusConfigurationExceptionWhenQueueIsNotDeclared()
+        {
+            EventMessage result = null;
+
+            Action action = () => {
+                target.StartReceivingMessages(eventMessage => result = eventMessage);
+            };
+
+            Assert.IsNull(result);
+            var ex = Assert.ThrowsException<BusConfigurationException>(action);
+            Assert.AreEqual($"Queue with name: {queueName} is not declared", ex.Message);
+        }
+
         [TestMethod]
         public void Dispose_ShouldCallDisposeOnResources()
         {

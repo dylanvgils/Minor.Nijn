@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -74,10 +75,11 @@ namespace Minor.Nijn.RabbitMQBus.Test
             propsReplyMock.SetupSet(props => props.Type = type);
 
             channelMock.Setup(chan => chan.CreateBasicProperties()).Returns(propsReplyMock.Object);
-            
             channelMock.Setup(chan =>
                     chan.BasicConsume(queueName, false, "", false, false, null, consumer))
                 .Returns("Ok");
+            channelMock.Setup(chan => chan.QueueDeclare(queueName, false, false, false, null)).Returns(new QueueDeclareOk(queueName, 0, 0));
+            channelMock.Setup(chan => chan.BasicQos(0, 1, false));
 
             channelMock.Setup(chan => chan.BasicPublish(
                 "", 
@@ -93,6 +95,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
                 .Returns(consumer);
 
             CommandMessage requestMessage = null;
+            target.DeclareCommandQueue();
             target.StartReceivingCommands(eventMessage =>
             {
                 requestMessage = eventMessage;
@@ -110,6 +113,26 @@ namespace Minor.Nijn.RabbitMQBus.Test
             Assert.AreEqual(requestMessage.Message, requestMessageBody);
             Assert.AreEqual(replyMessage.Type, type);
             Assert.AreEqual(requestMessage.CorrelationId, correlationId);
+        }
+
+        [TestMethod]
+        public void StartReceivingCommands_ShouldThrowBusConfigurationExceptionWhenQueueIsNotDeclared()
+        {
+            var replyMessage = new CommandMessage("reply message", "type", "correlationId");
+
+            CommandMessage requestMessage = null;
+            Action action = () =>
+            {
+                target.StartReceivingCommands(eventMessage =>
+                {
+                    requestMessage = eventMessage;
+                    return replyMessage;
+                });
+            };
+
+            Assert.IsNull(requestMessage);
+            var ex = Assert.ThrowsException<BusConfigurationException>(action);
+            Assert.AreEqual($"Queue with name: {queueName} is not declared", ex.Message);
         }
 
         [TestMethod]

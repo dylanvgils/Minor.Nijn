@@ -3,6 +3,7 @@ using Minor.Nijn.TestBus;
 using Moq;
 using System.Collections.Generic;
 using Minor.Nijn.TestBus.EventBus;
+using System;
 
 namespace Minor.Nijn.TestBus.EventBus.Test
 {
@@ -52,7 +53,22 @@ namespace Minor.Nijn.TestBus.EventBus.Test
 
             callbackMock.Verify(callback => callback(message));
         }
-        
+
+        [TestMethod]
+        public void StartReceivingMessages_ShouldThrowBusConfigurationExceptionWhenQueueIsNotDeclared()
+        {
+            var callbackMock = new Mock<EventMessageReceivedCallback>(MockBehavior.Strict);
+            EventMessage message = new EventMessage("a.b.c", "TestMessage");
+
+            Action action = () =>
+            {
+                target.StartReceivingMessages(callbackMock.Object);
+            };
+
+            var ex = Assert.ThrowsException<BusConfigurationException>(action);
+            Assert.AreEqual($"Queue with name: {queueName} is not declared", ex.Message);
+        }
+
         [TestMethod]
         public void Dispose_ShouldNotThrowException()
         {

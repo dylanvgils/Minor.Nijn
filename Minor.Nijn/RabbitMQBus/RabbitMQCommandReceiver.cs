@@ -12,6 +12,7 @@ namespace Minor.Nijn.RabbitMQBus
         
         public string QueueName { get; }
         public IModel Channel { get; }
+        private bool _queueDeclared;
 
         private RabbitMQCommandReceiver() { }
 
@@ -50,6 +51,8 @@ namespace Minor.Nijn.RabbitMQBus
                 prefetchCount: 1,
                 global: false
             );
+
+            _queueDeclared = true;
         }
 
         public void StartReceivingCommands(CommandReceivedCallback callback)
@@ -71,6 +74,8 @@ namespace Minor.Nijn.RabbitMQBus
 
         private EventingBasicConsumer CreateBasicConsumer(CommandReceivedCallback callback)
         {
+            CheckQueueDeclared();
+
             var consumer = _eventingBasicConsumerFactory.CreateEventingBasicConsumer(Channel);
                 
             consumer.Received += (model, args) =>
@@ -111,7 +116,15 @@ namespace Minor.Nijn.RabbitMQBus
                 multiple: false
             );
         }
-        
+
+        private void CheckQueueDeclared()
+        {
+            if (!_queueDeclared)
+            {
+                throw new BusConfigurationException($"Queue with name: {QueueName} is not declared");
+            }
+        }
+
         public void Dispose()
         {
             Channel?.Dispose();

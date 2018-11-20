@@ -133,7 +133,7 @@ namespace Minor.Nijn.TestBus.Test
                 TopicMatcher.IsMatch(topicExpressions, "a.b.c");
             };
 
-            InvalidTopicException ex = Assert.ThrowsException<InvalidTopicException>(action);
+            var ex = Assert.ThrowsException<BusConfigurationException>(action);
             Assert.AreEqual(ex.Message, $"Topic expression '{expression}' is invalid");
         }
 
@@ -148,7 +148,7 @@ namespace Minor.Nijn.TestBus.Test
                 TopicMatcher.IsMatch(topicExpressions, "a.b.c");
             };
 
-            InvalidTopicException ex = Assert.ThrowsException<InvalidTopicException>(action);
+            var ex = Assert.ThrowsException<BusConfigurationException>(action);
             Assert.AreEqual(ex.Message, $"Topic expression '{expression}' is invalid");
         }
     }
