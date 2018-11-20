@@ -48,7 +48,7 @@ namespace Minor.Nijn.TestBus
                 return;
             }
 
-            throw new InvalidTopicException($"Topic expression '{expressionPart}' is invalid");
+            throw new BusConfigurationException($"Topic expression '{expressionPart}' is invalid");
         }
 
         private static string ParseExpressionPart(string expressionPart, bool isLast)
