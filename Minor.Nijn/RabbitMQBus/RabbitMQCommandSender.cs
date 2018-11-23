@@ -15,8 +15,6 @@ namespace Minor.Nijn.RabbitMQBus
         
         public IModel Channel { get; }
 
-        private RabbitMQCommandSender() { }
-
         internal RabbitMQCommandSender(IRabbitMQBusContext context, EventingBasicConsumerFactory factory) : this(context)
         {
             _eventingBasicConsumerFactory = factory;

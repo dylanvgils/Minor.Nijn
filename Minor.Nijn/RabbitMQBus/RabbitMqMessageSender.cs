@@ -11,9 +11,6 @@ namespace Minor.Nijn.RabbitMQBus
 
         public IModel Channel { get; }
         private readonly IRabbitMQBusContext _context;
-
-        private RabbitMQMessageSender() { }
-        
         internal RabbitMQMessageSender(IRabbitMQBusContext context)
         {
             _context = context;

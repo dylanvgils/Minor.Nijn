@@ -13,8 +13,6 @@ namespace Minor.Nijn.TestBus
         public IEventBus EventBus { get; }
         public ICommandBus CommandBus { get; }
 
-        private TestBusContext() { }
-
         internal TestBusContext(IEventBus testBus, ICommandBus commandBus)
         {
             EventBus = testBus;
