@@ -1,6 +1,6 @@
 namespace Minor.Nijn.TestBus.CommandBus
 {
-    internal interface ICommandBus : IBus<CommandMessage>
+    public interface ICommandBus : ITestBus<CommandMessage>
     {
         CommandBusQueue DeclareCommandQueue(string queueName);
     }

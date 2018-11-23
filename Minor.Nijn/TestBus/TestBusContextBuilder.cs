@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Minor.Nijn.TestBus
+﻿namespace Minor.Nijn.TestBus
 {
     public sealed class TestBusContextBuilder
     {

@@ -7,9 +7,7 @@ namespace Minor.Nijn.TestBus.CommandBus
 
         private bool _queueDeclared;
         private CommandBusQueue _queue;
-        
-        private TestCommandReceiver() { }
-
+       
         internal TestCommandReceiver(ITestBusContext context, string queueName)
         {
             QueueName = queueName;

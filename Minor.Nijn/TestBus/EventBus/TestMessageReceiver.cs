@@ -11,8 +11,6 @@ namespace Minor.Nijn.TestBus.EventBus
         private bool _queueDeclared;
         private EventBusQueue _queue;
 
-        private TestMessageReceiver() { }
-
         internal TestMessageReceiver(ITestBusContext context, string queueName, IEnumerable<string> topicExpressions)
         {
             _context = context;

@@ -6,7 +6,7 @@ namespace Minor.Nijn.TestBus.EventBus
     {        
         public EventBusQueue DeclareQueue(string queueName, IEnumerable<string> topicExpressions)
         {
-            return base.DeclareQueue(queueName, new EventBusQueue(queueName, topicExpressions));
+            return DeclareQueue(queueName, new EventBusQueue(queueName, topicExpressions));
         }   
     }
 }
