@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace Minor.Nijn.WebScale
+namespace Minor.Nijn.WebScale.Events
 {
     /// <summary>
     /// Base class for all domain events.

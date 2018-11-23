@@ -45,7 +45,7 @@ namespace Minor.Nijn.WebScale.Test
             var listener = result.EventListeners.First();
             Assert.AreEqual(1, result.EventListeners.Count());
             Assert.AreEqual(TestClassesConstants.ProductEventListenerQueueName, listener.QueueName);
-            Assert.AreEqual(TestClassesConstants.ProductEventHandlerTopic, listener.TopicPatterns.First());
+            Assert.AreEqual(TestClassesConstants.ProductEventHandlerTopic, listener.TopicExpressions.First());
         }
 
         [TestMethod]
@@ -53,10 +53,10 @@ namespace Minor.Nijn.WebScale.Test
         {
             var result = target.UseConventions().WithContext(busContextMock.Object).CreateHost();
 
-            var listeners = result.EventListeners.ToList();
+            var listeners = result.EventListeners;
             Assert.AreEqual(2, result.EventListeners.Count());
-            Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.ProductEventListenerQueueName && l.TopicPatterns.Contains(TestClassesConstants.ProductEventHandlerTopic)));
-            Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.OrderEventListenerQueueName && l.TopicPatterns.Contains(TestClassesConstants.OrderEventHandlerTopic)));
+            Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.ProductEventListenerQueueName && l.TopicExpressions.Contains(TestClassesConstants.ProductEventHandlerTopic)));
+            Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.OrderEventListenerQueueName && l.TopicExpressions.Contains(TestClassesConstants.OrderEventHandlerTopic)));
         }
 
         [TestMethod]

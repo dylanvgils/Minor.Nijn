@@ -1,15 +1,22 @@
-﻿using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Minor.Nijn.WebScale.Events;
 using Minor.Nijn.WebScale.Test.TestClasses;
 using Minor.Nijn.WebScale.Test.TestClasses.Domain;
 using Minor.Nijn.WebScale.Test.TestClasses.Events;
+using Moq;
 using Newtonsoft.Json;
+using RabbitMQ.Client;
+using System;
+using System.Collections.Generic;
 
 namespace Minor.Nijn.WebScale.Test
 {
     [TestClass]
     public class EventListenerTest
     {
+        private string queueName;
+        private IEnumerable<string> topicExpressions;
+
         private EventListener target;
 
         [TestInitialize]
@@ -17,8 +24,8 @@ namespace Minor.Nijn.WebScale.Test
         {
             var type = typeof(OrderEventListener);
             var method = type.GetMethod(TestClassesConstants.OrderEventHandlerMethodName);
-            var queueName = "queueName";
-            var topicExpressions = new List<string> { "a.b.c" };
+            queueName = "queueName";
+            topicExpressions = new List<string> { "a.b.c" };
 
             target = new EventListener(type, method, queueName, topicExpressions);
         }
@@ -35,13 +42,54 @@ namespace Minor.Nijn.WebScale.Test
         {
             var type = typeof(OrderEventListener);
             var method = type.GetMethod(TestClassesConstants.OrderEventHandlerMethodName);
-            var queueName = "queueName";
+            queueName = "queueName";
             var topicExpressions = new List<string> {"a.b.c"};
 
             var listener = new EventListener(type, method, queueName, topicExpressions);
 
             Assert.AreEqual(queueName, listener.QueueName);
-            Assert.AreEqual(topicExpressions, listener.TopicPatterns);
+            Assert.AreEqual(topicExpressions, listener.TopicExpressions);
+        }
+
+        [TestMethod]
+        public void StartListening_ShouldStartListeningForMessages()
+        {
+            var messageReceiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
+            messageReceiverMock.Setup(recv => recv.DeclareQueue());
+            messageReceiverMock.Setup(recv => recv.StartReceivingMessages(It.IsAny<EventMessageReceivedCallback>()));
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(queueName, topicExpressions))
+                .Returns(messageReceiverMock.Object);
+
+            target.StartListening(busContextMock.Object);
+
+            messageReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+        }
+
+        [TestMethod]
+        public void StartListening_ShouldThrowInvalidOperationExceptionWhenCalledForTheSecondTime()
+        {
+            var messageReceiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
+            messageReceiverMock.Setup(recv => recv.DeclareQueue());
+            messageReceiverMock.Setup(recv => recv.StartReceivingMessages(It.IsAny<EventMessageReceivedCallback>()));
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(queueName, topicExpressions))
+                .Returns(messageReceiverMock.Object);
+
+            target.StartListening(busContextMock.Object);
+            Action action = () =>
+            {
+                target.StartListening(busContextMock.Object);
+            };
+        
+            messageReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+
+            var ex = Assert.ThrowsException<InvalidOperationException>(action);
+            Assert.AreEqual("Already listening for events", ex.Message);
         }
 
         [TestMethod]
@@ -58,6 +106,24 @@ namespace Minor.Nijn.WebScale.Test
             Assert.IsTrue(OrderEventListener.HandleOrderCreatedEventHasBeenCalled);
             Assert.AreEqual(order.Id, result.Order.Id);
             Assert.AreEqual(order.Description, result.Order.Description);
+        }
+
+        [TestMethod]
+        public void Dispose_ShouldDisposeResources()
+        {
+            var messageReceiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
+            messageReceiverMock.Setup(recv => recv.DeclareQueue());
+            messageReceiverMock.Setup(recv => recv.StartReceivingMessages(It.IsAny<EventMessageReceivedCallback>()));
+            messageReceiverMock.Setup(recv => recv.Dispose());
+
+            var contextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            contextMock.Setup(ctx => ctx.CreateMessageReceiver(It.IsAny<string>(), It.IsAny<List<string>>())).Returns(messageReceiverMock.Object);
+
+            target.StartListening(contextMock.Object);
+            target.Dispose();
+
+            contextMock.VerifyAll();
+            messageReceiverMock.VerifyAll();
         }
     }
 }

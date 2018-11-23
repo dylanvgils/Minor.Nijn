@@ -1,4 +1,5 @@
-﻿using Minor.Nijn.WebScale.Test.TestClasses.Domain;
+﻿using Minor.Nijn.WebScale.Events;
+using Minor.Nijn.WebScale.Test.TestClasses.Domain;
 
 namespace Minor.Nijn.WebScale.Test.TestClasses.Events
 {

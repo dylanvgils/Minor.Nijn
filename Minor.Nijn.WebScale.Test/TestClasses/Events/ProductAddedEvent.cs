@@ -1,4 +1,6 @@
-﻿namespace Minor.Nijn.WebScale.Test.TestClasses.Events
+﻿using Minor.Nijn.WebScale.Events;
+
+namespace Minor.Nijn.WebScale.Test.TestClasses.Events
 {
     public class ProductAddedEvent : DomainEvent
     {

@@ -5,6 +5,7 @@ using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Minor.Nijn.WebScale.Events;
 
 namespace Minor.Nijn.WebScale
 {
@@ -25,12 +26,12 @@ namespace Minor.Nijn.WebScale
         IBusContext<IConnection> Context { get; set; }
 
         private readonly Assembly _callingAssembly;
-        private readonly List<EventListener> _eventListeners;
+        private readonly List<IEventListener> _eventListeners;
 
         public MicroserviceHostBuilder()
         {
             _callingAssembly = Assembly.GetCallingAssembly();
-            _eventListeners = new List<EventListener>();
+            _eventListeners = new List<IEventListener>();
         }
 
         /// <summary>
@@ -112,14 +113,14 @@ namespace Minor.Nijn.WebScale
                 var attribute = method.GetCustomAttribute<TopicAttribute>();
                 if (attribute != null)
                 {
-                    CreateEventListener(type, method, queueName, attribute.TopicPattern);
+                    CreateEventListener(type, method, queueName, attribute.TopicExpression);
                 }
             }
         }
 
-        private void CreateEventListener(Type type, MethodInfo method, string queueName, string topicPattern)
+        private void CreateEventListener(Type type, MethodInfo method, string queueName, string topicExpression)
         {
-            _eventListeners.Add(new EventListener(type, method, queueName, new List<string> { topicPattern }));
+            _eventListeners.Add(new EventListener(type, method, queueName, new List<string> { topicExpression }));
         }
     }
 }
