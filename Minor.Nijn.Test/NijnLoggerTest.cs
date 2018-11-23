@@ -14,8 +14,9 @@ namespace Minor.Nijn.Test
         }
 
         [TestMethod]
-        public void NijnLoggerShouldReturnCreateLoggerWhenNoLoggerIsProvided()
+        public void NijnLoggerShouldCreateLoggerWhenNoLoggerFactoryIsProvided()
         {
+            NijnLogger.LoggerFactory = null;
             var result = NijnLogger.CreateLogger<NijnLoggerTest>();
 
             Assert.IsNotNull(result);

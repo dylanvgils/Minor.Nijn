@@ -17,8 +17,6 @@ namespace Minor.Nijn.RabbitMQBus
         private readonly IRabbitMQBusContext _context;
         private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
 
-        private RabbitMQMessageReceiver() { }
-
         internal RabbitMQMessageReceiver(IRabbitMQBusContext context, string queueName,
             IEnumerable<string> topicExpressions, EventingBasicConsumerFactory factory) : this(context, queueName, topicExpressions)
         {

@@ -13,9 +13,6 @@ namespace Minor.Nijn.RabbitMQBus
         public string QueueName { get; }
         public IModel Channel { get; }
         private bool _queueDeclared;
-
-        private RabbitMQCommandReceiver() { }
-
         internal RabbitMQCommandReceiver(
             IRabbitMQBusContext context,
             string queueName,

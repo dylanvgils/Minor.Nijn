@@ -14,8 +14,9 @@ namespace Minor.Nijn.WebScale.Test
         }
 
         [TestMethod]
-        public void NijnWebScaleLoggerShouldReturnCreateLoggerWhenNoLoggerIsProvided()
+        public void NijnWebScaleLoggerShouldCreateLoggerWhenNoLoggerFactoryIsProvided()
         {
+            NijnWebScaleLogger.LoggerFactory = null;
             var result = NijnWebScaleLogger.CreateLogger<NijnWebScaleLoggerTest>();
 
             Assert.IsNotNull(result);
