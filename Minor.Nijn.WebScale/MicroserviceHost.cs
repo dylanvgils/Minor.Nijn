@@ -3,6 +3,7 @@ using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Minor.Nijn.WebScale.Events;
 
 namespace Minor.Nijn.WebScale
 {
@@ -14,10 +15,10 @@ namespace Minor.Nijn.WebScale
         private readonly ILogger _logger;
 
         public IBusContext<IConnection> Context { get; }
-        public IEnumerable<EventListener> EventListeners { get; }
+        public List<IEventListener> EventListeners { get; }
         public bool EventListenersRegistered { get; private set; }
 
-        public MicroserviceHost(IBusContext<IConnection> context, IEnumerable<EventListener> eventListeners)
+        public MicroserviceHost(IBusContext<IConnection> context, List<IEventListener> eventListeners)
         {
             Context = context;
             EventListeners = eventListeners;
@@ -34,23 +35,13 @@ namespace Minor.Nijn.WebScale
             }
 
             _logger.LogInformation("Registering {0} event listeners", EventListeners.Count());
-
-            foreach (var listener in EventListeners)
-            {
-                var receiver = Context.CreateMessageReceiver(
-                    listener.QueueName,
-                    listener.TopicPatterns
-                );
-
-                receiver.DeclareQueue();
-                receiver.StartReceivingMessages(listener.HandleEventMessage);
-            }
-
+            EventListeners.ForEach(e => e.StartListening(Context));
             EventListenersRegistered = true;
         }
 
         public void Dispose()
         {
+            EventListeners.ForEach(e => e.Dispose());
             Context?.Connection?.Dispose();
         }
     }

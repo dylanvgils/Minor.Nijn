@@ -1,63 +1,45 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using RabbitMQ.Client;
+using System;
 using System.Collections.Generic;
-using System.Reflection;
-using Minor.Nijn.WebScale.Test.TestClasses;
+using Minor.Nijn.WebScale.Events;
 
 namespace Minor.Nijn.WebScale.Test
 {
     [TestClass]
     public class MicroserviceHostTest
     {
-        private Type type;
-        private MethodInfo method;
         private Mock<IBusContext<IConnection>> busContextMock;
+        private Mock<IEventListener> eventListenerMock;
 
         private MicroserviceHost target;
 
         [TestInitialize]
         public void BeforeEach()
         {
-            type = typeof(OrderEventListener);
-            method = type.GetMethod(TestClassesConstants.OrderEventHandlerMethodName);
-
-            var listeners = new List<EventListener>
-            {
-                new EventListener(type, method, "QueueName", new List<string> { "a.b.c" })
-            };
+            eventListenerMock = new Mock<IEventListener>(MockBehavior.Strict);
+            var listeners = new List<IEventListener> { eventListenerMock.Object };
 
             busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-
             target = new MicroserviceHost(busContextMock.Object, listeners);
         }
 
         [TestMethod]
         public void RegisterEventListeners_ShouldCreateMessageReceivers()
         {
-            var receiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
-            receiverMock.Setup(recv => recv.DeclareQueue());
-            receiverMock.Setup(recv => recv.StartReceivingMessages(It.IsAny<EventMessageReceivedCallback>()));
-
-            busContextMock.Setup(ctx => ctx.CreateMessageReceiver("QueueName", new List<string> {"a.b.c"}))
-                .Returns(receiverMock.Object);
+            eventListenerMock.Setup(l => l.StartListening(busContextMock.Object));
 
             target.RegisterEventListeners();
 
             busContextMock.VerifyAll();
-            receiverMock.VerifyAll();
+            eventListenerMock.VerifyAll();
         }
 
         [TestMethod]
         public void RegisterEventListeners_ShouldThrowExceptionWhenCalledForTheSecondTime()
         {
-            var receiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
-            receiverMock.Setup(recv => recv.DeclareQueue());
-            receiverMock.Setup(recv => recv.StartReceivingMessages(It.IsAny<EventMessageReceivedCallback>()));
-
-            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(It.IsAny<string>(), It.IsAny<List<string>>()))
-                .Returns(receiverMock.Object);
+            eventListenerMock.Setup(l => l.StartListening(busContextMock.Object));
 
             target.RegisterEventListeners();
             Action action = () =>
@@ -72,8 +54,12 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod]
         public void Dispose_ShouldCallDisposeOnResources()
         {
+            eventListenerMock.Setup(e => e.Dispose());
             busContextMock.Setup(ctx => ctx.Connection.Dispose());
+
             target.Dispose();
+
+            eventListenerMock.VerifyAll();
             busContextMock.VerifyAll();
         }
     }

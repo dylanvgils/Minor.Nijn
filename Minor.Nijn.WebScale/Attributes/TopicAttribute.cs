@@ -11,11 +11,11 @@ namespace Minor.Nijn.WebScale.Attributes
     [AttributeUsage(AttributeTargets.Method)]
     public class TopicAttribute : Attribute
     {
-        public string TopicPattern { get; set; }
+        public string TopicExpression { get; set; }
 
-        public TopicAttribute(string topicPattern)
+        public TopicAttribute(string topicExpression)
         {
-            TopicPattern = topicPattern;
+            TopicExpression = topicExpression;
         }
     }
 }
