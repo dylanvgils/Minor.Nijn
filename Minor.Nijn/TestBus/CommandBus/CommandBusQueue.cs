@@ -1,9 +1,7 @@
 namespace Minor.Nijn.TestBus.CommandBus
 {
-    internal class CommandBusQueue : TestBusQueue<CommandMessage>
-    {       
-        internal CommandBusQueue() { }
-        
+    public class CommandBusQueue : TestBusQueue<CommandMessage>
+    {               
         public CommandBusQueue(string queueName) : base(queueName) { }
              
         public override void Enqueue(CommandMessage message)

@@ -4,8 +4,6 @@
     {
         private readonly ITestBusContext _context;
 
-        private TestMessageSender() { }
-
         internal TestMessageSender(ITestBusContext context)
         {
             _context = context;

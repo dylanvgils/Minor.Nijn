@@ -9,8 +9,6 @@ namespace Minor.Nijn.TestBus.CommandBus
         public CommandMessage ReplyMessage { get; set; }
         private ITestBusContext _context;
         
-        private TestCommandSender() { }
-
         internal TestCommandSender(ITestBusContext context)
         {
             _context = context;

@@ -2,26 +2,23 @@
 using System.Collections.Generic;
 using Minor.Nijn.TestBus.CommandBus;
 using Minor.Nijn.TestBus.EventBus;
+using RabbitMQ.Client;
 
 namespace Minor.Nijn.TestBus
 {
     public sealed class TestBusContext : ITestBusContext
     {
-        private readonly IEventBus _eventBus;
-        IEventBus ITestBusContext.EventBus => _eventBus;
-
-        private readonly ICommandBus _commandBus;
-        ICommandBus ITestBusContext.CommandBus => _commandBus;
-
-        public object Connection => throw new NotImplementedException();
+        public IConnection Connection => throw new NotImplementedException();
         public string ExchangeName => throw new NotImplementedException();
+        public IEventBus EventBus { get; }
+        public ICommandBus CommandBus { get; }
 
         private TestBusContext() { }
 
         internal TestBusContext(IEventBus testBus, ICommandBus commandBus)
         {
-            _eventBus = testBus;
-            _commandBus = commandBus;
+            EventBus = testBus;
+            CommandBus = commandBus;
         }
 
         public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
@@ -54,7 +51,7 @@ namespace Minor.Nijn.TestBus
 
         public void SendMockCommand(CommandMessage request)
         {
-            _commandBus.DispatchMessage(request);
+            CommandBus.DispatchMessage(request);
         }
 
         public void Dispose() { }

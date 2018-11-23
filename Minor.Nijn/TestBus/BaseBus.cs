@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Minor.Nijn.TestBus
 {
-    internal abstract class BaseBus<TQueueType, TMessageType> : IBus<TMessageType> 
+    internal abstract class BaseBus<TQueueType, TMessageType> : ITestBus<TMessageType> 
         where TQueueType : TestBusQueue<TMessageType>
     {
         private readonly IDictionary<string, TQueueType> _queues;
