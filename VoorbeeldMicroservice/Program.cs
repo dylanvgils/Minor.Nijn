@@ -1,6 +1,5 @@
 ﻿using Minor.Nijn;
 using Minor.Nijn.RabbitMQBus;
-using Minor.Nijn.WebScale;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
