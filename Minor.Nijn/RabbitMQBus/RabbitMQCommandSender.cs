@@ -10,7 +10,7 @@ namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQCommandSender : ICommandSender
     {
-        private readonly ILogger _log;
+        private readonly ILogger _logger;
         private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
         
         public IModel Channel { get; }
@@ -27,12 +27,12 @@ namespace Minor.Nijn.RabbitMQBus
             Channel = context.Connection.CreateModel();
             _eventingBasicConsumerFactory = new EventingBasicConsumerFactory();
 
-            _log = NijnLogger.CreateLogger<RabbitMQCommandSender>();
+            _logger = NijnLogger.CreateLogger<RabbitMQCommandSender>();
         }
 
         public Task<CommandMessage> SendCommandAsync(CommandMessage request)
         {
-            _log.LogInformation("Sending command to {0}", request.RoutingKey);
+            _logger.LogInformation("Sending command to {0}", request.RoutingKey);
             string replyQueueName = Channel.QueueDeclare().QueueName;;
 
             var props = Channel.CreateBasicProperties();
@@ -78,10 +78,10 @@ namespace Minor.Nijn.RabbitMQBus
 
                 CommandMessage response = null;
                 consumer.Received += (sender, args) => {
-                    _log.LogInformation("Received response message, with correlationId {0}", args.BasicProperties.CorrelationId);
+                    _logger.LogInformation("Received response message, with correlationId {0}", args.BasicProperties.CorrelationId);
                     if (args.BasicProperties.CorrelationId != correlationId)
                     {
-                        _log.LogDebug("Received response with wrong correlationId, id was {0}, expected {1}", 
+                        _logger.LogDebug("Received response with wrong correlationId, id was {0}, expected {1}", 
                             args.BasicProperties.CorrelationId, 
                             correlationId
                         );

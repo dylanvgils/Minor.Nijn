@@ -10,7 +10,7 @@ namespace Minor.Nijn.RabbitMQBus
         private readonly IConnectionFactory _factory;
 
         private ILoggerFactory _loggerFactory;
-        private ILogger _log;
+        private ILogger _logger;
         
         public string ExchangeName { get; private set; }
         public string Hostname{ get; private set; }
@@ -23,7 +23,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         public RabbitMQContextBuilder()
         {
-            _loggerFactory = new LoggerFactory();
+            _loggerFactory = NijnLogger.DefaultFactory;
 
             _loggerFactory
                 .AddSerilog(new LoggerConfiguration()
@@ -33,7 +33,7 @@ namespace Minor.Nijn.RabbitMQBus
                     .CreateLogger());
 
             NijnLogger.LoggerFactory = _loggerFactory;
-            _log = _loggerFactory.CreateLogger<RabbitMQContextBuilder>();
+            _logger = _loggerFactory.CreateLogger<RabbitMQContextBuilder>();
         }
         
         internal RabbitMQContextBuilder(IConnectionFactory factory) : this()
@@ -66,7 +66,7 @@ namespace Minor.Nijn.RabbitMQBus
             _loggerFactory = loggerFactory;
             
             NijnLogger.LoggerFactory = _loggerFactory;
-            _log = _loggerFactory.CreateLogger<RabbitMQContextBuilder>();
+            _logger = _loggerFactory.CreateLogger<RabbitMQContextBuilder>();
             
             return this;
         }
@@ -91,8 +91,8 @@ namespace Minor.Nijn.RabbitMQBus
         /// <returns></returns>
         public IRabbitMQBusContext CreateContext()
         {
-            _log.LogInformation("Creating RabbitMQBusContext for exchange: {0} on host {1}:{2}", ExchangeName, Hostname, Port);
-            _log.LogDebug("Context configuration: type={1}, username={2}, password={3}", Type, Username, Password);
+            _logger.LogInformation("Creating RabbitMQBusContext for exchange: {0} on host {1}:{2}", ExchangeName, Hostname, Port);
+            _logger.LogDebug("Context configuration: type={1}, username={2}, password={3}", Type, Username, Password);
             
             var factory = _factory ?? new ConnectionFactory{ HostName = Hostname, Port = Port };
             var connection = factory.CreateConnection();
