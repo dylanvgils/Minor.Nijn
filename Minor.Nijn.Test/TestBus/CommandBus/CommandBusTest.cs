@@ -61,7 +61,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
             
             Assert.IsInstanceOfType(result, typeof(CommandBusQueue));
             Assert.AreEqual(name, result.QueueName);
-            Assert.AreEqual(1, target.QueueLength);
+            Assert.AreEqual(1, target.QueueCount);
         }
         
         [TestMethod]
@@ -69,7 +69,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         {
             target.DeclareCommandQueue("TestQueue1");
             target.DeclareCommandQueue("TestQueue2");
-            Assert.AreEqual(target.QueueLength, 2);
+            Assert.AreEqual(target.QueueCount, 2);
         }
 
         [TestMethod]
@@ -77,7 +77,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         {
             target.DeclareCommandQueue("TestQueue1");
             target.DeclareCommandQueue("TestQueue1");
-            Assert.AreEqual(target.QueueLength, 1);
+            Assert.AreEqual(target.QueueCount, 1);
         }
     }
 }

@@ -62,7 +62,7 @@ namespace Minor.Nijn.TestBus.EventBus.Test
             Assert.IsInstanceOfType(result, typeof(EventBusQueue));
             Assert.AreEqual(queueName, result.QueueName);
             Assert.AreEqual(topicExpressions, result.TopicExpressions);
-            Assert.AreEqual(target.QueueLength, 1);
+            Assert.AreEqual(target.QueueCount, 1);
         }
 
         [TestMethod]
@@ -70,7 +70,7 @@ namespace Minor.Nijn.TestBus.EventBus.Test
         {
             target.DeclareQueue("TestQueue1", new List<string> { "a.b.c" });
             target.DeclareQueue("TestQueue2", new List<string> { "a.b.c" });
-            Assert.AreEqual(target.QueueLength, 2);
+            Assert.AreEqual(target.QueueCount, 2);
         }
 
         [TestMethod]
@@ -78,7 +78,7 @@ namespace Minor.Nijn.TestBus.EventBus.Test
         {
             target.DeclareQueue("TestQueue1", new List<string> { "a.b.c" });
             target.DeclareQueue("TestQueue1", new List<string> { "a.b.c" });
-            Assert.AreEqual(target.QueueLength, 1);
+            Assert.AreEqual(target.QueueCount, 1);
         }
     }
 }

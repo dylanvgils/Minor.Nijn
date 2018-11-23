@@ -32,7 +32,7 @@ namespace Minor.Nijn.RabbitMQBus
                     .WriteTo.Console()
                     .CreateLogger());
 
-            NijnLogging.LoggerFactory = _loggerFactory;
+            NijnLogger.LoggerFactory = _loggerFactory;
             _log = _loggerFactory.CreateLogger<RabbitMQContextBuilder>();
         }
         
@@ -65,7 +65,7 @@ namespace Minor.Nijn.RabbitMQBus
         {
             _loggerFactory = loggerFactory;
             
-            NijnLogging.LoggerFactory = _loggerFactory;
+            NijnLogger.LoggerFactory = _loggerFactory;
             _log = _loggerFactory.CreateLogger<RabbitMQContextBuilder>();
             
             return this;

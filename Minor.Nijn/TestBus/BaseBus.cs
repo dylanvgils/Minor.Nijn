@@ -6,7 +6,7 @@ namespace Minor.Nijn.TestBus
         where TQueueType : TestBusQueue<TMessageType>
     {
         private readonly IDictionary<string, TQueueType> _queues;
-        public int QueueLength => _queues.Count;
+        public int QueueCount => _queues.Count;
 
         protected BaseBus()
         {
