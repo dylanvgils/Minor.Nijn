@@ -34,7 +34,7 @@ namespace Minor.Nijn.RabbitMQBus
 
             _eventingBasicConsumerFactory = new EventingBasicConsumerFactory();
             
-            _log = NijnLogging.CreateLogger<RabbitMQMessageReceiver>();
+            _log = NijnLogger.CreateLogger<RabbitMQMessageReceiver>();
         }
 
         public void DeclareQueue()

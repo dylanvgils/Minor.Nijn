@@ -19,7 +19,7 @@ namespace Minor.Nijn.RabbitMQBus
             _context = context;
             Channel = context.Connection.CreateModel();
 
-            _log = NijnLogging.CreateLogger<RabbitMQMessageSender>();
+            _log = NijnLogger.CreateLogger<RabbitMQMessageSender>();
         }
 
         public void SendMessage(EventMessage message)
