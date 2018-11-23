@@ -7,7 +7,7 @@ namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQMessageSender : IMessageSender
     {
-        private readonly ILogger _log;
+        private readonly ILogger _logger;
 
         public IModel Channel { get; }
         private readonly IRabbitMQBusContext _context;
@@ -19,12 +19,12 @@ namespace Minor.Nijn.RabbitMQBus
             _context = context;
             Channel = context.Connection.CreateModel();
 
-            _log = NijnLogger.CreateLogger<RabbitMQMessageSender>();
+            _logger = NijnLogger.CreateLogger<RabbitMQMessageSender>();
         }
 
         public void SendMessage(EventMessage message)
         {
-            _log.LogInformation("Send message to routing key: {0}", message.RoutingKey);
+            _logger.LogInformation("Send message to routing key: {0}", message.RoutingKey);
 
             var props = Channel.CreateBasicProperties();
             props.Type = message.EventType ?? "";

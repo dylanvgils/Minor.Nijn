@@ -7,7 +7,7 @@ namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQCommandReceiver : ICommandReceiver
     {   
-        private readonly ILogger _log;
+        private readonly ILogger _logger;
         private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
         
         public string QueueName { get; }
@@ -31,12 +31,12 @@ namespace Minor.Nijn.RabbitMQBus
             Channel = context.Connection.CreateModel();
             _eventingBasicConsumerFactory = new EventingBasicConsumerFactory();
 
-            _log = NijnLogger.CreateLogger<RabbitMQCommandReceiver>();
+            _logger = NijnLogger.CreateLogger<RabbitMQCommandReceiver>();
         }
 
         public void DeclareCommandQueue()
         {
-            _log.LogInformation("Declaring command queue with name: {0}", QueueName);
+            _logger.LogInformation("Declaring command queue with name: {0}", QueueName);
             
             Channel.QueueDeclare(
                 queue: QueueName, 
@@ -57,7 +57,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void StartReceivingCommands(CommandReceivedCallback callback)
         {
-            _log.LogInformation("Start listening for commands on queue: {0}", QueueName);
+            _logger.LogInformation("Start listening for commands on queue: {0}", QueueName);
 
             var consumer = CreateBasicConsumer(callback);
 
@@ -80,7 +80,7 @@ namespace Minor.Nijn.RabbitMQBus
                 
             consumer.Received += (model, args) =>
             {
-                _log.LogInformation("Received command with correlationId: {0}", args.BasicProperties.CorrelationId);
+                _logger.LogInformation("Received command with correlationId: {0}", args.BasicProperties.CorrelationId);
                 string requestBody = Encoding.UTF8.GetString(args.Body);
                 
                 var replyMessage = callback(new CommandMessage(
@@ -97,7 +97,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         private void PublishResponse(BasicDeliverEventArgs args, CommandMessage replyMessage)
         {
-            _log.LogInformation("Sending command reply to: {0}", args.BasicProperties.ReplyTo);
+            _logger.LogInformation("Sending command reply to: {0}", args.BasicProperties.ReplyTo);
             
             var replyProps = Channel.CreateBasicProperties();
             replyProps.CorrelationId = args.BasicProperties.CorrelationId;

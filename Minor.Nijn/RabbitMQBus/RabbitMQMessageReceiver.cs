@@ -7,7 +7,7 @@ namespace Minor.Nijn.RabbitMQBus
 {
     public class RabbitMQMessageReceiver : IMessageReceiver
     {
-        private readonly ILogger _log;
+        private readonly ILogger _logger;
         
         public string QueueName { get; }
         public IEnumerable<string> TopicExpressions { get; }
@@ -34,12 +34,12 @@ namespace Minor.Nijn.RabbitMQBus
 
             _eventingBasicConsumerFactory = new EventingBasicConsumerFactory();
             
-            _log = NijnLogger.CreateLogger<RabbitMQMessageReceiver>();
+            _logger = NijnLogger.CreateLogger<RabbitMQMessageReceiver>();
         }
 
         public void DeclareQueue()
         {
-            _log.LogInformation("Declare queue on exchange with name: {0}", QueueName);
+            _logger.LogInformation("Declare queue on exchange with name: {0}", QueueName);
             
             Channel.QueueDeclare(
                 queue: QueueName,
@@ -51,7 +51,7 @@ namespace Minor.Nijn.RabbitMQBus
 
             foreach (var topic in TopicExpressions)
             {
-                _log.LogInformation("Bind queue {0} to exchange {1} with with topic {2}", QueueName, _context.ExchangeName, topic);
+                _logger.LogInformation("Bind queue {0} to exchange {1} with with topic {2}", QueueName, _context.ExchangeName, topic);
                 
                 Channel.QueueBind(
                     queue: QueueName,
@@ -68,12 +68,12 @@ namespace Minor.Nijn.RabbitMQBus
         {
             CheckQueueDeclared();
 
-            _log.LogInformation("Start listening for messages on queue: {1}", QueueName);
+            _logger.LogInformation("Start listening for messages on queue: {1}", QueueName);
             var consumer = _eventingBasicConsumerFactory.CreateEventingBasicConsumer(Channel);
 
             consumer.Received += (model, ea) =>
             {
-                _log.LogInformation("Received message {0}", ea.BasicProperties.MessageId);
+                _logger.LogInformation("Received message {0}", ea.BasicProperties.MessageId);
                 string body = Encoding.UTF8.GetString(ea.Body);
 
                 callback.Invoke(new EventMessage(
@@ -106,7 +106,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void Dispose()
         {
-            _log.LogInformation("Disposing message receiver for queue: {0}", QueueName);
+            _logger.LogInformation("Disposing message receiver for queue: {0}", QueueName);
             Channel?.Dispose();
         }
     }

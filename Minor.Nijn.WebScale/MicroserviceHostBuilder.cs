@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Minor.Nijn.WebScale.Attributes;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Reflection;
 
 namespace Minor.Nijn.WebScale
 {
@@ -22,7 +23,16 @@ namespace Minor.Nijn.WebScale
     public class MicroserviceHostBuilder
     {
         IBusContext<IConnection> Context { get; set; }
-    
+
+        private readonly Assembly _callingAssembly;
+        private readonly List<EventListener> _eventListeners;
+
+        public MicroserviceHostBuilder()
+        {
+            _callingAssembly = Assembly.GetCallingAssembly();
+            _eventListeners = new List<EventListener>();
+        }
+
         /// <summary>
         /// Configures the connection to the message broker
         /// </summary>
@@ -38,7 +48,11 @@ namespace Minor.Nijn.WebScale
         public MicroserviceHostBuilder UseConventions()
         {
             // Find Event listeners
-            // AddEventListener<T>()
+            foreach (Type type in _callingAssembly.GetTypes())
+            {
+                ParseType(type);
+            }
+
             return this;
         }
 
@@ -47,6 +61,8 @@ namespace Minor.Nijn.WebScale
         /// </summary>
         public MicroserviceHostBuilder AddEventListener<T>()
         {
+            var type = typeof(T);
+            ParseType(type);
             return this;
         }
 
@@ -55,7 +71,7 @@ namespace Minor.Nijn.WebScale
         /// </summary>
         public MicroserviceHostBuilder SetLoggerFactory(ILoggerFactory loggerFactory)
         {
-            NijnLogging.LoggerFactory = loggerFactory;
+            NijnWebScaleLogger.LoggerFactory = loggerFactory;
             return this;
         }
 
@@ -74,7 +90,36 @@ namespace Minor.Nijn.WebScale
         public MicroserviceHost CreateHost()
         {
             // Create host
-            return new MicroserviceHost(Context);
+            var host = new MicroserviceHost(Context, _eventListeners);
+            host.RegisterEventListeners();
+            return host;
+        }
+
+        private void ParseType(Type type)
+        {
+            var attribute = type.GetCustomAttribute<EventListenerAttribute>();
+            if (attribute != null)
+            {
+                ParseTopics(type, attribute.QueueName);
+            }
+        }
+
+        private void ParseTopics(Type type, string queueName)
+        {
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var method in methods)
+            {
+                var attribute = method.GetCustomAttribute<TopicAttribute>();
+                if (attribute != null)
+                {
+                    CreateEventListener(type, method, queueName, attribute.TopicPattern);
+                }
+            }
+        }
+
+        private void CreateEventListener(Type type, MethodInfo method, string queueName, string topicPattern)
+        {
+            _eventListeners.Add(new EventListener(type, method, queueName, new List<string> { topicPattern }));
         }
     }
 }
