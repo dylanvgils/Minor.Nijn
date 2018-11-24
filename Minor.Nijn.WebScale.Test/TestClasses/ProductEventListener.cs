@@ -1,5 +1,4 @@
 ﻿using Minor.Nijn.WebScale.Attributes;
-using Minor.Nijn.WebScale.Events;
 using Minor.Nijn.WebScale.Test.TestClasses.Events;
 using Minor.Nijn.WebScale.Test.TestClasses.Injectable;
 
@@ -10,7 +9,7 @@ namespace Minor.Nijn.WebScale.Test.TestClasses
     {
         public ProductEventListener(IFoo injectable)
         {
-            injectable.HasBeenCalled = true;
+            injectable.HasBeenInstantiated = true;
         }
 
         [Topic(TestClassesConstants.ProductEventHandlerTopic)]

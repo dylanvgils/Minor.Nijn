@@ -4,6 +4,7 @@ using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
+using Minor.Nijn.TestBus;
 using Minor.Nijn.WebScale.Events;
 using Minor.Nijn.WebScale.Test.TestClasses;
 
@@ -14,7 +15,6 @@ namespace Minor.Nijn.WebScale.Test
     {
         private Mock<IBusContext<IConnection>> busContextMock;
         private Mock<IEventListener> eventListenerMock;
-        private Mock<ServiceProvider> serviceProviderMock;
 
         private MicroserviceHost target;
 
@@ -63,6 +63,20 @@ namespace Minor.Nijn.WebScale.Test
             var result = target.CreateInstance(type);
             Assert.IsInstanceOfType(result, typeof(OrderEventListener));
         }
+
+        [TestMethod]
+        public void MicroserviceHost_ShouldRegisterPublisherAndContextDependenciesByDefault()
+        {
+            var testBusContext = new TestBusContextBuilder().CreateTestContext();
+            var target = new MicroserviceHost(testBusContext, new List<IEventListener>(), new ServiceCollection());
+
+            var busContext = target.ServiceProvider.GetService<IBusContext<IConnection>>();
+            var eventPublisher = target.ServiceProvider.GetService<IEventPublisher>();
+
+            Assert.IsInstanceOfType(busContext, typeof(TestBusContext));
+            Assert.IsInstanceOfType(eventPublisher, typeof(EventPublisher));
+        }
+
 
         [TestMethod]
         public void Dispose_ShouldCallDisposeOnResources()

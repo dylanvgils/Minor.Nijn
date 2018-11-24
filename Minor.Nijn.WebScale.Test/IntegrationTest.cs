@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.TestBus;
 using Minor.Nijn.WebScale.Test.TestClasses;
@@ -18,6 +17,27 @@ namespace Minor.Nijn.WebScale.Test
         {
             OrderEventListener.HandleOrderCreatedEventHasBeenCalled = false;
             OrderEventListener.HandleOrderCreatedEventHasBeenCalledWith = null;
+        }
+
+        [TestMethod]
+        public void RegisteredDependenciesCanBeInjected()
+        {
+            var foo = new Foo();
+
+            var busContext = new TestBusContextBuilder().CreateTestContext();
+            var hostBuilder = new MicroserviceHostBuilder()
+                .RegisterDependencies(services =>
+                {
+                    services.AddSingleton<IFoo>(foo);
+                })
+                .WithContext(busContext)
+                .AddEventListener<ProductEventListener>();
+
+            using (var host = hostBuilder.CreateHost())
+            {
+                host.RegisterListeners();
+                Assert.IsTrue(foo.HasBeenInstantiated);
+            }
         }
 
         [TestMethod]
@@ -44,28 +64,6 @@ namespace Minor.Nijn.WebScale.Test
                 var result = OrderEventListener.HandleOrderCreatedEventHasBeenCalledWith;
                 Assert.AreEqual(order.Id, result.Order.Id);
                 Assert.AreEqual(order.Description, result.Order.Description);
-            }
-        }
-
-        [TestMethod]
-        public void RegisteredDependenciesCanBeInjected()
-        {
-            var busContext = new TestBusContextBuilder().CreateTestContext();
-            var hostBuilder = new MicroserviceHostBuilder()
-                .RegisterDependencies(services =>
-                {
-                    services.AddTransient<IFoo, Foo>();
-                })
-                .WithContext(busContext)
-                .AddEventListener<ProductEventListener>();
-
-            using (var host = hostBuilder.CreateHost())
-            {
-                host.RegisterListeners();
-
-                var result = host.ServiceProvider.GetService<IFoo>();
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result, typeof(Foo));
             }
         }
     }
