@@ -2,6 +2,6 @@
 {
     public interface IFoo
     {
-        bool HasBeenCalled { get; set; }
+        bool HasBeenInstantiated { get; set; }
     }
 }

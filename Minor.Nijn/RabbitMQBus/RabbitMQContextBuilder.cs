@@ -61,7 +61,7 @@ namespace Minor.Nijn.RabbitMQBus
             return this;
         }
 
-        public RabbitMQContextBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
+        public RabbitMQContextBuilder SetLoggerFactory(ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
             

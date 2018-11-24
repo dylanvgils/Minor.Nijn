@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Reflection;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using RabbitMQ.Client;
@@ -82,6 +84,14 @@ namespace Minor.Nijn.RabbitMQBus.Test
             connectionMock.VerifyAll();
             modelMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(RabbitMQBusContext));
+        }
+
+        [TestMethod]
+        public void SetLoggerFactory_ShouldSetTheLoggerFactoryForTheProject()
+        {
+            var factory = new LoggerFactory();
+            new RabbitMQContextBuilder().SetLoggerFactory(factory);
+            Assert.AreEqual(NijnLogger.LoggerFactory, factory);
         }
     }
 }

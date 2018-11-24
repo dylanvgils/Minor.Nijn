@@ -48,10 +48,11 @@ namespace Minor.Nijn.WebScale
         {
             return ActivatorUtilities.CreateInstance(ServiceProvider, type);
         }
+
         private void ConfigurePublisherServices(IServiceCollection serviceCollection)
         {
-            // serviceCollection.AddSingleton(Context);
-            // serviceCollection.AddTransient<IEventPublisher, EventPublisher>();
+            serviceCollection.AddSingleton(Context);
+            serviceCollection.AddTransient<IEventPublisher, EventPublisher>();
         }
 
         public void Dispose()

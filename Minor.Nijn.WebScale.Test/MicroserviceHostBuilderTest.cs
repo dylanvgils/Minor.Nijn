@@ -4,6 +4,7 @@ using Moq;
 using RabbitMQ.Client;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Minor.Nijn.WebScale.Test
 {
@@ -57,6 +58,14 @@ namespace Minor.Nijn.WebScale.Test
             Assert.AreEqual(2, result.EventListeners.Count());
             Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.ProductEventListenerQueueName && l.TopicExpressions.Contains(TestClassesConstants.ProductEventHandlerTopic)));
             Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.OrderEventListenerQueueName && l.TopicExpressions.Contains(TestClassesConstants.OrderEventHandlerTopic)));
+        }
+
+        [TestMethod]
+        public void SetLoggerFactory_ShouldSetTheLoggerFactoryForTheProject()
+        {
+            var factory = new LoggerFactory();
+            target.SetLoggerFactory(factory);
+            Assert.AreEqual(NijnWebScaleLogger.LoggerFactory, factory);
         }
     }
 }
