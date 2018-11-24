@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.TestBus;
+using Minor.Nijn.WebScale.Events;
 using Minor.Nijn.WebScale.Test.TestClasses;
 using Minor.Nijn.WebScale.Test.TestClasses.Domain;
 using Minor.Nijn.WebScale.Test.TestClasses.Events;
@@ -57,6 +58,34 @@ namespace Minor.Nijn.WebScale.Test
             {
                 host.RegisterListeners();
                 messageSender.SendMessage(new EventMessage(routingKey, JsonConvert.SerializeObject(orderCreatedEvent)));
+
+                Assert.IsTrue(host.EventListenersRegistered);
+                Assert.IsTrue(OrderEventListener.HandleOrderCreatedEventHasBeenCalled);
+
+                var result = OrderEventListener.HandleOrderCreatedEventHasBeenCalledWith;
+                Assert.AreEqual(order.Id, result.Order.Id);
+                Assert.AreEqual(order.Description, result.Order.Description);
+            }
+        }
+
+        [TestMethod]
+        public void EventPublisherCanSendEventMessage()
+        {
+            var routingKey = TestClassesConstants.OrderEventHandlerTopic;
+            var order = new Order { Id = 1, Description = "Some description" };
+            var orderCreatedEvent = new OrderCreatedEvent(routingKey, order);
+
+            var busContext = new TestBusContextBuilder().CreateTestContext();
+            var hostBuilder = new MicroserviceHostBuilder()
+                .WithContext(busContext)
+                .AddEventListener<OrderEventListener>();
+
+            using (var host = hostBuilder.CreateHost())
+            using(var publisher = new EventPublisher(busContext))
+            {
+                host.RegisterListeners();
+
+                publisher.Publish(orderCreatedEvent);
 
                 Assert.IsTrue(host.EventListenersRegistered);
                 Assert.IsTrue(OrderEventListener.HandleOrderCreatedEventHasBeenCalled);

@@ -91,7 +91,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
 
             var propsMock = new Mock<BasicProperties>(MockBehavior.Strict);
             propsMock.SetupSet(props => props.Type = "");
-            propsMock.SetupSet(props => props.CorrelationId = "");
+            propsMock.SetupSet(props => props.CorrelationId = It.IsAny<string>());
             propsMock.SetupSet(props => props.Timestamp = It.IsAny<AmqpTimestamp>());
 
             contextMock.Setup(ctx => ctx.ExchangeName).Returns(exchangeName);
