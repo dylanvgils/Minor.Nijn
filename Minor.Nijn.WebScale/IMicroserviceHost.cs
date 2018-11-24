@@ -2,6 +2,7 @@
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
+using Minor.Nijn.WebScale.Commands;
 
 namespace Minor.Nijn.WebScale
 {
@@ -9,7 +10,8 @@ namespace Minor.Nijn.WebScale
     {
         IBusContext<IConnection> Context { get; }
         List<IEventListener> EventListeners { get; }
-        bool EventListenersRegistered { get; }
+        bool ListenersRegistered { get; }
+        List<ICommandListener> CommandListeners { get; }
         IServiceProvider ServiceProvider { get; }
 
         void RegisterListeners();

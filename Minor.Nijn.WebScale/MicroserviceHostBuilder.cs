@@ -5,6 +5,7 @@ using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Minor.Nijn.WebScale.Commands;
 using Minor.Nijn.WebScale.Events;
 
 namespace Minor.Nijn.WebScale
@@ -27,12 +28,14 @@ namespace Minor.Nijn.WebScale
 
         private readonly Assembly _callingAssembly;
         private readonly List<IEventListener> _eventListeners;
+        private readonly List<ICommandListener> _commandListeners;
         private readonly IServiceCollection _serviceCollection;
 
         public MicroserviceHostBuilder()
         {
             _callingAssembly = Assembly.GetCallingAssembly();
             _eventListeners = new List<IEventListener>();
+            _commandListeners = new List<ICommandListener>();
             _serviceCollection = new ServiceCollection();
         }
 
@@ -80,10 +83,16 @@ namespace Minor.Nijn.WebScale
 
         private void ParseType(Type type)
         {
-            var attribute = type.GetCustomAttribute<EventListenerAttribute>();
-            if (attribute != null)
+            var eventAttribute = type.GetCustomAttribute<EventListenerAttribute>();
+            if (eventAttribute != null)
             {
-                ParseTopics(type, attribute.QueueName);
+                ParseTopics(type, eventAttribute.QueueName);
+            }
+
+            var commandAttribute = type.GetCustomAttribute<CommandListenerAttribute>();
+            if (commandAttribute != null)
+            {
+                ParseCommand(type);
             }
         }
 
@@ -100,9 +109,27 @@ namespace Minor.Nijn.WebScale
             }
         }
 
+        private void ParseCommand(Type type)
+        {
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var method in methods)
+            {
+                var attribute = method.GetCustomAttribute<CommandAttribute>();
+                if (attribute != null)
+                {
+                    CreateCommandListener(type, method, attribute.QueueName);
+                }
+            }
+        }
+
         private void CreateEventListener(Type type, MethodInfo method, string queueName, string topicExpression)
         {
             _eventListeners.Add(new EventListener(type, method, queueName, new List<string> { topicExpression }));
+        }
+
+        private void CreateCommandListener(Type type, MethodInfo method, string queueName)
+        {
+            _commandListeners.Add(new CommandListener(type, method, queueName));
         }
 
         /// <summary>
@@ -120,7 +147,7 @@ namespace Minor.Nijn.WebScale
         /// <returns></returns>
         public IMicroserviceHost CreateHost()
         {
-            return new MicroserviceHost(Context, _eventListeners, _serviceCollection);
+            return new MicroserviceHost(Context, _eventListeners, _commandListeners, _serviceCollection);
         }
     }
 }

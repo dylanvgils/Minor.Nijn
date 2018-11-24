@@ -50,14 +50,35 @@ namespace Minor.Nijn.WebScale.Test
         }
 
         [TestMethod]
+        public void CreateHost_ShouldReturnMicroserviceHostWithOneCommandListenerWhenCalledWithAddEventListener()
+        {
+            var result = target.AddEventListener<OrderCommandListener>().WithContext(busContextMock.Object).CreateHost();
+
+            var listener = result.CommandListeners.First();
+            Assert.AreEqual(1, result.CommandListeners.Count());
+            Assert.AreEqual(TestClassesConstants.OrderCommandListenerQueueName, listener.QueueName);
+        }
+
+        [TestMethod]
         public void CreateHost_ShouldReturnMicroserviceHostWithEventListenersWhenCalledWithUseConventions()
         {
             var result = target.UseConventions().WithContext(busContextMock.Object).CreateHost();
 
             var listeners = result.EventListeners;
-            Assert.AreEqual(2, result.EventListeners.Count());
+            Assert.AreEqual(2, listeners.Count());
             Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.ProductEventListenerQueueName && l.TopicExpressions.Contains(TestClassesConstants.ProductEventHandlerTopic)));
             Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.OrderEventListenerQueueName && l.TopicExpressions.Contains(TestClassesConstants.OrderEventHandlerTopic)));
+        }
+
+        [TestMethod]
+        public void CreateHost_ShouldReturnMicroserviceHostWithCommandListenersWhenCalledWithUseConventions()
+        {
+            var result = target.UseConventions().WithContext(busContextMock.Object).CreateHost();
+
+            var listeners = result.CommandListeners;
+            Assert.AreEqual(2, listeners.Count());
+            Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.ProductCommandListenerQueueName));
+            Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.OrderCommandListenerQueueName));
         }
 
         [TestMethod]
