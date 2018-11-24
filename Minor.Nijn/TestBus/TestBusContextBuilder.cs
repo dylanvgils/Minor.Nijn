@@ -2,7 +2,7 @@
 {
     public sealed class TestBusContextBuilder
     {
-        public TestBusContext CreateTestContext()
+        public ITestBusContext CreateTestContext()
         {
             var eventBus = new EventBus.EventBus();
             var commandBus = new CommandBus.CommandBus();

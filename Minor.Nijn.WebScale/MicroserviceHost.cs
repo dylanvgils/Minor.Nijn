@@ -5,6 +5,7 @@ using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Minor.Nijn.WebScale.Commands;
 
 namespace Minor.Nijn.WebScale
 {
@@ -17,13 +18,15 @@ namespace Minor.Nijn.WebScale
 
         public IBusContext<IConnection> Context { get; }
         public List<IEventListener> EventListeners { get; }
-        public bool EventListenersRegistered { get; private set; }
+        public List<ICommandListener> CommandListeners { get; }
+        public bool ListenersRegistered { get; private set; }
         public IServiceProvider ServiceProvider { get;  }
 
-        public MicroserviceHost(IBusContext<IConnection> context, List<IEventListener> eventListeners, IServiceCollection serviceCollection)
+        public MicroserviceHost(IBusContext<IConnection> context, List<IEventListener> eventListeners, List<ICommandListener> commandListeners, IServiceCollection serviceCollection)
         {
             Context = context;
             EventListeners = eventListeners;
+            CommandListeners = commandListeners;
 
             ConfigurePublisherServices(serviceCollection);
             ServiceProvider = serviceCollection.BuildServiceProvider();
@@ -33,15 +36,17 @@ namespace Minor.Nijn.WebScale
 
         public void RegisterListeners()
         {
-            if (EventListenersRegistered)
+            if (ListenersRegistered)
             {
                 _logger.LogError("Event listeners already created");
                 throw new InvalidOperationException("Event listeners already registered");
             }
 
-            _logger.LogInformation("Registering {0} event listeners", EventListeners.Count());
+            _logger.LogInformation("Registering {0} event listeners and {1} command listeners", EventListeners.Count, CommandListeners.Count);
             EventListeners.ForEach(e => e.StartListening(this));
-            EventListenersRegistered = true;
+            CommandListeners.ForEach(c => c.StartListening(this));
+
+            ListenersRegistered = true;
         }
 
         public virtual object CreateInstance(Type type)
@@ -53,11 +58,13 @@ namespace Minor.Nijn.WebScale
         {
             serviceCollection.AddSingleton(Context);
             serviceCollection.AddTransient<IEventPublisher, EventPublisher>();
+            serviceCollection.AddTransient<ICommandPublisher, CommandPublisher>();
         }
 
         public void Dispose()
         {
             EventListeners.ForEach(e => e.Dispose());
+            CommandListeners.ForEach(c => c.Dispose());
             Context.Dispose();
         }
     }

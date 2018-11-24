@@ -4,8 +4,8 @@ namespace Minor.Nijn.WebScale.Events
 {
     public abstract class DomainEvent
     {
-        public string RoutingKey { get;  }
-        public long Timestamp { get;  }
+        public string RoutingKey { get; }
+        public long Timestamp { get; }
         public Guid ID { get; }
 
         public DomainEvent(string routingKey)

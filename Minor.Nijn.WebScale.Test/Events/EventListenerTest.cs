@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minor.Nijn.WebScale.Events;
 using Minor.Nijn.WebScale.Test.TestClasses;
 using Minor.Nijn.WebScale.Test.TestClasses.Domain;
 using Minor.Nijn.WebScale.Test.TestClasses.Events;
@@ -9,7 +8,7 @@ using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 
-namespace Minor.Nijn.WebScale.Test
+namespace Minor.Nijn.WebScale.Events.Test
 {
     [TestClass]
     public class EventListenerTest

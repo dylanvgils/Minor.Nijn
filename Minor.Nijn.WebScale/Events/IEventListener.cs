@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using RabbitMQ.Client;
 
 namespace Minor.Nijn.WebScale.Events
 {
