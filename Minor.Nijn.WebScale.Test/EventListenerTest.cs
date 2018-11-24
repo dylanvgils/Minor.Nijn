@@ -14,6 +14,7 @@ namespace Minor.Nijn.WebScale.Test
     [TestClass]
     public class EventListenerTest
     {
+        private Type type;
         private string queueName;
         private IEnumerable<string> topicExpressions;
 
@@ -22,7 +23,7 @@ namespace Minor.Nijn.WebScale.Test
         [TestInitialize]
         public void BeforeEach()
         {
-            var type = typeof(OrderEventListener);
+            type = typeof(OrderEventListener);
             var method = type.GetMethod(TestClassesConstants.OrderEventHandlerMethodName);
             queueName = "queueName";
             topicExpressions = new List<string> { "a.b.c" };
@@ -62,8 +63,13 @@ namespace Minor.Nijn.WebScale.Test
             busContextMock.Setup(ctx => ctx.CreateMessageReceiver(queueName, topicExpressions))
                 .Returns(messageReceiverMock.Object);
 
-            target.StartListening(busContextMock.Object);
+            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+            microServiceHostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
 
+            target.StartListening(microServiceHostMock.Object);
+
+            microServiceHostMock.VerifyAll();
             messageReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
         }
@@ -79,12 +85,17 @@ namespace Minor.Nijn.WebScale.Test
             busContextMock.Setup(ctx => ctx.CreateMessageReceiver(queueName, topicExpressions))
                 .Returns(messageReceiverMock.Object);
 
-            target.StartListening(busContextMock.Object);
+            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+            microServiceHostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+
+            target.StartListening(microServiceHostMock.Object);
             Action action = () =>
             {
-                target.StartListening(busContextMock.Object);
+                target.StartListening(microServiceHostMock.Object);
             };
         
+            microServiceHostMock.VerifyAll();
             messageReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
 
@@ -99,6 +110,19 @@ namespace Minor.Nijn.WebScale.Test
             var order = new Order { Id = 1, Description = "Some Description" };
             var orderCreatedEvent = new OrderCreatedEvent(routingKey, order);
             var eventMessage = new EventMessage(routingKey, JsonConvert.SerializeObject(orderCreatedEvent));
+
+            var messageReceiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
+            messageReceiverMock.Setup(recv => recv.DeclareQueue());
+            messageReceiverMock.Setup(recv => recv.StartReceivingMessages(It.IsAny<EventMessageReceivedCallback>()));
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(queueName, topicExpressions))
+                .Returns(messageReceiverMock.Object);
+
+            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+            microServiceHostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+            target.StartListening(microServiceHostMock.Object);
 
             target.HandleEventMessage(eventMessage);
 
@@ -116,13 +140,18 @@ namespace Minor.Nijn.WebScale.Test
             messageReceiverMock.Setup(recv => recv.StartReceivingMessages(It.IsAny<EventMessageReceivedCallback>()));
             messageReceiverMock.Setup(recv => recv.Dispose());
 
-            var contextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            contextMock.Setup(ctx => ctx.CreateMessageReceiver(It.IsAny<string>(), It.IsAny<List<string>>())).Returns(messageReceiverMock.Object);
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(It.IsAny<string>(), It.IsAny<List<string>>())).Returns(messageReceiverMock.Object);
 
-            target.StartListening(contextMock.Object);
+            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+            microServiceHostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+
+            target.StartListening(microServiceHostMock.Object);
             target.Dispose();
 
-            contextMock.VerifyAll();
+            microServiceHostMock.VerifyAll();
+            busContextMock.VerifyAll();
             messageReceiverMock.VerifyAll();
         }
     }

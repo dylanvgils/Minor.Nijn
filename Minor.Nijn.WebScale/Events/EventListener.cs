@@ -14,8 +14,9 @@ namespace Minor.Nijn.WebScale.Events
         public string QueueName { get; }
         public IEnumerable<string> TopicExpressions { get; }
 
+        public readonly Type _type;
         private readonly MethodInfo _method;
-        private readonly object _instance;
+        private object _instance;
 
         private IMessageReceiver _receiver;
         private bool _isListening;
@@ -24,13 +25,13 @@ namespace Minor.Nijn.WebScale.Events
         {
             QueueName = queueName;
             TopicExpressions = topicExpressions;
+            _type = type;
             _method = method;
 
-            _instance = Activator.CreateInstance(type);
             _logger = NijnWebScaleLogger.CreateLogger<EventListener>();
         }
 
-        public void StartListening(IBusContext<IConnection> context)
+        public void StartListening(IMicroserviceHost host)
         {
             if (_isListening)
             {
@@ -38,7 +39,9 @@ namespace Minor.Nijn.WebScale.Events
                 throw new InvalidOperationException("Already listening for events");
             }
 
-            _receiver = context.CreateMessageReceiver(QueueName, TopicExpressions);
+            _instance = host.CreateInstance(_type);
+
+            _receiver = host.Context.CreateMessageReceiver(QueueName, TopicExpressions);
             _receiver.DeclareQueue();
             _receiver.StartReceivingMessages(HandleEventMessage);
 

@@ -3,7 +3,9 @@ using Moq;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 using Minor.Nijn.WebScale.Events;
+using Minor.Nijn.WebScale.Test.TestClasses;
 
 namespace Minor.Nijn.WebScale.Test
 {
@@ -12,25 +14,28 @@ namespace Minor.Nijn.WebScale.Test
     {
         private Mock<IBusContext<IConnection>> busContextMock;
         private Mock<IEventListener> eventListenerMock;
+        private Mock<ServiceProvider> serviceProviderMock;
 
         private MicroserviceHost target;
 
         [TestInitialize]
         public void BeforeEach()
         {
+            var serviceCollection = new ServiceCollection();
+
             eventListenerMock = new Mock<IEventListener>(MockBehavior.Strict);
             var listeners = new List<IEventListener> { eventListenerMock.Object };
 
             busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            target = new MicroserviceHost(busContextMock.Object, listeners);
+            target = new MicroserviceHost(busContextMock.Object, listeners, serviceCollection);
         }
 
         [TestMethod]
         public void RegisterEventListeners_ShouldCreateMessageReceivers()
         {
-            eventListenerMock.Setup(l => l.StartListening(busContextMock.Object));
+            eventListenerMock.Setup(l => l.StartListening(target));
 
-            target.RegisterEventListeners();
+            target.RegisterListeners();
 
             busContextMock.VerifyAll();
             eventListenerMock.VerifyAll();
@@ -39,12 +44,12 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod]
         public void RegisterEventListeners_ShouldThrowExceptionWhenCalledForTheSecondTime()
         {
-            eventListenerMock.Setup(l => l.StartListening(busContextMock.Object));
+            eventListenerMock.Setup(l => l.StartListening(target));
 
-            target.RegisterEventListeners();
+            target.RegisterListeners();
             Action action = () =>
             {
-                target.RegisterEventListeners();
+                target.RegisterListeners();
             };
 
             var ex = Assert.ThrowsException<InvalidOperationException>(action);
@@ -52,10 +57,18 @@ namespace Minor.Nijn.WebScale.Test
         }
 
         [TestMethod]
+        public void CreateInstance_ShouldReturnInstanceOfType()
+        {
+            var type = typeof(OrderEventListener);
+            var result = target.CreateInstance(type);
+            Assert.IsInstanceOfType(result, typeof(OrderEventListener));
+        }
+
+        [TestMethod]
         public void Dispose_ShouldCallDisposeOnResources()
         {
             eventListenerMock.Setup(e => e.Dispose());
-            busContextMock.Setup(ctx => ctx.Connection.Dispose());
+            busContextMock.Setup(ctx => ctx.Dispose());
 
             target.Dispose();
 
