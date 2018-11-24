@@ -9,6 +9,6 @@ namespace Minor.Nijn.WebScale.Events
         string QueueName { get; }
         IEnumerable<string> TopicExpressions { get; }
 
-        void StartListening(IBusContext<IConnection> context);
+        void StartListening(IMicroserviceHost host);
     }
 }

@@ -27,11 +27,13 @@ namespace Minor.Nijn.WebScale
 
         private readonly Assembly _callingAssembly;
         private readonly List<IEventListener> _eventListeners;
+        private readonly IServiceCollection _serviceCollection;
 
         public MicroserviceHostBuilder()
         {
             _callingAssembly = Assembly.GetCallingAssembly();
             _eventListeners = new List<IEventListener>();
+            _serviceCollection = new ServiceCollection();
         }
 
         /// <summary>
@@ -49,7 +51,7 @@ namespace Minor.Nijn.WebScale
         public MicroserviceHostBuilder UseConventions()
         {
             // Find Event listeners
-            foreach (Type type in _callingAssembly.GetTypes())
+            foreach (var type in _callingAssembly.GetTypes())
             {
                 ParseType(type);
             }
@@ -74,26 +76,6 @@ namespace Minor.Nijn.WebScale
         {
             NijnWebScaleLogger.LoggerFactory = loggerFactory;
             return this;
-        }
-
-        /// <summary>
-        /// Configures Dependency Injection for the MicroserviceHost
-        /// </summary>
-        public MicroserviceHostBuilder RegisterDependencies(Action<IServiceCollection> servicesConfiguration)
-        {
-            return this;
-        }
-
-        /// <summary>
-        /// Creates the MicroserviceHost, based on the configurations
-        /// </summary>
-        /// <returns></returns>
-        public MicroserviceHost CreateHost()
-        {
-            // Create host
-            var host = new MicroserviceHost(Context, _eventListeners);
-            host.RegisterEventListeners();
-            return host;
         }
 
         private void ParseType(Type type)
@@ -121,6 +103,24 @@ namespace Minor.Nijn.WebScale
         private void CreateEventListener(Type type, MethodInfo method, string queueName, string topicExpression)
         {
             _eventListeners.Add(new EventListener(type, method, queueName, new List<string> { topicExpression }));
+        }
+
+        /// <summary>
+        /// Configures Dependency Injection for the MicroserviceHost
+        /// </summary>
+        public MicroserviceHostBuilder RegisterDependencies(Action<IServiceCollection> servicesConfiguration)
+        {
+            servicesConfiguration(_serviceCollection);
+            return this;
+        }
+
+        /// <summary>
+        /// Creates the MicroserviceHost, based on the configurations
+        /// </summary>
+        /// <returns></returns>
+        public IMicroserviceHost CreateHost()
+        {
+            return new MicroserviceHost(Context, _eventListeners, _serviceCollection);
         }
     }
 }
