@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Minor.Nijn.WebScale.Events;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using Minor.Nijn.WebScale.Events;
 
 namespace Minor.Nijn.WebScale
 {
@@ -58,7 +58,7 @@ namespace Minor.Nijn.WebScale
         public void Dispose()
         {
             EventListeners.ForEach(e => e.Dispose());
-            Context?.Dispose();
+            Context.Dispose();
         }
     }
 }

@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Minor.Nijn.WebScale.Events;
+﻿using Minor.Nijn.WebScale.Events;
 using RabbitMQ.Client;
+using System;
+using System.Collections.Generic;
 
 namespace Minor.Nijn.WebScale
 {
