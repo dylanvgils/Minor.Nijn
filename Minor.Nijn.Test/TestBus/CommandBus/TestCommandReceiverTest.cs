@@ -36,7 +36,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         [TestMethod]
         public void StartReceivingMessages_ShouldStartListeningForMessagesOnRpcQueue()
         {
-            var message = new CommandMessage("TestMessage", "type" ,"id", queueName);
+            var message = new RequestCommandMessage("TestMessage", "type", "id", queueName);
             var command = new TestBusCommand(null, message);
 
             var queue = new CommandBusQueue(queueName);
@@ -44,8 +44,8 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
                 .Returns(queue);
             
             var callbackMock = new Mock<CommandReceivedCallback>(MockBehavior.Strict);
-            callbackMock.Setup(callback => callback(It.IsAny<CommandMessage>()))
-                .Returns(new CommandMessage("Reply message", "type", "correlationId"));
+            callbackMock.Setup(callback => callback(It.IsAny<RequestCommandMessage>()))
+                .Returns(new ResponseCommandMessage("Reply message", "type", "correlationId"));
 
             target.DeclareCommandQueue();
             target.StartReceivingCommands(callbackMock.Object);
@@ -72,10 +72,10 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         public void StartReceivingMessages_ShouldUseReplyToWhenSet()
         {
             var replyQueueName = "ReplyCommandToQueue";
-            var request = new CommandMessage("TestMessage", "type", "id", queueName);
+            var request = new RequestCommandMessage("TestMessage", "type", "id", queueName);
             var command = new TestBusCommand(replyQueueName, request);
 
-            var response = new CommandMessage("Reply message", "type", "correlationId");
+            var response = new ResponseCommandMessage("Reply message", "type", "correlationId");
 
             var commandQueue = new Dictionary<string, CommandBusQueue>();
             commandQueue.Add(replyQueueName, new CommandBusQueue(replyQueueName));
@@ -86,7 +86,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
             contextMock.SetupGet(ctx => ctx.CommandBus.Queues).Returns(commandQueue);
 
             var callbackMock = new Mock<CommandReceivedCallback>(MockBehavior.Strict);
-            callbackMock.Setup(callback => callback(It.IsAny<CommandMessage>()))
+            callbackMock.Setup(callback => callback(It.IsAny<RequestCommandMessage>()))
                 .Returns(response);
 
             target.DeclareCommandQueue();

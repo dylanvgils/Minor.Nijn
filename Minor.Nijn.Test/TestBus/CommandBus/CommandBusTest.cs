@@ -18,7 +18,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         public void DispatchMessage_ShouldTriggerEvent()
         {
             var queueName = "CommandQueue";
-            var message = new CommandMessage("Test message", "type", "id", queueName);
+            var message = new RequestCommandMessage("Test message", "type", "id", queueName);
             var command = new TestBusCommand(null, message);
 
             var mock = new MessageAddedMock<TestBusCommand>();
@@ -35,7 +35,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         public void DispatchMessage_ShouldNotQueueMessageWhenReplyToNotMatches()
         {
             var queueName = "CommandQueue";
-            var message = new CommandMessage("Test message", "type", "id", queueName);
+            var message = new RequestCommandMessage("Test message", "type", "id", queueName);
             var command = new TestBusCommand(null, message);
 
             var mock1 = new MessageAddedMock<TestBusCommand>();

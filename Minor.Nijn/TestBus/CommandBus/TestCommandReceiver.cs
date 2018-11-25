@@ -33,7 +33,7 @@ namespace Minor.Nijn.TestBus.CommandBus
             {
                 if (args.Message.ReplyTo != null && _context.CommandBus.Queues.ContainsKey(args.Message.ReplyTo))
                 {
-                    var response = callback(args.Message.Command);
+                    var response = callback(args.Message.Command as RequestCommandMessage);
                     response.RoutingKey = args.Message.ReplyTo;
 
                     var responseCommand = new TestBusCommand(null, response);
@@ -42,7 +42,7 @@ namespace Minor.Nijn.TestBus.CommandBus
                     return;
                 }
 
-                callback(args.Message.Command);
+                callback(args.Message.Command as RequestCommandMessage);
             });
         }
         

@@ -1,26 +1,44 @@
-﻿namespace Minor.Nijn
+﻿using System;
+
+namespace Minor.Nijn
 {
-    public class CommandMessage
+    public abstract class CommandMessage
     {
-        public string RoutingKey { get; set; }
+        public string RoutingKey { get; protected set; }
         public string Type { get; }
         public string CorrelationId { get; }
-
         public string Message { get; }
 
-        public CommandMessage(string message, string type, string correlationId)
+        protected CommandMessage(string message, string type, string correlationId)
         {
             Message = message;
             Type = type;
             CorrelationId = correlationId;
         }
+    }
 
-        public CommandMessage(string message, string type, string correlationId, string routingKey)
+    public class RequestCommandMessage : CommandMessage
+    {
+        internal RequestCommandMessage(string message, string type, string correlationId) : base(message, type, correlationId)
         {
-            Message = message;
-            Type = type;
-            CorrelationId = correlationId;
+        }
+
+        public RequestCommandMessage(string message, string type, string correlationId, string routingKey) : base(message, type, correlationId)
+        {
             RoutingKey = routingKey;
+        }
+    }
+
+    public class ResponseCommandMessage : CommandMessage
+    {
+        public new string RoutingKey
+        {
+            get => base.RoutingKey;
+            set => base.RoutingKey = value;
+        }
+
+        public ResponseCommandMessage(string message, string type, string correlationId) : base(message, type, correlationId)
+        {
         }
     }
 }
