@@ -16,7 +16,7 @@ namespace Minor.Nijn.WebScale.Commands
         public async Task<T> Publish<T>(DomainCommand domainCommand)
         {
             var body = JsonConvert.SerializeObject(domainCommand);
-            var command = new CommandMessage(body, typeof(T).Name, domainCommand.CorrelationId, domainCommand.RoutingKey);
+            var command = new RequestCommandMessage(body, typeof(T).Name, domainCommand.CorrelationId, domainCommand.RoutingKey);
             var result = await _sender.SendCommandAsync(command);
             return JsonConvert.DeserializeObject<T>(result.Message);
         }

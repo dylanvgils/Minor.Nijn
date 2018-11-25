@@ -80,7 +80,7 @@ namespace Minor.Nijn.RabbitMQBus
                 _logger.LogInformation("Received command with correlationId: {0}", args.BasicProperties.CorrelationId);
                 string requestBody = Encoding.UTF8.GetString(args.Body);
                 
-                var replyMessage = callback(new CommandMessage(
+                var replyMessage = callback(new RequestCommandMessage(
                     message: requestBody,
                     type: args.BasicProperties.Type,
                     correlationId: args.BasicProperties.CorrelationId

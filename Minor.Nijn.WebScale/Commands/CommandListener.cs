@@ -44,7 +44,7 @@ namespace Minor.Nijn.WebScale.Commands
         }
 
         // TODO: Add parameter check, parameter has to be derived type of DomainCommand
-        private CommandMessage HandleCommandMessage(CommandMessage message)
+        private ResponseCommandMessage HandleCommandMessage(RequestCommandMessage message)
         {
             var paramType = _method.GetParameters()[0].ParameterType;
             var payload = JsonConvert.DeserializeObject(message.Message, paramType);
@@ -52,7 +52,7 @@ namespace Minor.Nijn.WebScale.Commands
             var result = _method.Invoke(_instance, new [] { payload });
             var json = JsonConvert.SerializeObject(result);
 
-            return new CommandMessage(json, _method.ReturnType.Name, message.CorrelationId);
+            return new ResponseCommandMessage(json, _method.ReturnType.Name, message.CorrelationId);
         }
 
         public void Dispose()

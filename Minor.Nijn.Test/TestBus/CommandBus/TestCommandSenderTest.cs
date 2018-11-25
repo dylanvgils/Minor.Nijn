@@ -19,9 +19,9 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         [TestMethod]
         public void SendCommandAsync_ShouldCallDispatchMessage()
         {
-            var request = new CommandMessage("Test message.", "type", "id");
+            var request = new RequestCommandMessage("Test message.", "type", "id");
 
-            var response = new CommandMessage("Reply message", "type", "id");
+            var response = new ResponseCommandMessage("Reply message", "type", "id");
             var responseCommand = new TestBusCommand(null, response);
 
             CommandBusQueue commandQueue = null;
@@ -45,8 +45,8 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         [TestMethod]
         public void SendCommandAsync_ShouldThrowTimeoutExceptionAfter_5_Seconds()
         {
-            var request = new CommandMessage("Test message.", "type", "id");
-            var response = new CommandMessage("Reply message", "type", "id");
+            var request = new RequestCommandMessage("Test message.", "type", "id");
+            var response = new ResponseCommandMessage("Reply message", "type", "id");
 
             CommandBusQueue commandQueue = null;
             contextMock.Setup(ctx => ctx.CommandBus.DeclareCommandQueue(It.IsAny<string>()))

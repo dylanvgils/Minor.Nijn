@@ -27,13 +27,8 @@ namespace Minor.Nijn.TestBus.Test
         {
             string queueName = "TestQueue";
             IEnumerable<string> topicExpressions = new List<string> { "a.b.c" };
-            
-            eventBusMock.Setup(eventBus => eventBus.DeclareQueue(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
-                .Returns(new EventBusQueue(queueName, topicExpressions));    
 
             var result = target.CreateMessageReceiver(queueName, topicExpressions);
-
-            eventBusMock.Verify(eventBus => eventBus.DeclareQueue(queueName, topicExpressions));
             
             Assert.IsInstanceOfType(result, typeof(IMessageReceiver));
             Assert.AreEqual(result.QueueName, queueName);

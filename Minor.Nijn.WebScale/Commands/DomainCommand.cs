@@ -2,7 +2,7 @@
 
 namespace Minor.Nijn.WebScale.Commands
 {
-    public class DomainCommand
+    public abstract class DomainCommand
     {
         public string RoutingKey { get; }
         public long Timestamp { get; }

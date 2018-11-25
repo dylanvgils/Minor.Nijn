@@ -35,12 +35,12 @@ namespace Minor.Nijn.TestBus.Integration.Test
             var target = new TestBusContextBuilder().CreateTestContext();
             target.CommandBus.DeclareCommandQueue(queueName);
 
-            var request = new CommandMessage("Test message", "type", "id", queueName);
+            var request = new RequestCommandMessage("Test message", "type", "id", queueName);
 
             var sender = (ITestCommandSender)target.CreateCommandSender();
             var result = sender.SendCommandAsync(request);
 
-            var response = new CommandMessage("Reply message", "type", "id", sender.ReplyQueueName);
+            var response = new ResponseCommandMessage("Reply message", "type", "id") { RoutingKey = sender.ReplyQueueName };
             var responseBusCommand = new TestBusCommand("ReplyTo", response);
             target.CommandBus.Queues[sender.ReplyQueueName].Enqueue(responseBusCommand);
 
@@ -57,11 +57,15 @@ namespace Minor.Nijn.TestBus.Integration.Test
 
             var receiver = target.CreateCommandReceiver(queueName);
             receiver.DeclareCommandQueue();
-            var commandMessage = new CommandMessage("Reply message", "type", "id", queueName);
+            var commandMessage = new RequestCommandMessage("Reply message", "type", "id", queueName);
             var command = new TestBusCommand(null, commandMessage);
 
             CommandMessage result = null;
-            receiver.StartReceivingCommands(c => result = c);
+            receiver.StartReceivingCommands(c =>
+            {
+                result = c;
+                return null;
+            });
             target.CommandBus.DispatchMessage(command);
 
             Assert.AreEqual(commandMessage, result);

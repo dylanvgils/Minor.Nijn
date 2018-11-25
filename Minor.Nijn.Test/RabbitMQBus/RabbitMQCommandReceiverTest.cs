@@ -63,7 +63,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
             var replyToQueueName = "ReplyToQueueName";
             var requestMessageBody = "Test message";
             var replyMessageBody = "Reply message";
-            var replyMessage = new CommandMessage(replyMessageBody, type, correlationId);
+            var replyMessage = new ResponseCommandMessage(replyMessageBody, type, correlationId);
             
             var propsRequestMock = new Mock<IBasicProperties>(MockBehavior.Strict);
             propsRequestMock.SetupGet(props => props.Type).Returns(type);
@@ -118,7 +118,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
         [TestMethod]
         public void StartReceivingCommands_ShouldThrowBusConfigurationExceptionWhenQueueIsNotDeclared()
         {
-            var replyMessage = new CommandMessage("reply message", "type", "correlationId");
+            var replyMessage = new ResponseCommandMessage("reply message", "type", "correlationId");
 
             CommandMessage requestMessage = null;
             Action action = () =>

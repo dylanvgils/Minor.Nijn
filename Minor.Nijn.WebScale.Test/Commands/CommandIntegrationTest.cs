@@ -51,7 +51,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
             var commandQueue = TestClassesConstants.OrderCommandListenerQueueName;
             var order = new Order { Id = 1, Description = "Some description" };
             var addOrderCommand = new AddOrderCommand(commandQueue, order);
-            var commandMessage = new CommandMessage(JsonConvert.SerializeObject(addOrderCommand), "type", correlationId, commandQueue);
+            var commandMessage = new RequestCommandMessage(JsonConvert.SerializeObject(addOrderCommand), "type", correlationId, commandQueue);
             var command = new TestBusCommand(null, commandMessage);
 
             var busContext = new TestBusContextBuilder().CreateTestContext();

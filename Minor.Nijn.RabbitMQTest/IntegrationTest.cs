@@ -113,8 +113,8 @@ namespace RabbitMQ
         public void CommandCanBeSentAndReceived()
         {
             var queueName = "TestCommandQueue";
-            var requestCommand = new CommandMessage("Request message", "type", "correlationId",  queueName);
-            var responseCommand = new CommandMessage("Reply message", "type", requestCommand.CorrelationId);
+            var requestCommand = new RequestCommandMessage("Request message", "type", "correlationId",  queueName);
+            var responseCommand = new ResponseCommandMessage("Reply message", "type", requestCommand.CorrelationId);
             
             var connectionBuilder = new RabbitMQContextBuilder()
                 .WithExchange("MVM.EventExchange")

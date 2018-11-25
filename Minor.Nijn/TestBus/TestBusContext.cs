@@ -21,9 +21,7 @@ namespace Minor.Nijn.TestBus
 
         public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
         {
-            var receiver = new TestMessageReceiver(this, queueName, topicExpressions);
-            receiver.DeclareQueue();
-            return receiver;
+            return new TestMessageReceiver(this, queueName, topicExpressions);
         }
 
         public IMessageSender CreateMessageSender()

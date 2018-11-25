@@ -89,7 +89,7 @@ namespace Minor.Nijn.RabbitMQBus
                   
                     string body = Encoding.UTF8.GetString(args.Body);
                     
-                    response = new CommandMessage(
+                    response = new ResponseCommandMessage(
                         body,
                         args.BasicProperties.Type,
                         args.BasicProperties.CorrelationId

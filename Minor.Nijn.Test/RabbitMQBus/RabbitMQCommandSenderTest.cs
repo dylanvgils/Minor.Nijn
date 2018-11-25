@@ -50,7 +50,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
             var routingKey = "routingKey";
             var requestCommandBody = "Request message";
             var replyCommandMessage = "Reply message";
-            var requestCommand = new CommandMessage(requestCommandBody, type, correlationId, routingKey);
+            var requestCommand = new RequestCommandMessage(requestCommandBody, type, correlationId, routingKey);
 
             var basicPropsMock = new Mock<IBasicProperties>(MockBehavior.Strict);
             basicPropsMock.SetupSet(props => props.ReplyTo = replyQueueName);
@@ -108,7 +108,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
             var routingKey = "routingKey";
             var requestCommandBody = "Request message";
             var replyCommandMessage = "Reply message";
-            var requestCommand = new CommandMessage(requestCommandBody, type, correlationId, routingKey);
+            var requestCommand = new RequestCommandMessage(requestCommandBody, type, correlationId, routingKey);
 
             var basicPropsMock = new Mock<IBasicProperties>(MockBehavior.Strict);
             basicPropsMock.SetupSet(props => props.ReplyTo = replyQueueName);
