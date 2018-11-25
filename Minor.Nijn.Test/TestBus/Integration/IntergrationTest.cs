@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using Minor.Nijn.TestBus.CommandBus;
+using System.Collections.Generic;
 
 namespace Minor.Nijn.TestBus.Integration.Test
 {
@@ -41,7 +41,8 @@ namespace Minor.Nijn.TestBus.Integration.Test
             var result = sender.SendCommandAsync(request);
 
             var response = new CommandMessage("Reply message", "type", "id", sender.ReplyQueueName);
-            target.CommandBus.Queues[sender.ReplyQueueName].Enqueue(response);
+            var responseBusCommand = new TestBusCommand("ReplyTo", response);
+            target.CommandBus.Queues[sender.ReplyQueueName].Enqueue(responseBusCommand);
 
             Assert.AreEqual(2, target.CommandBus.QueueCount);
             Assert.AreEqual(1, target.CommandBus.Queues[queueName].MessageQueueLength);
@@ -56,13 +57,14 @@ namespace Minor.Nijn.TestBus.Integration.Test
 
             var receiver = target.CreateCommandReceiver(queueName);
             receiver.DeclareCommandQueue();
-            var command = new CommandMessage("Reply message", "type", "id", queueName);
+            var commandMessage = new CommandMessage("Reply message", "type", "id", queueName);
+            var command = new TestBusCommand(null, commandMessage);
 
             CommandMessage result = null;
             receiver.StartReceivingCommands(c => result = c);
             target.CommandBus.DispatchMessage(command);
 
-            Assert.AreEqual(command, result);
+            Assert.AreEqual(commandMessage, result);
         }
     }
 }

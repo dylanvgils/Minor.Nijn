@@ -31,7 +31,7 @@ namespace Minor.Nijn.WebScale.Events.Test
                     services.AddSingleton<IFoo>(foo);
                 })
                 .WithContext(busContext)
-                .AddEventListener<ProductEventListener>();
+                .AddListener<ProductEventListener>();
 
             using (var host = hostBuilder.CreateHost())
             {
@@ -51,7 +51,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             var messageSender = busContext.CreateMessageSender();
             var hostBuilder = new MicroserviceHostBuilder()
                 .WithContext(busContext)
-                .AddEventListener<OrderEventListener>();
+                .AddListener<OrderEventListener>();
 
             using (var host = hostBuilder.CreateHost())
             {
@@ -77,7 +77,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             var busContext = new TestBusContextBuilder().CreateTestContext();
             var hostBuilder = new MicroserviceHostBuilder()
                 .WithContext(busContext)
-                .AddEventListener<OrderEventListener>();
+                .AddListener<OrderEventListener>();
 
             using (var host = hostBuilder.CreateHost())
             using(var publisher = new EventPublisher(busContext))

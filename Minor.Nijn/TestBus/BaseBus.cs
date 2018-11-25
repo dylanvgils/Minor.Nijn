@@ -13,7 +13,7 @@ namespace Minor.Nijn.TestBus
             Queues = new Dictionary<string, TQueueType>();
         }
         
-        public void DispatchMessage(TMessageType message)
+        public virtual void DispatchMessage(TMessageType message)
         {
             foreach (var queue in Queues)
             {
@@ -21,7 +21,7 @@ namespace Minor.Nijn.TestBus
             }
         }
 
-        protected TQueueType DeclareQueue(string queueName, TQueueType queue)
+        public virtual TQueueType DeclareQueue(string queueName, TQueueType queue)
         {
             if (Queues.ContainsKey(queueName))
             {

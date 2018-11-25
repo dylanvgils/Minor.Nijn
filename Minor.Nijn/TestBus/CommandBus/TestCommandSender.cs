@@ -20,7 +20,8 @@ namespace Minor.Nijn.TestBus.CommandBus
             var replyQueue = _context.CommandBus.DeclareCommandQueue(ReplyQueueName);
 
             var task = StartListeningForCommandReply(replyQueue);
-            _context.CommandBus.DispatchMessage(request);
+            var command = new TestBusCommand(ReplyQueueName, request);
+            _context.CommandBus.DispatchMessage(command);
 
             return task;
         }
@@ -34,7 +35,7 @@ namespace Minor.Nijn.TestBus.CommandBus
                 CommandMessage result = null;
                 replyQueue.Subscribe((sender, args) =>
                 {
-                    result = args.Message;
+                    result = args.Message.Command;
                     flag.Set();
                 });
 

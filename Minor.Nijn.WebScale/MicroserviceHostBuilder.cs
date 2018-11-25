@@ -65,7 +65,7 @@ namespace Minor.Nijn.WebScale
         /// <summary>
         /// Manually adds EventListeners to the MicroserviceHost
         /// </summary>
-        public MicroserviceHostBuilder AddEventListener<T>()
+        public MicroserviceHostBuilder AddListener<T>()
         {
             var type = typeof(T);
             ParseType(type);
