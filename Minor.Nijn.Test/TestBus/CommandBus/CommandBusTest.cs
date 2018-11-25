@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.TestBus.Mocks.Test;
 
 namespace Minor.Nijn.TestBus.CommandBus.Test
@@ -7,19 +7,19 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
     public class CommandBusTest
     {
         private CommandBus target;
-        
+
         [TestInitialize]
         public void BeforeEach()
         {
             target = new CommandBus();
         }
-        
+
         [TestMethod]
         public void DispatchMessage_ShouldTriggerEvent()
         {
             var message = new CommandMessage("Test message", "type", "id");
             message.RoutingKey = "ReplyQueue1";
-            
+
             var mock = new MessageAddedMock<CommandMessage>();
             var queue = target.DeclareCommandQueue("ReplyQueue1");
             queue.Subscribe(mock.HandleMessageAdded);
@@ -51,19 +51,19 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
 
             Assert.IsFalse(mock2.HandledMessageAddedHasBeenCalled);
         }
-        
+
         [TestMethod]
         public void DeclareCommandQueue_ShouldReturnNewCommandBusQueue()
         {
             string name = "RpcQueue";
-           
+
             var result = target.DeclareCommandQueue("RpcQueue");
-            
+
             Assert.IsInstanceOfType(result, typeof(CommandBusQueue));
             Assert.AreEqual(name, result.QueueName);
             Assert.AreEqual(1, target.QueueCount);
         }
-        
+
         [TestMethod]
         public void DeclareQueue_WhenCalledTwiceQueueLengthShouldBe_2()
         {

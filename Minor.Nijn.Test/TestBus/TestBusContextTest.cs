@@ -60,24 +60,6 @@ namespace Minor.Nijn.TestBus.Test
             var result = target.CreateCommandSender();
             Assert.IsInstanceOfType(result, typeof(ICommandSender));
         }
-
-        [TestMethod]
-        public void CreateMockCommandSender_ShouldReturnTestCommandSender()
-        {
-            var result = target.CreateCommandSender();
-            Assert.IsInstanceOfType(result, typeof(IMockCommandSender));
-        }
-
-        [TestMethod]
-        public void SendMockCommand_ShouldCallDispatchMessage()
-        {
-            commandBusMock.Setup(commandBus => commandBus.DispatchMessage(It.IsAny<CommandMessage>()));
-            var command = new CommandMessage("Test message", "type", "id");
-
-            target.SendMockCommand(command);
-
-            commandBusMock.Verify(commandBus => commandBus.DispatchMessage(command));
-        }
         
         [TestMethod]
         public void Dispose_ShouldNotThrowException()
