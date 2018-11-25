@@ -4,13 +4,13 @@ namespace Minor.Nijn.WebScale.Commands
 {
     public class DomainCommand
     {
-        public string Command { get; }
+        public string RoutingKey { get; }
         public long Timestamp { get; }
         public string CorrelationId { get; }
 
-        public DomainCommand(string command)
+        public DomainCommand(string routingKey)
         {
-            Command = command;
+            RoutingKey = routingKey;
             Timestamp = DateTime.Now.Ticks;
             CorrelationId = Guid.NewGuid().ToString();
         }

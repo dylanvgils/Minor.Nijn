@@ -16,7 +16,7 @@ namespace Minor.Nijn.WebScale.Test.TestClasses
         {
             HandleOrderCreatedEventHasBeenCalled = true;
             HandleOrderCreatedEventHasBeenCalledWith = command;
-            return new Order();
+            return new Order { Id = 2, Description = "test" };
         }
     }
 }
