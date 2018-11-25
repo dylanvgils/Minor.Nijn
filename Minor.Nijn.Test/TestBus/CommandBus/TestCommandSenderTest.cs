@@ -19,8 +19,10 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         [TestMethod]
         public void SendCommandAsync_ShouldCallDispatchMessage()
         {
-            var request = new CommandMessage("Test message.", "type", "id");       
+            var request = new CommandMessage("Test message.", "type", "id");
+
             var response = new CommandMessage("Reply message", "type", "id");
+            var responseCommand = new TestBusCommand(null, response);
 
             CommandBusQueue commandQueue = null;
             contextMock.Setup(ctx => ctx.CommandBus.DeclareCommandQueue(It.IsAny<string>()))
@@ -31,10 +33,10 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
                 })
                 .Returns(() => commandQueue);
 
-            contextMock.Setup(ctx => ctx.CommandBus.DispatchMessage(request));
+            contextMock.Setup(ctx => ctx.CommandBus.DispatchMessage(It.IsAny<TestBusCommand>()));
 
             var result = target.SendCommandAsync(request);
-            commandQueue.Enqueue(response);
+            commandQueue.Enqueue(responseCommand);
 
             contextMock.VerifyAll();
             Assert.AreEqual(response, result.Result);
@@ -55,7 +57,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
                 })
                 .Returns(() => commandQueue);
 
-            contextMock.Setup(ctx => ctx.CommandBus.DispatchMessage(request));
+            contextMock.Setup(ctx => ctx.CommandBus.DispatchMessage(It.IsAny<TestBusCommand>()));
 
             var result = target.SendCommandAsync(request);
 

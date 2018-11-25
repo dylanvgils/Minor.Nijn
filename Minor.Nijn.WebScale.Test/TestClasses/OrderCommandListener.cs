@@ -8,6 +8,7 @@ namespace Minor.Nijn.WebScale.Test.TestClasses
     [CommandListener]
     public class OrderCommandListener
     {
+        public static Order ReplyWith;
         public static bool HandleOrderCreatedEventHasBeenCalled;
         public static AddOrderCommand HandleOrderCreatedEventHasBeenCalledWith;
 
@@ -16,7 +17,7 @@ namespace Minor.Nijn.WebScale.Test.TestClasses
         {
             HandleOrderCreatedEventHasBeenCalled = true;
             HandleOrderCreatedEventHasBeenCalledWith = command;
-            return new Order { Id = 2, Description = "test" };
+            return ReplyWith;
         }
     }
 }

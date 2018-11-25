@@ -13,15 +13,12 @@ namespace Minor.Nijn.WebScale.Commands
             _sender = context.CreateCommandSender();
         }
 
-        public Task<T> Publish<T>(DomainCommand domainCommand)
+        public async Task<T> Publish<T>(DomainCommand domainCommand)
         {
-            return Task.Run(async () =>
-            {
-                var body = JsonConvert.SerializeObject(domainCommand);
-                var command = new CommandMessage(body, typeof(T).Name, domainCommand.CorrelationId, domainCommand.RoutingKey);
-                var result = await _sender.SendCommandAsync(command);
-                return JsonConvert.DeserializeObject<T>(result.Message);
-            });
+            var body = JsonConvert.SerializeObject(domainCommand);
+            var command = new CommandMessage(body, typeof(T).Name, domainCommand.CorrelationId, domainCommand.RoutingKey);
+            var result = await _sender.SendCommandAsync(command);
+            return JsonConvert.DeserializeObject<T>(result.Message);
         }
 
         public void Dispose()

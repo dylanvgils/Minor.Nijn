@@ -17,37 +17,39 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         [TestMethod]
         public void DispatchMessage_ShouldTriggerEvent()
         {
-            var message = new CommandMessage("Test message", "type", "id");
-            message.RoutingKey = "ReplyQueue1";
+            var queueName = "CommandQueue";
+            var message = new CommandMessage("Test message", "type", "id", queueName);
+            var command = new TestBusCommand(null, message);
 
-            var mock = new MessageAddedMock<CommandMessage>();
-            var queue = target.DeclareCommandQueue("ReplyQueue1");
+            var mock = new MessageAddedMock<TestBusCommand>();
+            var queue = target.DeclareCommandQueue(queueName);
             queue.Subscribe(mock.HandleMessageAdded);
 
-            target.DispatchMessage(message);
+            target.DispatchMessage(command);
 
             Assert.IsTrue(mock.HandledMessageAddedHasBeenCalled);
-            Assert.AreEqual(message, mock.Args.Message);
+            Assert.AreEqual(message, mock.Args.Message.Command);
         }
 
         [TestMethod]
         public void DispatchMessage_ShouldNotQueueMessageWhenReplyToNotMatches()
         {
-            var message = new CommandMessage("Test message", "type", "id");
-            message.RoutingKey = "ReplyQueue1";
+            var queueName = "CommandQueue";
+            var message = new CommandMessage("Test message", "type", "id", queueName);
+            var command = new TestBusCommand(null, message);
 
-            var mock1 = new MessageAddedMock<CommandMessage>();
-            var queue1 = target.DeclareCommandQueue("ReplyQueue1");
+            var mock1 = new MessageAddedMock<TestBusCommand>();
+            var queue1 = target.DeclareCommandQueue(queueName);
             queue1.Subscribe(mock1.HandleMessageAdded);
 
-            var mock2 = new MessageAddedMock<CommandMessage>();
-            var queue2 = target.DeclareCommandQueue("ReplyQueue2");
+            var mock2 = new MessageAddedMock<TestBusCommand>();
+            var queue2 = target.DeclareCommandQueue("SomeOtherQueue");
             queue2.Subscribe(mock2.HandleMessageAdded);
 
-            target.DispatchMessage(message);
+            target.DispatchMessage(command);
 
             Assert.IsTrue(mock1.HandledMessageAddedHasBeenCalled);
-            Assert.AreEqual(message, mock1.Args.Message);
+            Assert.AreEqual(message, mock1.Args.Message.Command);
 
             Assert.IsFalse(mock2.HandledMessageAddedHasBeenCalled);
         }

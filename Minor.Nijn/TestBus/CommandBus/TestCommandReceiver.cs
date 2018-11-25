@@ -1,3 +1,5 @@
+using System;
+
 namespace Minor.Nijn.TestBus.CommandBus
 {
     public sealed class TestCommandReceiver : ICommandReceiver
@@ -27,7 +29,21 @@ namespace Minor.Nijn.TestBus.CommandBus
                 throw new BusConfigurationException($"Queue with name: {QueueName} is not declared");
             }
 
-            _queue.Subscribe((sender, args) => callback(args.Message));
+            _queue.Subscribe((sender, args) =>
+            {
+                if (args.Message.ReplyTo != null && _context.CommandBus.Queues.ContainsKey(args.Message.ReplyTo))
+                {
+                    var response = callback(args.Message.Command);
+                    response.RoutingKey = args.Message.ReplyTo;
+
+                    var responseCommand = new TestBusCommand(null, response);
+                    _context.CommandBus.Queues[args.Message.ReplyTo].Enqueue(responseCommand);
+
+                    return;
+                }
+
+                callback(args.Message.Command);
+            });
         }
         
         public void Dispose() { }

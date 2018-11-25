@@ -41,7 +41,7 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod]
         public void CreateHost_ShouldReturnMicroserviceHostWithOneEventListenerWhenCalledWithAddEventListener()
         {
-            var result = target.AddEventListener<ProductEventListener>().WithContext(busContextMock.Object).CreateHost();
+            var result = target.AddListener<ProductEventListener>().WithContext(busContextMock.Object).CreateHost();
 
             var listener = result.EventListeners.First();
             Assert.AreEqual(1, result.EventListeners.Count());
@@ -52,7 +52,7 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod]
         public void CreateHost_ShouldReturnMicroserviceHostWithOneCommandListenerWhenCalledWithAddEventListener()
         {
-            var result = target.AddEventListener<OrderCommandListener>().WithContext(busContextMock.Object).CreateHost();
+            var result = target.AddListener<OrderCommandListener>().WithContext(busContextMock.Object).CreateHost();
 
             var listener = result.CommandListeners.First();
             Assert.AreEqual(1, result.CommandListeners.Count());
