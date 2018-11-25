@@ -2,7 +2,7 @@
 
 namespace Minor.Nijn.TestBus.EventBus
 {
-    public interface IEventBus : ITestBus<EventMessage>
+    public interface IEventBus : ITestBus<EventBusQueue, EventMessage>
     {
         EventBusQueue DeclareQueue(string queueName, IEnumerable<string> topicExpressions);
     }

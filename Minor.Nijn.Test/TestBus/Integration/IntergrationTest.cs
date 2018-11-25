@@ -1,13 +1,14 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using Minor.Nijn.TestBus.CommandBus;
 
 namespace Minor.Nijn.TestBus.Integration.Test
 {
     [TestClass]
-    public class IntergrationTest
+    public class IntegrationTest
     {
         [TestMethod]
-        public void IntegrationTestEvent()
+        public void EventSendWithSenderIsReceivedInReceiver()
         {
             var target = new TestBusContextBuilder().CreateTestContext();
 
@@ -28,32 +29,38 @@ namespace Minor.Nijn.TestBus.Integration.Test
         }
 
         [TestMethod]
-        public void IntegrationTestCommandSend()
+        public void CommandIsSentToTheRightQueueAndReturnsRightResponse()
         {
-            var taraget = new TestBusContextBuilder().CreateTestContext();
+            var queueName = "CommandQueue";
+            var target = new TestBusContextBuilder().CreateTestContext();
+            target.CommandBus.DeclareCommandQueue(queueName);
 
-            var response = new CommandMessage("Reply message", "type", "id");
-            var request = new CommandMessage("Test message", "type", "id");
+            var request = new CommandMessage("Test message", "type", "id", queueName);
 
-            var sender = taraget.CreateMockCommandSender();
-            sender.ReplyMessage = response;
+            var sender = (ITestCommandSender)target.CreateCommandSender();
             var result = sender.SendCommandAsync(request);
 
+            var response = new CommandMessage("Reply message", "type", "id", sender.ReplyQueueName);
+            target.CommandBus.Queues[sender.ReplyQueueName].Enqueue(response);
+
+            Assert.AreEqual(2, target.CommandBus.QueueCount);
+            Assert.AreEqual(1, target.CommandBus.Queues[queueName].MessageQueueLength);
             Assert.AreEqual(response, result.Result);
         }
 
         [TestMethod]
-        public void IntegrationTestCommandReceive()
+        public void ReceiverReceivesCommandSendToQueue()
         {
-            var taraget = new TestBusContextBuilder().CreateTestContext();
+            var queueName = "CommandQueue";
+            var target = new TestBusContextBuilder().CreateTestContext();
 
-            var receiver = taraget.CreateCommandReceiver("CommandQueue");
+            var receiver = target.CreateCommandReceiver(queueName);
             receiver.DeclareCommandQueue();
-            var command = new CommandMessage("Reply message", "type", "id", "CommandQueue");
+            var command = new CommandMessage("Reply message", "type", "id", queueName);
 
             CommandMessage result = null;
             receiver.StartReceivingCommands(c => result = c);
-            taraget.SendMockCommand(command);
+            target.CommandBus.DispatchMessage(command);
 
             Assert.AreEqual(command, result);
         }

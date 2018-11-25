@@ -2,20 +2,20 @@ using System.Collections.Generic;
 
 namespace Minor.Nijn.TestBus
 {
-    internal abstract class BaseBus<TQueueType, TMessageType> : ITestBus<TMessageType> 
+    internal abstract class BaseBus<TQueueType, TMessageType> : ITestBus<TQueueType, TMessageType> 
         where TQueueType : TestBusQueue<TMessageType>
     {
-        private readonly IDictionary<string, TQueueType> _queues;
-        public int QueueCount => _queues.Count;
+        public IDictionary<string, TQueueType> Queues { get; }
+        public int QueueCount => Queues.Count;
 
         protected BaseBus()
         {
-            _queues = new Dictionary<string, TQueueType>();
+            Queues = new Dictionary<string, TQueueType>();
         }
         
         public void DispatchMessage(TMessageType message)
         {
-            foreach (var queue in _queues)
+            foreach (var queue in Queues)
             {
                 queue.Value.Enqueue(message);
             }
@@ -23,12 +23,12 @@ namespace Minor.Nijn.TestBus
 
         protected TQueueType DeclareQueue(string queueName, TQueueType queue)
         {
-            if (_queues.ContainsKey(queueName))
+            if (Queues.ContainsKey(queueName))
             {
-                return _queues[queueName];
+                return Queues[queueName];
             }
 
-            _queues.Add(queueName, queue);
+            Queues.Add(queueName, queue);
             return queue;
         }
     }

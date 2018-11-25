@@ -1,6 +1,4 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minor.Nijn.TestBus;
-using Minor.Nijn.TestBus.CommandBus;
 using Moq;
 
 namespace Minor.Nijn.TestBus.CommandBus.Test
@@ -21,16 +19,52 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         [TestMethod]
         public void SendCommandAsync_ShouldCallDispatchMessage()
         {
-            var request = new CommandMessage("Test message.", "type", "id");
-            request.RoutingKey = "ReplyQueue1";            
+            var request = new CommandMessage("Test message.", "type", "id");       
             var response = new CommandMessage("Reply message", "type", "id");
-            target.ReplyMessage = response;
-            
+
+            CommandBusQueue commandQueue = null;
+            contextMock.Setup(ctx => ctx.CommandBus.DeclareCommandQueue(It.IsAny<string>()))
+                .Callback<string>(name =>
+                {
+                    response.RoutingKey = name;
+                    commandQueue = new CommandBusQueue(name);
+                })
+                .Returns(() => commandQueue);
+
+            contextMock.Setup(ctx => ctx.CommandBus.DispatchMessage(request));
+
+            var result = target.SendCommandAsync(request);
+            commandQueue.Enqueue(response);
+
+            contextMock.VerifyAll();
+            Assert.AreEqual(response, result.Result);
+        }
+
+        [TestMethod]
+        public void SendCommandAsync_ShouldThrowTimeoutExceptionAfter_5_Seconds()
+        {
+            var request = new CommandMessage("Test message.", "type", "id");
+            var response = new CommandMessage("Reply message", "type", "id");
+
+            CommandBusQueue commandQueue = null;
+            contextMock.Setup(ctx => ctx.CommandBus.DeclareCommandQueue(It.IsAny<string>()))
+                .Callback<string>(name =>
+                {
+                    response.RoutingKey = name;
+                    commandQueue = new CommandBusQueue(name);
+                })
+                .Returns(() => commandQueue);
+
+            contextMock.Setup(ctx => ctx.CommandBus.DispatchMessage(request));
+
             var result = target.SendCommandAsync(request);
 
-            Assert.AreEqual(result.Result, response);
+            contextMock.VerifyAll();
+
+            while(!result.IsFaulted) { }
+            Assert.IsTrue(result.IsFaulted);
         }
-        
+
         [TestMethod]
         public void Dispose_ShouldNotThrowException()
         {

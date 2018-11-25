@@ -27,11 +27,7 @@ namespace Minor.Nijn.TestBus
         internal virtual void Subscribe(EventHandler<MessageAddedEventArgs<T>> handler)
         {
             MessageAdded += handler;
-
-            foreach (var message in _messageQueue.ToList())
-            {
-                Enqueue(_messageQueue.Dequeue());
-            }
+            _messageQueue.ToList().ForEach(m => Enqueue(_messageQueue.Dequeue()));
         }
 
         internal virtual void Unsubscribe(EventHandler<MessageAddedEventArgs<T>> handler)
