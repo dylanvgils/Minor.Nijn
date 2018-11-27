@@ -45,8 +45,9 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         [TestMethod]
         public void SendCommandAsync_ShouldThrowTimeoutExceptionAfter_5_Seconds()
         {
-            var request = new RequestCommandMessage("Test message.", "type", "id");
-            var response = new ResponseCommandMessage("Reply message", "type", "id");
+            var correlationId = "correlationId";
+            var request = new RequestCommandMessage("Test message.", "type", correlationId);
+            var response = new ResponseCommandMessage("Reply message", "type", correlationId);
 
             CommandBusQueue commandQueue = null;
             contextMock.Setup(ctx => ctx.CommandBus.DeclareCommandQueue(It.IsAny<string>()))
@@ -57,7 +58,8 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
                 })
                 .Returns(() => commandQueue);
 
-            contextMock.Setup(ctx => ctx.CommandBus.DispatchMessage(It.IsAny<TestBusCommand>()));
+            contextMock.Setup(ctx => ctx.CommandBus.DispatchMessage(It.IsAny<TestBusCommand>()))
+                .Callback((TestBusCommand c) => Assert.AreEqual(correlationId, c.CorrelationId));
 
             var result = target.SendCommandAsync(request);
 

@@ -26,7 +26,7 @@ namespace Minor.Nijn.TestBus.EventBus.Test
         }
 
         [TestMethod]
-        public void DeclareQueue_ShouldDeclareAQueueOnTheEventBuzz()
+        public void DeclareQueue_ShouldDeclareAQueueOnTheEventBuss()
         {
             contextMock.Setup(context => context.EventBus.DeclareQueue(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
                 .Returns(new EventBusQueue(queueName, topicExpressions));
@@ -34,6 +34,21 @@ namespace Minor.Nijn.TestBus.EventBus.Test
             target.DeclareQueue();
 
             contextMock.Verify(context => context.EventBus.DeclareQueue(queueName, topicExpressions));
+        }
+
+        [TestMethod]
+        public void DeclareQueue_ShouldThrowExceptionWhenAlreadyDeclared()
+        {
+            contextMock.Setup(context => context.EventBus.DeclareQueue(queueName, topicExpressions))
+                .Returns(new EventBusQueue(queueName, topicExpressions));
+
+            target.DeclareQueue();
+            Action action = () => { target.DeclareQueue(); };
+
+            contextMock.VerifyAll();
+
+            var ex = Assert.ThrowsException<BusConfigurationException>(action);
+            Assert.AreEqual($"Queue with name: {queueName} is already declared", ex.Message);
         }
 
         [TestMethod]

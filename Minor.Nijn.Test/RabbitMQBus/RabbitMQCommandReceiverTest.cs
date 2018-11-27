@@ -54,6 +54,23 @@ namespace Minor.Nijn.RabbitMQBus.Test
         }
 
         [TestMethod]
+        public void DeclareCommandQueue_ShouldThrowExceptionWhenAlreadyDeclared()
+        {
+            channelMock.Setup(chan => chan.QueueDeclare(queueName, false, false, false, null))
+                .Returns(new QueueDeclareOk(queueName, 0, 0));
+
+            channelMock.Setup(chan => chan.BasicQos(0, 1, false));
+
+            target.DeclareCommandQueue();
+            Action action = () => { target.DeclareCommandQueue(); };
+
+            channelMock.Verify();
+
+            var ex = Assert.ThrowsException<BusConfigurationException>(action);
+            Assert.AreEqual($"Queue with name: {queueName} is already declared", ex.Message);
+        }
+
+        [TestMethod]
         public void StartReceivingCommands_ShouldStartListeningForCommands()
         {
             var consumer = new EventingBasicConsumer(channelMock.Object);

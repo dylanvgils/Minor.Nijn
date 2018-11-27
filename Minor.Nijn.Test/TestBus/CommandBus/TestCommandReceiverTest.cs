@@ -23,7 +23,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         }
         
         [TestMethod]
-        public void DeclareCommandQueue_ShouldDeclareAQueueOnTheEventBuzz()
+        public void DeclareCommandQueue_ShouldDeclareAQueueOnTheEventBuss()
         {
             contextMock.Setup(context => context.CommandBus.DeclareCommandQueue(It.IsAny<string>()))
                 .Returns(new CommandBusQueue(queueName));
@@ -32,7 +32,22 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
             
             contextMock.Verify(context => context.CommandBus.DeclareCommandQueue(queueName));
         }
-        
+
+        [TestMethod]
+        public void DeclareCommandQueue_ShouldThrowExceptionWhenAlreadyDeclared()
+        {
+            contextMock.Setup(context => context.CommandBus.DeclareCommandQueue(queueName))
+                .Returns(new CommandBusQueue(queueName));
+
+            target.DeclareCommandQueue();
+            Action action = () => { target.DeclareCommandQueue(); };
+
+            contextMock.VerifyAll();
+
+            var ex = Assert.ThrowsException<BusConfigurationException>(action);
+            Assert.AreEqual($"Queue with name: {queueName} is already declared", ex.Message);
+        }
+
         [TestMethod]
         public void StartReceivingMessages_ShouldStartListeningForMessagesOnRpcQueue()
         {

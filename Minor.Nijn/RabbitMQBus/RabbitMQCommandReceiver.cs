@@ -13,6 +13,7 @@ namespace Minor.Nijn.RabbitMQBus
         public string QueueName { get; }
         public IModel Channel { get; }
         private bool _queueDeclared;
+
         internal RabbitMQCommandReceiver(
             IRabbitMQBusContext context,
             string queueName,
@@ -33,6 +34,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void DeclareCommandQueue()
         {
+            CheckQueueAlreadyDeclared();
             _logger.LogInformation("Declaring command queue with name: {0}", QueueName);
             
             Channel.QueueDeclare(
@@ -54,6 +56,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void StartReceivingCommands(CommandReceivedCallback callback)
         {
+            CheckQueueDeclared();
             _logger.LogInformation("Start listening for commands on queue: {0}", QueueName);
 
             var consumer = CreateBasicConsumer(callback);
@@ -71,8 +74,6 @@ namespace Minor.Nijn.RabbitMQBus
 
         private EventingBasicConsumer CreateBasicConsumer(CommandReceivedCallback callback)
         {
-            CheckQueueDeclared();
-
             var consumer = _eventingBasicConsumerFactory.CreateEventingBasicConsumer(Channel);
                 
             consumer.Received += (model, args) =>
@@ -112,6 +113,14 @@ namespace Minor.Nijn.RabbitMQBus
                 deliveryTag: args.DeliveryTag,
                 multiple: false
             );
+        }
+
+        private void CheckQueueAlreadyDeclared()
+        {
+            if (_queueDeclared)
+            {
+                throw new BusConfigurationException($"Queue with name: {QueueName} is already declared");
+            }
         }
 
         private void CheckQueueDeclared()
