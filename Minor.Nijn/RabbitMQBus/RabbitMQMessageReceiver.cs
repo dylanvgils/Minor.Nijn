@@ -38,6 +38,8 @@ namespace Minor.Nijn.RabbitMQBus
         public void DeclareQueue()
         {
             CheckQueueAlreadyDeclared();
+            TopicMatcher.AreValidTopicExpressions(TopicExpressions);
+
             _logger.LogInformation("Declare queue on exchange with name: {0}", QueueName);
             
             Channel.QueueDeclare(
@@ -51,7 +53,7 @@ namespace Minor.Nijn.RabbitMQBus
             foreach (var topic in TopicExpressions)
             {
                 _logger.LogInformation("Bind queue {0} to exchange {1} with with topic {2}", QueueName, _context.ExchangeName, topic);
-                
+
                 Channel.QueueBind(
                     queue: QueueName,
                     exchange: _context.ExchangeName,

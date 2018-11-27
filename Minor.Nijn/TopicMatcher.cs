@@ -3,11 +3,11 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Minor.Nijn.TestBus
+namespace Minor.Nijn
 {
     internal static class TopicMatcher
     {
-        private const string ValidTopicExpressionExpression = @"^(?:(?:\w+|\*|\#)\.)*(?:\w+|\*|\#)$";
+        private const string ValidTopicExpression = @"^(?:(?:\w+|\*|\#)\.)*(?:\w+|\*|\#)$";
         private const string AsteriskCaptureGroup = @"(?:\w+)";
         private const string HashTagCaptureGroup  = @"(?:\w+\.?)+";
 
@@ -21,9 +21,24 @@ namespace Minor.Nijn.TestBus
             return topicExpressions.Any(expr => MatchTopicExpressions(expr, topic));
         }
 
+        /// <summary>
+        /// Checks if the provided topics are valid
+        /// </summary>
+        /// <returns>Returns true when all topics are valid</returns>
+        /// <exception cref="BusConfigurationException">This exception is thrown when one of the topic is invalid</exception>
+        public static bool AreValidTopicExpressions(IEnumerable<string> topics)
+        {
+            foreach (var topic in topics)
+            {
+                IsValidTopic(topic);
+            }
+
+            return true;
+        }
+
         private static bool MatchTopicExpressions(string expression, string topic)
         {
-            IsValidExpression(expression);
+            IsValidTopic(expression);
 
             string[] expressionParts = expression.Split('.');
             StringBuilder builder = new StringBuilder();
@@ -39,16 +54,16 @@ namespace Minor.Nijn.TestBus
             return regex.IsMatch(topic.Trim());
         }
 
-        private static void IsValidExpression(string expressionPart)
+        private static void IsValidTopic(string topic)
         {
-            Regex regex = new Regex(ValidTopicExpressionExpression, RegexOptions.Compiled);
+            Regex regex = new Regex(ValidTopicExpression, RegexOptions.Compiled);
 
-            if (regex.IsMatch(expressionPart))
+            if (regex.IsMatch(topic))
             {
                 return;
             }
 
-            throw new BusConfigurationException($"Topic expression '{expressionPart}' is invalid");
+            throw new BusConfigurationException($"Topic expression '{topic}' is invalid");
         }
 
         private static string ParseExpressionPart(string expressionPart, bool isLast)

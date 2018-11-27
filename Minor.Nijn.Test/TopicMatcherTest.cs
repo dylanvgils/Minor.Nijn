@@ -1,9 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minor.Nijn.TestBus;
 using System;
 using System.Collections.Generic;
 
-namespace Minor.Nijn.TestBus.Test
+namespace Minor.Nijn.Test
 {
     [TestClass]
     public class TopicMatcherTest
@@ -123,14 +122,21 @@ namespace Minor.Nijn.TestBus.Test
         }
 
         [TestMethod]
-        public void IsMatch_ShouldThrowInvalidTopicExceptionWhenTopicIsInvalid_DoubleAsterisk()
+        public void AreValidTopicExpressions_ShouldReturnTrueWhenTopicIsInValidFormat()
+        {
+            var expressions = new List<string> { "a.b.c", "a.*.*.c", "a.*.c.*.d", "a.#.d", "a.#.d.*" };
+            Assert.IsTrue(TopicMatcher.AreValidTopicExpressions(expressions));
+        }
+
+        [TestMethod]
+        public void AreValidTopicExpressions_ShouldThrowInvalidTopicExceptionWhenTopicIsInvalid_DoubleAsterisk()
         {
             string expression = "solution.#.**.event";
-            IEnumerable<string> topicExpressions = new List<string> { expression };
+            var expressions = new List<string> { expression };
 
             Action action = () =>
             {
-                TopicMatcher.IsMatch(topicExpressions, "a.b.c");
+                TopicMatcher.AreValidTopicExpressions(expressions);
             };
 
             var ex = Assert.ThrowsException<BusConfigurationException>(action);
@@ -138,14 +144,14 @@ namespace Minor.Nijn.TestBus.Test
         }
 
         [TestMethod]
-        public void IsMatch_ShouldThrowInvalidTopicExceptionWhenTopicIsInvalid_DoubleHashtag()
+        public void AreValidTopicExpressions_ShouldThrowInvalidTopicExceptionWhenTopicIsInvalid_DoubleHashtag()
         {
             string expression = "solution.##.*.event";
-            IEnumerable<string> topicExpressions = new List<string> { expression };
+            var expressions = new List<string> { expression };
 
             Action action = () =>
             {
-                TopicMatcher.IsMatch(topicExpressions, "a.b.c");
+                TopicMatcher.AreValidTopicExpressions(expressions);
             };
 
             var ex = Assert.ThrowsException<BusConfigurationException>(action);

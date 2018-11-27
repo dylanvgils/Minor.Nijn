@@ -84,7 +84,20 @@ namespace Minor.Nijn.RabbitMQBus.Test
             var ex = Assert.ThrowsException<BusConfigurationException>(action);
             Assert.AreEqual($"Queue with name: {queueName} is already declared", ex.Message);
         }
-        
+
+        [TestMethod]
+        public void DeclareQueue_ShouldThrowWhenExceptionWhenOneOfTheTopicExpressionsIsInvalid()
+        {
+            var target = new RabbitMQMessageReceiver(contextMock.Object, queueName, new List<string> { "a.b.c", "a.##.c" });
+            Action action = () => { target.DeclareQueue(); };
+
+            contextMock.VerifyAll();
+            channelMock.VerifyAll();
+
+            var ex = Assert.ThrowsException<BusConfigurationException>(action);
+            Assert.AreEqual("Topic expression 'a.##.c' is invalid", ex.Message);
+        }
+
         [TestMethod]
         public void StartReceivingMessages_ShouldStartListeningForMessages()
         {
