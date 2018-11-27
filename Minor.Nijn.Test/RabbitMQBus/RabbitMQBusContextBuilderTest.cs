@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.Reflection;
+using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -10,6 +9,17 @@ namespace Minor.Nijn.RabbitMQBus.Test
     [TestClass]
     public class RabbitMQBusContextBuilderTest
     {
+        [TestInitialize]
+        public void BeforeEach()
+        {
+            Environment.SetEnvironmentVariable(Constants.EnvExchangeName, "exchange");
+            Environment.SetEnvironmentVariable(Constants.EnvHostname, "hostname");
+            Environment.SetEnvironmentVariable(Constants.EnvPort, "1024");
+            Environment.SetEnvironmentVariable(Constants.EnvUsername, "username");
+            Environment.SetEnvironmentVariable(Constants.EnvPassword, "password");
+            Environment.SetEnvironmentVariable(Constants.EnvExchangeType, "type");
+        }
+
         [TestMethod]
         public void ContextHasRightExchangeName()
         {
@@ -92,6 +102,44 @@ namespace Minor.Nijn.RabbitMQBus.Test
             var factory = new LoggerFactory();
             new RabbitMQContextBuilder().SetLoggerFactory(factory);
             Assert.AreEqual(NijnLogger.LoggerFactory, factory);
+        }
+
+        [TestMethod]
+        public void ReadFromEnvironmentVariables_ShouldLoadEnvironmentVariables()
+        {
+            var result = new RabbitMQContextBuilder().ReadFromEnvironmentVariables();
+
+            Assert.AreEqual("exchange", result.ExchangeName);
+            Assert.AreEqual("hostname", result.Hostname);
+            Assert.AreEqual(1024, result.Port);
+            Assert.AreEqual("username", result.Username);
+            Assert.AreEqual("password", result.Password);
+            Assert.AreEqual("type", result.Type);
+        }
+
+        [TestMethod]
+        public void ReadFromEnvironmentVariables_ShouldUseDefaultValueWhenSet()
+        {
+            Environment.SetEnvironmentVariable(Constants.EnvExchangeType, null);
+            var result = new RabbitMQContextBuilder().ReadFromEnvironmentVariables();
+            Assert.AreEqual("topic", result.Type);
+        }
+
+        [TestMethod]
+        public void ReadFromEnvironmentVariables_ShouldThrowExceptionWhenEnvironmentVariableIsNotSet()
+        {
+            Environment.SetEnvironmentVariable(Constants.EnvHostname, null);
+            Action action = () => { new RabbitMQContextBuilder().ReadFromEnvironmentVariables(); };
+            Assert.ThrowsException<ArgumentException>(action);
+        }
+
+        [TestMethod]
+        public void ReadFromEnvironmentVariables_ShouldThrowExceptionWhenUnableToParsePort()
+        {
+            Environment.SetEnvironmentVariable(Constants.EnvPort, "abc");
+            Action action = () => { new RabbitMQContextBuilder().ReadFromEnvironmentVariables(); };
+            var ex = Assert.ThrowsException<ArgumentException>(action);
+            Assert.AreEqual($"Invalid environment variable: {Constants.EnvPort}, could not parse value to int", ex.Message);
         }
     }
 }

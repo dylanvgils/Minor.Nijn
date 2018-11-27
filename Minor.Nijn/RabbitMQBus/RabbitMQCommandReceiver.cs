@@ -117,18 +117,16 @@ namespace Minor.Nijn.RabbitMQBus
 
         private void CheckQueueAlreadyDeclared()
         {
-            if (_queueDeclared)
-            {
-                throw new BusConfigurationException($"Queue with name: {QueueName} is already declared");
-            }
+            if (!_queueDeclared) return;
+            _logger.LogDebug("Queue with name: {0} is already declared", QueueName);
+            throw new BusConfigurationException($"Queue with name: {QueueName} is already declared");
         }
 
         private void CheckQueueDeclared()
         {
-            if (!_queueDeclared)
-            {
-                throw new BusConfigurationException($"Queue with name: {QueueName} is not declared");
-            }
+            if (_queueDeclared) return;
+            _logger.LogDebug("Queue with name: {0} is not declared", QueueName);
+            throw new BusConfigurationException($"Queue with name: {QueueName} is not declared");
         }
 
         public void Dispose()

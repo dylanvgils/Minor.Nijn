@@ -39,10 +39,10 @@ namespace Minor.Nijn.TestBus.CommandBus
                     flag.Set();
                 });
 
-                bool isSet = flag.WaitOne(5000);
+                bool isSet = flag.WaitOne(Constants.CommandResponseTimeoutMs);
                 if (!isSet)
                 {
-                    throw new TimeoutException("No response received after 5 seconds");
+                    throw new TimeoutException($"No response received after {Constants.CommandResponseTimeoutMs / 1000} seconds");
                 }
 
                 return result;

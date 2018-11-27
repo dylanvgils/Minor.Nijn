@@ -74,7 +74,7 @@ namespace Minor.Nijn.RabbitMQBus
 
             consumer.Received += (model, ea) =>
             {
-                _logger.LogInformation("Received message {0}", ea.BasicProperties.MessageId);
+                _logger.LogInformation("Received message with correlationId: {0}", ea.BasicProperties.CorrelationId);
                 string body = Encoding.UTF8.GetString(ea.Body);
 
                 callback.Invoke(new EventMessage(
@@ -99,23 +99,20 @@ namespace Minor.Nijn.RabbitMQBus
 
         private void CheckQueueAlreadyDeclared()
         {
-            if (_queueDeclared)
-            {
-                throw new BusConfigurationException($"Queue with name: {QueueName} is already declared");
-            }
+            if (!_queueDeclared) return;
+            _logger.LogDebug("Queue with name: {0} is already declared", QueueName);
+            throw new BusConfigurationException($"Queue with name: {QueueName} is already declared");
         }
 
         private void CheckQueueDeclared()
         {
-            if (!_queueDeclared)
-            {
-                throw new BusConfigurationException($"Queue with name: {QueueName} is not declared");
-            }
+            if (_queueDeclared) return;
+            _logger.LogDebug("Queue with name: {0} is not declared", QueueName);
+            throw new BusConfigurationException($"Queue with name: {QueueName} is not declared");
         }
 
         public void Dispose()
         {
-            _logger.LogInformation("Disposing message receiver for queue: {0}", QueueName);
             Channel?.Dispose();
         }
     }

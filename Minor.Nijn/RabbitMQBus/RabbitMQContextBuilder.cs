@@ -1,5 +1,7 @@
-﻿using RabbitMQ.Client;
+﻿using System;
+using RabbitMQ.Client;
 using Microsoft.Extensions.Logging;
+using Minor.Nijn.Helpers;
 using Serilog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -19,7 +21,7 @@ namespace Minor.Nijn.RabbitMQBus
         public string Username { get; private set; }
         public string Password { get; private set; }
 
-        public string Type { get; private set; }
+        public string Type { get; private set; } = Constants.DefaultRabbitMqExchangeType;
 
         public RabbitMQContextBuilder()
         {
@@ -73,7 +75,23 @@ namespace Minor.Nijn.RabbitMQBus
 
         public RabbitMQContextBuilder ReadFromEnvironmentVariables()
         {
-            // TODO
+            EnvironmentHelper.GetValue(Constants.EnvExchangeName, v => ExchangeName = v);
+            EnvironmentHelper.GetValue(Constants.EnvHostname, v => Hostname = v);
+            EnvironmentHelper.GetValue(Constants.EnvUsername, v => Username = v);
+            EnvironmentHelper.GetValue(Constants.EnvPassword, v => Password = v);
+            EnvironmentHelper.GetValue(Constants.EnvExchangeType, v => Type = v, Constants.DefaultRabbitMqExchangeType);
+            EnvironmentHelper.GetValue(Constants.EnvPort, v =>
+            {
+                try
+                {
+                    Port = int.Parse(v);
+                }
+                catch (Exception)
+                {
+                    throw new ArgumentException($"Invalid environment variable: {Constants.EnvPort}, could not parse value to int");
+                }
+            });
+
             return this;
         }
 
