@@ -28,7 +28,7 @@ namespace Minor.Nijn.RabbitMQBus
             _logger = NijnLogger.CreateLogger<RabbitMQCommandSender>();
         }
 
-        public Task<CommandMessage> SendCommandAsync(CommandMessage request)
+        public Task<ResponseCommandMessage> SendCommandAsync(RequestCommandMessage request)
         {
             _logger.LogInformation("Sending command to {0}", request.RoutingKey);
             string replyQueueName = Channel.QueueDeclare().QueueName;;
@@ -51,7 +51,7 @@ namespace Minor.Nijn.RabbitMQBus
             return task;
         }
 
-        private Task<CommandMessage> SubscribeToResponseQueue(string replyQueueName, string correlationId)
+        private Task<ResponseCommandMessage> SubscribeToResponseQueue(string replyQueueName, string correlationId)
         {
             var consumer = _eventingBasicConsumerFactory.CreateEventingBasicConsumer(Channel);
             var task = StartResponseAwaiterTask(consumer, correlationId);
@@ -69,12 +69,12 @@ namespace Minor.Nijn.RabbitMQBus
             return task;
         }
 
-        private Task<CommandMessage> StartResponseAwaiterTask(EventingBasicConsumer consumer, string correlationId)
+        private Task<ResponseCommandMessage> StartResponseAwaiterTask(EventingBasicConsumer consumer, string correlationId)
         {               
             return Task.Run(() => {
                 var flag = new ManualResetEvent(false);
 
-                CommandMessage response = null;
+                ResponseCommandMessage response = null;
                 consumer.Received += (sender, args) => {
                     _logger.LogInformation("Received response message, with correlationId {0}", args.BasicProperties.CorrelationId);
                     if (args.BasicProperties.CorrelationId != correlationId)

@@ -14,7 +14,7 @@ namespace Minor.Nijn.TestBus.CommandBus
             _context = context;
         }
         
-        public Task<CommandMessage> SendCommandAsync(CommandMessage request)
+        public Task<ResponseCommandMessage> SendCommandAsync(RequestCommandMessage request)
         {
             ReplyQueueName = Guid.NewGuid().ToString();
             var replyQueue = _context.CommandBus.DeclareCommandQueue(ReplyQueueName);
@@ -26,16 +26,16 @@ namespace Minor.Nijn.TestBus.CommandBus
             return task;
         }
 
-        private static Task<CommandMessage> StartListeningForCommandReply(CommandBusQueue replyQueue)
+        private static Task<ResponseCommandMessage> StartListeningForCommandReply(CommandBusQueue replyQueue)
         {
            return Task.Run(() =>
             {
                 var flag = new ManualResetEvent(false);
 
-                CommandMessage result = null;
+                ResponseCommandMessage result = null;
                 replyQueue.Subscribe((sender, args) =>
                 {
-                    result = args.Message.Command;
+                    result = args.Message.Command as ResponseCommandMessage;
                     flag.Set();
                 });
 

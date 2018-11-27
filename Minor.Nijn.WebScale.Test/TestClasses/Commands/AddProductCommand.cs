@@ -4,6 +4,11 @@ namespace Minor.Nijn.WebScale.Test.TestClasses.Commands
 {
     public class AddProductCommand : DomainCommand
     {
-        public AddProductCommand(string routingKey) : base(routingKey) { }
+        public int Number { get; set; }
+
+        public AddProductCommand(string routingKey, int number) : base(routingKey)
+        {
+            Number = number;
+        }
     }
 }

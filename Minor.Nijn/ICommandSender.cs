@@ -5,6 +5,6 @@ namespace Minor.Nijn
 {
     public interface ICommandSender : IDisposable
     {
-        Task<CommandMessage> SendCommandAsync(CommandMessage request);
+        Task<ResponseCommandMessage> SendCommandAsync(RequestCommandMessage request);
     }
 }
