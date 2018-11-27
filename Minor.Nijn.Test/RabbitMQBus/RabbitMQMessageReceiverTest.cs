@@ -114,7 +114,6 @@ namespace Minor.Nijn.RabbitMQBus.Test
             propsMock.SetupGet(props => props.Type).Returns(type);
             propsMock.SetupGet(props => props.Timestamp).Returns(timestamp);
             propsMock.SetupGet(props => props.CorrelationId).Returns(correlationId);
-            propsMock.SetupGet(props => props.MessageId).Returns(messageId);
 
             contextMock.SetupGet(ctx => ctx.ExchangeName).Returns(exchangeName);
 
