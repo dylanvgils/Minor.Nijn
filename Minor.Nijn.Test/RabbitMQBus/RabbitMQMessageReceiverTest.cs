@@ -62,6 +62,28 @@ namespace Minor.Nijn.RabbitMQBus.Test
             contextMock.VerifyAll();
             channelMock.VerifyAll();
         }
+
+        [TestMethod]
+        public void DeclareQueue_ShouldThrowExceptionWhenAlreadyDeclared()
+        {
+            contextMock.Setup(ctx => ctx.ExchangeName).Returns(exchangeName);
+            channelMock.Setup(chan => chan.QueueDeclare(queueName, true, false, false, null))
+                .Returns(new QueueDeclareOk(queueName, 0, 0));
+
+            foreach (var topic in topicExpressions)
+            {
+                channelMock.Setup(chan => chan.QueueBind(queueName, exchangeName, topic, null));
+            }
+
+            target.DeclareQueue();
+            Action action = () => { target.DeclareQueue(); };
+
+            contextMock.VerifyAll();
+            channelMock.VerifyAll();
+
+            var ex = Assert.ThrowsException<BusConfigurationException>(action);
+            Assert.AreEqual($"Queue with name: {queueName} is already declared", ex.Message);
+        }
         
         [TestMethod]
         public void StartReceivingMessages_ShouldStartListeningForMessages()

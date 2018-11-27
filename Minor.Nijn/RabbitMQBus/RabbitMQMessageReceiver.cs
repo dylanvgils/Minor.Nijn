@@ -37,6 +37,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void DeclareQueue()
         {
+            CheckQueueAlreadyDeclared();
             _logger.LogInformation("Declare queue on exchange with name: {0}", QueueName);
             
             Channel.QueueDeclare(
@@ -92,6 +93,14 @@ namespace Minor.Nijn.RabbitMQBus
                 arguments: null,
                 consumer: consumer
             );
+        }
+
+        private void CheckQueueAlreadyDeclared()
+        {
+            if (_queueDeclared)
+            {
+                throw new BusConfigurationException($"Queue with name: {QueueName} is already declared");
+            }
         }
 
         private void CheckQueueDeclared()

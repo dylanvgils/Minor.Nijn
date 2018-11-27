@@ -20,7 +20,12 @@ namespace Minor.Nijn.TestBus.EventBus
 
         public void DeclareQueue()
         {
-           _queue =  _context.EventBus.DeclareQueue(QueueName, TopicExpressions);
+            if (_queueDeclared)
+            {
+                throw new BusConfigurationException($"Queue with name: {QueueName} is already declared");
+            }
+
+            _queue =  _context.EventBus.DeclareQueue(QueueName, TopicExpressions);
            _queueDeclared = true;
         }
 

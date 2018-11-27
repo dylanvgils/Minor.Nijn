@@ -18,6 +18,11 @@ namespace Minor.Nijn.TestBus.CommandBus
         
         public void DeclareCommandQueue()
         {
+            if (_queueDeclared)
+            {
+                throw new BusConfigurationException($"Queue with name: {QueueName} is already declared");
+            }
+
             _queue = _context.CommandBus.DeclareCommandQueue(QueueName);
             _queueDeclared = true;
         }
