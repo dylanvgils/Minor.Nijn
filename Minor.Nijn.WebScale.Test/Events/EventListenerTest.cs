@@ -42,7 +42,7 @@ namespace Minor.Nijn.WebScale.Events.Test
         {
             var type = typeof(OrderEventListener);
             var method = type.GetMethod(TestClassesConstants.OrderEventHandlerMethodName);
-            queueName = "queueName";
+            var queueName = "queueName";
             var topicExpressions = new List<string> {"a.b.c"};
 
             var listener = new EventListener(type, method, queueName, topicExpressions);
@@ -89,10 +89,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             microServiceHostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
 
             target.StartListening(microServiceHostMock.Object);
-            Action action = () =>
-            {
-                target.StartListening(microServiceHostMock.Object);
-            };
+            Action action = () => { target.StartListening(microServiceHostMock.Object); };
         
             microServiceHostMock.VerifyAll();
             messageReceiverMock.VerifyAll();
