@@ -30,7 +30,7 @@ namespace Minor.Nijn.WebScale.Commands
         {
             if (_isListening)
             {
-                _logger.LogDebug("Event listener already listening for commands");
+                _logger.LogDebug("Command listener already listening for commands");
                 throw new InvalidOperationException("Already listening for commands");
             }
 
@@ -44,7 +44,7 @@ namespace Minor.Nijn.WebScale.Commands
         }
 
         // TODO: Add parameter check, parameter has to be derived type of DomainCommand
-        private ResponseCommandMessage HandleCommandMessage(RequestCommandMessage message)
+        internal ResponseCommandMessage HandleCommandMessage(RequestCommandMessage message)
         {
             var paramType = _method.GetParameters()[0].ParameterType;
             var payload = JsonConvert.DeserializeObject(message.Message, paramType);
