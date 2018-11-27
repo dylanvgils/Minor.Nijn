@@ -3,6 +3,7 @@ using Minor.Nijn.WebScale.Test.TestClasses;
 using Moq;
 using RabbitMQ.Client;
 using System;
+using Minor.Nijn.WebScale.Test.TestClasses.Commands;
 using Minor.Nijn.WebScale.Test.TestClasses.Domain;
 using Newtonsoft.Json;
 
@@ -17,17 +18,24 @@ namespace Minor.Nijn.WebScale.Commands.Test
         private CommandListener target;
 
         [TestInitialize]
-        public void Ctor_ShouldCreateNewCommandListener()
+        public void BeforeEach()
         {
-            type = typeof(OrderEventListener);
-            var method = type.GetMethod(TestClassesConstants.OrderEventHandlerMethodName);
+            type = typeof(OrderCommandListener);
+            var method = type.GetMethod(TestClassesConstants.OrderCommandHandlerMethodName);
             queueName = "queueName";
 
             target = new CommandListener(type, method, queueName);
         }
 
+        [TestCleanup]
+        public void AfterEach()
+        {
+            OrderCommandListener.HandleOrderCreatedEventHasBeenCalled = false;
+            OrderCommandListener.HandleOrderCreatedEventHasBeenCalledWith = null;
+        }
+
         [TestMethod]
-        public void Ctor_ShouldCreatedNewEventListener()
+        public void Ctor_ShouldCreateNewCommandListener()
         {
             var type = typeof(OrderEventListener);
             var method = type.GetMethod(TestClassesConstants.OrderEventHandlerMethodName);
@@ -85,12 +93,12 @@ namespace Minor.Nijn.WebScale.Commands.Test
         }
 
         [TestMethod]
-        [Ignore]
-        public void HandleCommandMessage_ShouldHandleCommandMessageAndReturnCommandResponse()
+        public void HandleCommandMessage_ShouldHandleRequestCommandMessageAndReturnTheRightResult()
         {
             var correlationId = "correlationId";
             var order = new Order { Id = 1, Description = "Some description" };
-            var commandMessage = new RequestCommandMessage(JsonConvert.SerializeObject(order), "Order", correlationId, queueName);
+            var command = new AddOrderCommand(queueName, order);
+            var commandMessage = new RequestCommandMessage(JsonConvert.SerializeObject(command), "Order", correlationId, queueName);
 
             var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
             commandReceiverMock.Setup(recv => recv.DeclareCommandQueue());
@@ -104,11 +112,17 @@ namespace Minor.Nijn.WebScale.Commands.Test
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
             target.StartListening(hostMock.Object);
 
-            var result = target.HandleCommandMessage(commandMessage);
+            target.HandleCommandMessage(commandMessage);
 
             commandReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
             hostMock.VerifyAll();
+
+            var result = OrderCommandListener.HandleOrderCreatedEventHasBeenCalledWith;
+            Assert.IsTrue(OrderCommandListener.HandleOrderCreatedEventHasBeenCalled);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(order.Id, result.Order.Id);
+            Assert.AreEqual(order.Description, result.Order.Description);
         }
 
         [TestMethod]
