@@ -29,6 +29,7 @@ namespace Minor.Nijn.WebScale.Commands
         }
         public void StartListening(IMicroserviceHost host)
         {
+            CheckDisposed();
             if (_isListening)
             {
                 _logger.LogDebug("Command listener already listening for commands");
@@ -54,6 +55,14 @@ namespace Minor.Nijn.WebScale.Commands
             var json = JsonConvert.SerializeObject(result);
 
             return new ResponseCommandMessage(json, _method.ReturnType.Name, message.CorrelationId);
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
 
         public void Dispose()

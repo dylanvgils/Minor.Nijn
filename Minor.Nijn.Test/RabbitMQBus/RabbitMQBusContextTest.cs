@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using RabbitMQ.Client;
@@ -34,7 +35,15 @@ namespace Minor.Nijn.RabbitMQBus.Test
             connectionMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(IMessageSender));
         }
-        
+
+        [TestMethod]
+        public void CreateMessageSender_ShouldThrowExceptionWhenDisposed()
+        {
+            connectionMock.Setup(conn => conn.Dispose());
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.CreateMessageSender());
+        }
+
         [TestMethod]
         public void CreateMessageReceiver_ShouldReturnIMessageReceiver()
         {
@@ -46,6 +55,14 @@ namespace Minor.Nijn.RabbitMQBus.Test
             connectionMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(IMessageReceiver));
         }
+
+        [TestMethod]
+        public void CreateMessageReceiver_ShouldThrowExceptionWhenDisposed()
+        {
+            connectionMock.Setup(conn => conn.Dispose());
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.CreateMessageReceiver("Queue", new List<string>()));
+        }
         
         [TestMethod]
         public void CreateCommandSender_ShouldReturnICommandSender()
@@ -55,7 +72,15 @@ namespace Minor.Nijn.RabbitMQBus.Test
             connectionMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(ICommandSender));
         }
-        
+
+        [TestMethod]
+        public void CreateCommandSender_ShouldThrowExceptionWhenDisposed()
+        {
+            connectionMock.Setup(conn => conn.Dispose());
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.CreateCommandSender());
+        }
+
         [TestMethod]
         public void CreateCommandReceiver_ShouldReturnICommandReceiver()
         {
@@ -63,6 +88,14 @@ namespace Minor.Nijn.RabbitMQBus.Test
 
             connectionMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(ICommandReceiver));
+        }
+
+        [TestMethod]
+        public void CreateCommandReceiver_ShouldThrowExceptionWhenDisposed()
+        {
+            connectionMock.Setup(conn => conn.Dispose());
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.CreateCommandReceiver("QueueName"));
         }
 
         [TestMethod]

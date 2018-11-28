@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.WebScale.Test.TestClasses.Domain;
 using Minor.Nijn.WebScale.Test.TestClasses.Events;
 using Moq;
@@ -25,6 +26,22 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             senderMock.VerifyAll();
             busContextMock.VerifyAll();
+        }
+
+        [TestMethod, ExpectedException(typeof(ObjectDisposedException))]
+        public void Publish_ShouldThrowExceptionWhenDisposed()
+        {
+            var commandSenderMock = new Mock<IMessageSender>(MockBehavior.Strict);
+            commandSenderMock.Setup(s => s.Dispose());
+
+            var contextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            contextMock.Setup(ctx => ctx.CreateMessageSender()).Returns(commandSenderMock.Object);
+
+            var message = new OrderCreatedEvent("RoutinKey", new Order());
+            var target = new EventPublisher(contextMock.Object);
+
+            target.Dispose();
+            target.Publish(message);
         }
 
         [TestMethod]

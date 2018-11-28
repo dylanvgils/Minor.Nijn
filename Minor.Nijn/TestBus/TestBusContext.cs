@@ -8,6 +8,8 @@ namespace Minor.Nijn.TestBus
 {
     public sealed class TestBusContext : ITestBusContext
     {
+        private bool _disposed;
+
         public IConnection Connection => throw new NotImplementedException();
         public string ExchangeName => throw new NotImplementedException();
         public IEventBus EventBus { get; }
@@ -21,28 +23,40 @@ namespace Minor.Nijn.TestBus
 
         public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
         {
+            CheckDisposed();
             return new TestMessageReceiver(this, queueName, topicExpressions);
         }
 
         public IMessageSender CreateMessageSender()
         {
-            var sender = new TestMessageSender(this);
-            return sender;
+            CheckDisposed();
+            return new TestMessageSender(this);
         }
 
         public ICommandReceiver CreateCommandReceiver(string queueName)
         {
+            CheckDisposed();
             return new TestCommandReceiver(this, queueName);
         }
         
         public ICommandSender CreateCommandSender()
         {
+            CheckDisposed();
             return new TestCommandSender(this);
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
 
         public void Dispose()
         {
             // No need to dispose anything in the TestBus
+            _disposed = true;
         }
     }
 }

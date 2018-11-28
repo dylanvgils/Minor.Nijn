@@ -23,6 +23,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void SendMessage(EventMessage message)
         {
+            CheckDisposed();
             _logger.LogInformation("Send message to routing key: {0}", message.RoutingKey);
 
             var props = Channel.CreateBasicProperties();
@@ -39,6 +40,14 @@ namespace Minor.Nijn.RabbitMQBus
                 basicProperties: props,
                 body: Encoding.UTF8.GetBytes(message.Message)
             );
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
 
         public void Dispose()

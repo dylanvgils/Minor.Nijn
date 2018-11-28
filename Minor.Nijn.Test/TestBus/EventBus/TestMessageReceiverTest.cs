@@ -52,6 +52,13 @@ namespace Minor.Nijn.TestBus.EventBus.Test
         }
 
         [TestMethod]
+        public void DeclareQueue_ShouldThrowExceptionWhenDisposed()
+        {
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.DeclareQueue());
+        }
+
+        [TestMethod]
         public void StartReceivingMessages_ShouldStartListeningForMessages()
         {
             var callbackMock = new Mock<EventMessageReceivedCallback>(MockBehavior.Strict);
@@ -82,6 +89,13 @@ namespace Minor.Nijn.TestBus.EventBus.Test
 
             var ex = Assert.ThrowsException<BusConfigurationException>(action);
             Assert.AreEqual($"Queue with name: {queueName} is not declared", ex.Message);
+        }
+
+        [TestMethod]
+        public void StartReceivingMessages_ShouldThrowExceptionWhenDisposed()
+        {
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.StartReceivingMessages(m => {}));
         }
 
         [TestMethod]

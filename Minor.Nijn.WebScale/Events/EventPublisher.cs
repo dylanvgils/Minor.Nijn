@@ -16,9 +16,19 @@ namespace Minor.Nijn.WebScale.Events
 
         public void Publish(DomainEvent domainEvent)
         {
+            CheckDisposed();
+
             var body = JsonConvert.SerializeObject(domainEvent);
             var message = new EventMessage(domainEvent.RoutingKey, body);
             _sender.SendMessage(message);
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
 
         public void Dispose()

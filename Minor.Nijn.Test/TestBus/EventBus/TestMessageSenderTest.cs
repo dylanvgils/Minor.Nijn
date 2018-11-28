@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.TestBus;
 using Minor.Nijn.TestBus.EventBus;
 using Moq;
@@ -28,7 +29,15 @@ namespace Minor.Nijn.TestBus.EventBus.Test
 
             contextMock.Verify(context => context.EventBus.DispatchMessage(message));
         }
-        
+
+        [TestMethod]
+        public void SendMessage_ShouldThrowExceptionWhenDisposed()
+        {
+            var message = new EventMessage("RoutingKey", "message", "type");
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.SendMessage(message));
+        }
+
         [TestMethod]
         public void Dispose_ShouldNotThrowException()
         {

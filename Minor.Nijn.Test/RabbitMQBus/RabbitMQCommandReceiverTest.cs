@@ -71,6 +71,14 @@ namespace Minor.Nijn.RabbitMQBus.Test
         }
 
         [TestMethod]
+        public void DeclareCommandQueue_ShouldThrowExceptionWhenDisposed()
+        {
+            channelMock.Setup(chan => chan.Dispose());
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.DeclareCommandQueue());
+        }
+
+        [TestMethod]
         public void StartReceivingCommands_ShouldStartListeningForCommands()
         {
             var consumer = new EventingBasicConsumer(channelMock.Object);
@@ -150,6 +158,14 @@ namespace Minor.Nijn.RabbitMQBus.Test
             Assert.IsNull(requestMessage);
             var ex = Assert.ThrowsException<BusConfigurationException>(action);
             Assert.AreEqual($"Queue with name: {queueName} is not declared", ex.Message);
+        }
+
+        [TestMethod]
+        public void StartReceivingCommands_ShouldThrowExceptionWhenDisposed()
+        {
+            channelMock.Setup(chan => chan.Dispose());
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.StartReceivingCommands((m) => new ResponseCommandMessage("message", "type", "id")));
         }
 
         [TestMethod]

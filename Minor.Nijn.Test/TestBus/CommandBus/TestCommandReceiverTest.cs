@@ -49,7 +49,14 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         }
 
         [TestMethod]
-        public void StartReceivingMessages_ShouldStartListeningForMessagesOnRpcQueue()
+        public void DeclareCommandQueue_ShouldThrowExceptionWhenDisposed()
+        {
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.DeclareCommandQueue());
+        }
+
+        [TestMethod]
+        public void StartReceivingCommands_ShouldStartListeningForMessagesOnRpcQueue()
         {
             var message = new RequestCommandMessage("TestMessage", "type", "id", queueName);
             var command = new TestBusCommand(null, message);
@@ -70,7 +77,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         }
 
         [TestMethod]
-        public void StartReceivingMessages_ShouldThrowBusConfigurationExceptionWhenQueueIsNotDeclared()
+        public void StartReceivingCommands_ShouldThrowBusConfigurationExceptionWhenQueueIsNotDeclared()
         {
             var callbackMock = new Mock<CommandReceivedCallback>(MockBehavior.Strict);
 
@@ -84,7 +91,7 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         }
 
         [TestMethod]
-        public void StartReceivingMessages_ShouldUseReplyToWhenSet()
+        public void StartReceivingCommands_ShouldUseReplyToWhenSet()
         {
             var replyQueueName = "ReplyCommandToQueue";
             var request = new RequestCommandMessage("TestMessage", "type", "id", queueName);
@@ -110,6 +117,14 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
 
             callbackMock.Verify(callback => callback(request));
             Assert.AreEqual(1, commandQueue[replyQueueName].MessageQueueLength);
+        }
+
+        [TestMethod]
+        public void StartReceivingCommands_ShouldThrowExceptionWhenDisposed()
+        {
+            var response = new ResponseCommandMessage("message", "type", "id");
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.StartReceivingCommands((c) => response));
         }
 
         [TestMethod]

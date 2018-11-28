@@ -99,6 +99,14 @@ namespace Minor.Nijn.WebScale.Events.Test
             Assert.AreEqual("Already listening for events", ex.Message);
         }
 
+        [TestMethod, ExpectedException(typeof(ObjectDisposedException))]
+        public void StartListening_ShouldThrowExceptionWhenDisposed()
+        {
+            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            target.Dispose();
+            target.StartListening(microServiceHostMock.Object);
+        }
+
         [TestMethod]
         public void HandleEventMessage_ShouldHandleEventMessageAndReturnCastedType()
         {

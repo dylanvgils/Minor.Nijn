@@ -92,6 +92,14 @@ namespace Minor.Nijn.WebScale.Commands.Test
             Assert.AreEqual("Already listening for commands", ex.Message);
         }
 
+        [TestMethod, ExpectedException(typeof(ObjectDisposedException))]
+        public void StartListening_ShouldThrowExceptionWhenDisposed()
+        {
+            var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            target.Dispose();
+            target.StartListening(hostMock.Object);
+        }
+
         [TestMethod]
         public void HandleCommandMessage_ShouldHandleRequestCommandMessageAndReturnTheRightResult()
         {

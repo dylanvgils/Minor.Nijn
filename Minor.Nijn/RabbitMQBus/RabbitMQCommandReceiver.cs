@@ -36,7 +36,9 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void DeclareCommandQueue()
         {
+            CheckDisposed();
             CheckQueueAlreadyDeclared();
+
             _logger.LogInformation("Declaring command queue with name: {0}", QueueName);
             
             Channel.QueueDeclare(
@@ -58,7 +60,9 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void StartReceivingCommands(CommandReceivedCallback callback)
         {
+            CheckDisposed();
             CheckQueueDeclared();
+
             _logger.LogInformation("Start listening for commands on queue: {0}", QueueName);
 
             var consumer = CreateBasicConsumer(callback);
@@ -129,6 +133,14 @@ namespace Minor.Nijn.RabbitMQBus
             if (_queueDeclared) return;
             _logger.LogDebug("Queue with name: {0} is not declared", QueueName);
             throw new BusConfigurationException($"Queue with name: {QueueName} is not declared");
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
 
         public void Dispose()

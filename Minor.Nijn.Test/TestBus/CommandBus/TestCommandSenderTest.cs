@@ -1,3 +1,4 @@
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -67,6 +68,14 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
 
             while(!result.IsFaulted) { }
             Assert.IsTrue(result.IsFaulted);
+        }
+
+        [TestMethod]
+        public void SendCommandAsync_ShouldThrowExceptionWhenDisposed()
+        {
+            var request = new RequestCommandMessage("message", "type", "id");
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.SendCommandAsync(request));
         }
 
         [TestMethod]

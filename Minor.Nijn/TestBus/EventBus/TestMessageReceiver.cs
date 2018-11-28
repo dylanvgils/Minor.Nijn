@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Minor.Nijn.TestBus.EventBus
 {
@@ -8,8 +9,9 @@ namespace Minor.Nijn.TestBus.EventBus
         public IEnumerable<string> TopicExpressions { get; }
         private readonly ITestBusContext _context;
 
-        private bool _queueDeclared;
         private EventBusQueue _queue;
+        private bool _queueDeclared;
+        private bool _disposed;
 
         internal TestMessageReceiver(ITestBusContext context, string queueName, IEnumerable<string> topicExpressions)
         {
@@ -20,6 +22,7 @@ namespace Minor.Nijn.TestBus.EventBus
 
         public void DeclareQueue()
         {
+            CheckDisposed();
             if (_queueDeclared)
             {
                 throw new BusConfigurationException($"Queue with name: {QueueName} is already declared");
@@ -31,6 +34,7 @@ namespace Minor.Nijn.TestBus.EventBus
 
         public void StartReceivingMessages(EventMessageReceivedCallback callback)
         {
+            CheckDisposed();
             if (!_queueDeclared)
             {
                 throw new BusConfigurationException($"Queue with name: {QueueName} is not declared");
@@ -39,9 +43,18 @@ namespace Minor.Nijn.TestBus.EventBus
             _queue.Subscribe((sender, args) => callback(args.Message));
         }
 
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+        }
+
         public void Dispose()
         {
             // No need to dispose anything in the TestBus
+            _disposed = true;
         }
     }
 }
