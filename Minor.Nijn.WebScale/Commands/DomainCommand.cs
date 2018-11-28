@@ -8,7 +8,7 @@ namespace Minor.Nijn.WebScale.Commands
         public long Timestamp { get; }
         public string CorrelationId { get; }
 
-        public DomainCommand(string routingKey)
+        protected DomainCommand(string routingKey)
         {
             RoutingKey = routingKey;
             Timestamp = DateTime.Now.Ticks;

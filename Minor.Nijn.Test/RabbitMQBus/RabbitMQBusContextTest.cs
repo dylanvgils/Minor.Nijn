@@ -64,5 +64,16 @@ namespace Minor.Nijn.RabbitMQBus.Test
             connectionMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(ICommandReceiver));
         }
+
+        [TestMethod]
+        public void Dispose_ShouldCallDisposeOnResources()
+        {
+            connectionMock.Setup(conn => conn.Dispose());
+
+            target.Dispose();
+            target.Dispose(); // Don't call dispose for second time
+
+            connectionMock.Verify(conn => conn.Dispose(), Times.Once);
+        }
     }
 }

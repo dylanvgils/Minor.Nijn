@@ -40,6 +40,9 @@ namespace Minor.Nijn.TestBus
             return new TestCommandSender(this);
         }
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            // No need to dispose anything in the TestBus
+        }
     }
 }

@@ -83,7 +83,7 @@ namespace Minor.Nijn
                     break;
             }
 
-            return isLast ? result : result + @"\."; ;
+            return isLast ? result : result + @"\.";
         }
     }
 }

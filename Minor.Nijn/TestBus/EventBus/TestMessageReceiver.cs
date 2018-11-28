@@ -39,6 +39,9 @@ namespace Minor.Nijn.TestBus.EventBus
             _queue.Subscribe((sender, args) => callback(args.Message));
         }
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            // No need to dispose anything in the TestBus
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
@@ -9,7 +10,8 @@ namespace Minor.Nijn.RabbitMQBus
     {   
         private readonly ILogger _logger;
         private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
-        
+        private bool _disposed;
+
         public string QueueName { get; }
         public IModel Channel { get; }
         private bool _queueDeclared;
@@ -131,7 +133,25 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void Dispose()
         {
-            Channel?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~RabbitMQCommandReceiver()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                Channel?.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

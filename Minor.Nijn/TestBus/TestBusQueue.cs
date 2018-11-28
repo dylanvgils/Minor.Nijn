@@ -13,7 +13,7 @@ namespace Minor.Nijn.TestBus
         public int MessageQueueLength => _messageQueue.Count;
         public int SubscriberCount => MessageAdded?.GetInvocationList().Length ?? 0;
 
-        internal TestBusQueue(string name)
+        protected TestBusQueue(string name)
         {
             QueueName = name;
             _messageQueue = new Queue<T>();

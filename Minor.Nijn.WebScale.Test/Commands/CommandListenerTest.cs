@@ -142,12 +142,9 @@ namespace Minor.Nijn.WebScale.Commands.Test
 
             target.StartListening(hostMock.Object);
             target.Dispose();
+            target.Dispose(); // Don't call dispose the second time
 
-            commandReceiverMock.VerifyAll();
-            busContextMock.VerifyAll();
-            hostMock.VerifyAll();
-
-            hostMock.VerifyAll();
+            commandReceiverMock.Verify(c => c.Dispose(), Times.Once);
         }
     }
 }

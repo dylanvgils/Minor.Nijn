@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 
 namespace Minor.Nijn.WebScale.Events
@@ -6,6 +7,7 @@ namespace Minor.Nijn.WebScale.Events
     public class EventPublisher : IEventPublisher
     {
         private readonly IMessageSender _sender;
+        private bool _disposed;
 
         public EventPublisher(IBusContext<IConnection> context)
         {
@@ -21,7 +23,25 @@ namespace Minor.Nijn.WebScale.Events
 
         public void Dispose()
         {
-            _sender?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~EventPublisher()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                _sender?.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System.Threading.Tasks;
 
@@ -7,6 +8,7 @@ namespace Minor.Nijn.WebScale.Commands
     public class CommandPublisher : ICommandPublisher
     {
         private readonly ICommandSender _sender;
+        private bool _disposed;
 
         public CommandPublisher(IBusContext<IConnection> context)
         {
@@ -23,7 +25,25 @@ namespace Minor.Nijn.WebScale.Commands
 
         public void Dispose()
         {
-            _sender?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~CommandPublisher()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                _sender?.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }
