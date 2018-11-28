@@ -7,9 +7,10 @@ namespace Minor.Nijn.TestBus.CommandBus
         public string QueueName { get; }
         private readonly ITestBusContext _context;
 
-        private bool _queueDeclared;
         private CommandBusQueue _queue;
-       
+        private bool _queueDeclared;
+        private bool _disposed;
+
         internal TestCommandReceiver(ITestBusContext context, string queueName)
         {
             QueueName = queueName;
@@ -18,6 +19,7 @@ namespace Minor.Nijn.TestBus.CommandBus
         
         public void DeclareCommandQueue()
         {
+            CheckDisposed();
             if (_queueDeclared)
             {
                 throw new BusConfigurationException($"Queue with name: {QueueName} is already declared");
@@ -29,6 +31,7 @@ namespace Minor.Nijn.TestBus.CommandBus
 
         public void StartReceivingCommands(CommandReceivedCallback callback)
         {
+            CheckDisposed();
             if (!_queueDeclared)
             {
                 throw new BusConfigurationException($"Queue with name: {QueueName} is not declared");
@@ -51,9 +54,18 @@ namespace Minor.Nijn.TestBus.CommandBus
             });
         }
 
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+        }
+
         public void Dispose()
         {
             // No need to dispose anything in the TestBus
+            _disposed = true;
         }
     }
 }

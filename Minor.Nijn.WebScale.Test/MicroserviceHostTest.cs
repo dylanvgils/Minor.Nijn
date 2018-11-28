@@ -64,6 +64,17 @@ namespace Minor.Nijn.WebScale.Test
             Assert.AreEqual("Event listeners already registered", ex.Message);
         }
 
+        [TestMethod, ExpectedException(typeof(ObjectDisposedException))]
+        public void RegisterEventListeners_ShouldThrowExceptionWhenDisposed()
+        {
+            eventListenerMock.Setup(e => e.Dispose());
+            commandListenerMock.Setup(c => c.Dispose());
+            busContextMock.Setup(ctx => ctx.Dispose());
+
+            target.Dispose();
+            target.RegisterListeners();
+        }
+
         [TestMethod]
         public void CreateInstance_ShouldReturnInstanceOfType()
         {

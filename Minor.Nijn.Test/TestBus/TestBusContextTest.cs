@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Collections.Generic;
 using Minor.Nijn.TestBus.CommandBus;
@@ -36,26 +37,54 @@ namespace Minor.Nijn.TestBus.Test
         }
 
         [TestMethod]
+        public void CreateMessageReceiver_ShouldThrowExceptionWhenDisposed()
+        {
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.CreateMessageReceiver("QueueName", new List<string>()));
+        }
+
+        [TestMethod]
         public void CreateMessageSender_ShouldReturnMessageSender()
         {
             var result = target.CreateMessageSender();
             Assert.IsInstanceOfType(result, typeof(IMessageSender));
         }
-        
+
+        [TestMethod]
+        public void CreateMessageSender_ShouldThrowExceptionWhenDisposed()
+        {
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.CreateMessageSender());
+        }
+
         [TestMethod]
         public void CreateCommandReceiver_ShouldReturnCommandReceiver()
         {
             var result = target.CreateCommandReceiver("CommandQueue");
             Assert.IsInstanceOfType(result, typeof(ICommandReceiver));
         }
-        
+
+        [TestMethod]
+        public void CreateCommandReceiver_ShouldThrowExceptionWhenDisposed()
+        {
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.CreateCommandReceiver("QueueName"));
+        }
+
         [TestMethod]
         public void CreateCommandSender_ShouldReturnCommandSender()
         {
             var result = target.CreateCommandSender();
             Assert.IsInstanceOfType(result, typeof(ICommandSender));
         }
-        
+
+        [TestMethod]
+        public void CreateCommandSender_ShouldThrowExceptionWhenDisposed()
+        {
+            target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => target.CreateMessageSender());
+        }
+
         [TestMethod]
         public void Dispose_ShouldNotThrowException()
         {

@@ -7,8 +7,10 @@ namespace Minor.Nijn.TestBus.CommandBus
     public sealed class TestCommandSender : ITestCommandSender
     {
         public string ReplyQueueName { get; private set; }
+
         private readonly ITestBusContext _context;
-        
+        private bool _disposed;
+
         internal TestCommandSender(ITestBusContext context)
         {
             _context = context;
@@ -16,6 +18,7 @@ namespace Minor.Nijn.TestBus.CommandBus
         
         public Task<ResponseCommandMessage> SendCommandAsync(RequestCommandMessage request)
         {
+            CheckDisposed();
             ReplyQueueName = Guid.NewGuid().ToString();
             var replyQueue = _context.CommandBus.DeclareCommandQueue(ReplyQueueName);
 
@@ -49,9 +52,18 @@ namespace Minor.Nijn.TestBus.CommandBus
             });
         }
 
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+        }
+
         public void Dispose()
         {
             // No need to dispose anything in the TestBus
+            _disposed = true;
         }
     }
 }

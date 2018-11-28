@@ -33,6 +33,7 @@ namespace Minor.Nijn.WebScale.Events
 
         public void StartListening(IMicroserviceHost host)
         {
+            CheckDisposed();
             if (_isListening)
             {
                 _logger.LogDebug("Event listener already listening for events");
@@ -54,6 +55,14 @@ namespace Minor.Nijn.WebScale.Events
             var paramType = _method.GetParameters()[0].ParameterType;
             var payload = JsonConvert.DeserializeObject(message.Message, paramType);
             _method.Invoke(_instance, new [] { payload });
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
 
         public void Dispose()

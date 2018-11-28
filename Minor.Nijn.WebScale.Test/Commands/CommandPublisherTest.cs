@@ -1,5 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.WebScale.Test.TestClasses.Commands;
+using Minor.Nijn.WebScale.Test.TestClasses.Domain;
 using Moq;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
@@ -26,6 +29,23 @@ namespace Minor.Nijn.WebScale.Commands.Test
             var result = target.Publish<int>(command);
 
             Assert.AreEqual(42, result.Result);
+        }
+
+        [TestMethod, ExpectedException(typeof(ObjectDisposedException))]
+        public async Task Publish_ShouldThrowExceptionWhenDisposed()
+        {
+            var commandSenderMock = new Mock<ICommandSender>(MockBehavior.Strict);
+            commandSenderMock.Setup(s => s.Dispose());
+
+            var contextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            contextMock.Setup(ctx => ctx.CreateCommandSender()).Returns(commandSenderMock.Object);
+
+            var command = new AddOrderCommand("RoutinKey", new Order());
+            var target = new CommandPublisher(contextMock.Object);
+
+            target.Dispose();
+
+            await target.Publish<long>(command);
         }
 
         [TestMethod]

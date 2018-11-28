@@ -37,6 +37,7 @@ namespace Minor.Nijn.WebScale
 
         public void RegisterListeners()
         {
+            CheckDisposed();
             if (ListenersRegistered)
             {
                 _logger.LogError("Event listeners already created");
@@ -60,6 +61,14 @@ namespace Minor.Nijn.WebScale
             serviceCollection.AddSingleton(Context);
             serviceCollection.AddTransient<IEventPublisher, EventPublisher>();
             serviceCollection.AddTransient<ICommandPublisher, CommandPublisher>();
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
 
         public void Dispose()

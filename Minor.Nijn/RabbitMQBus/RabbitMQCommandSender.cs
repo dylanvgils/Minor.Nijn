@@ -31,6 +31,8 @@ namespace Minor.Nijn.RabbitMQBus
 
         public Task<ResponseCommandMessage> SendCommandAsync(RequestCommandMessage request)
         {
+            CheckDisposed();
+
             _logger.LogInformation("Sending command to {0}", request.RoutingKey);
             string replyQueueName = Channel.QueueDeclare().QueueName;
 
@@ -108,7 +110,15 @@ namespace Minor.Nijn.RabbitMQBus
                 return response;
             });
         }
-        
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+        }
+
         public void Dispose()
         {
             Dispose(true);

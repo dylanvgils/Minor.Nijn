@@ -17,10 +17,20 @@ namespace Minor.Nijn.WebScale.Commands
 
         public async Task<T> Publish<T>(DomainCommand domainCommand)
         {
+            CheckDisposed();
+
             var body = JsonConvert.SerializeObject(domainCommand);
             var command = new RequestCommandMessage(body, typeof(T).Name, domainCommand.CorrelationId, domainCommand.RoutingKey);
             var result = await _sender.SendCommandAsync(command);
             return JsonConvert.DeserializeObject<T>(result.Message);
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
 
         public void Dispose()

@@ -19,22 +19,34 @@ namespace Minor.Nijn.RabbitMQBus
 
         public IMessageSender CreateMessageSender()
         {
+            CheckDisposed();
             return new RabbitMQMessageSender(this);
         }
 
         public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
         {
+            CheckDisposed();
             return new RabbitMQMessageReceiver(this, queueName, topicExpressions);
         }
         
         public ICommandSender CreateCommandSender()
         {
+            CheckDisposed();
             return new RabbitMQCommandSender(this);
         }
 
         public ICommandReceiver CreateCommandReceiver(string queueName)
         {
+            CheckDisposed();
             return new RabbitMQCommandReceiver(this, queueName);
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
 
         public void Dispose()

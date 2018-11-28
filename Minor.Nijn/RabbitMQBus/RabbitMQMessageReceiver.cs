@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using System.Collections.Generic;
 using System.Text;
+using Minor.Nijn.Helpers;
 
 namespace Minor.Nijn.RabbitMQBus
 {
@@ -40,6 +41,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void DeclareQueue()
         {
+            CheckDisposed();
             CheckQueueAlreadyDeclared();
             TopicMatcher.AreValidTopicExpressions(TopicExpressions);
 
@@ -70,6 +72,7 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void StartReceivingMessages(EventMessageReceivedCallback callback)
         {
+            CheckDisposed();
             CheckQueueDeclared();
 
             _logger.LogInformation("Start listening for messages on queue: {1}", QueueName);
@@ -112,6 +115,14 @@ namespace Minor.Nijn.RabbitMQBus
             if (_queueDeclared) return;
             _logger.LogDebug("Queue with name: {0} is not declared", QueueName);
             throw new BusConfigurationException($"Queue with name: {QueueName} is not declared");
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
 
         public void Dispose()

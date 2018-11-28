@@ -152,6 +152,17 @@ namespace Minor.Nijn.RabbitMQBus.Test
         }
 
         [TestMethod]
+        public void SendMessageAsync_ShouldThrowExceptionWhenDisposed()
+        {
+            var command = new RequestCommandMessage("RoutingKey", "type", "id");
+            channelMock.Setup(chan => chan.Dispose());
+
+            target.Dispose();
+
+            Assert.ThrowsException<ObjectDisposedException>(() => target.SendCommandAsync(command));
+        }
+
+        [TestMethod]
         public void Dispose_ShouldCallDisposeOnResources()
         {
             channelMock.Setup(chan => chan.Dispose());
