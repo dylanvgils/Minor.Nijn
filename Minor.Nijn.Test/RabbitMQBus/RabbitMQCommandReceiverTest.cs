@@ -156,8 +156,11 @@ namespace Minor.Nijn.RabbitMQBus.Test
         public void Dispose_ShouldCallDisposeOnResources()
         {
             channelMock.Setup(chan => chan.Dispose());
+
             target.Dispose();
-            channelMock.VerifyAll();
+            target.Dispose(); // Don't call dispose the second time
+
+            channelMock.Verify(chan => chan.Dispose(), Times.Once);
         }
     }
 }

@@ -8,9 +8,11 @@ namespace Minor.Nijn.RabbitMQBus
     public class RabbitMQMessageSender : IMessageSender
     {
         private readonly ILogger _logger;
+        private bool _disposed;
 
         public IModel Channel { get; }
         private readonly IRabbitMQBusContext _context;
+
         internal RabbitMQMessageSender(IRabbitMQBusContext context)
         {
             _context = context;
@@ -41,7 +43,25 @@ namespace Minor.Nijn.RabbitMQBus
 
         public void Dispose()
         {
-            Channel?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~RabbitMQMessageSender()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                Channel?.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

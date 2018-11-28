@@ -17,6 +17,7 @@ namespace Minor.Nijn.WebScale.Commands
 
         private ICommandReceiver _receiver;
         private bool _isListening;
+        private bool _disposed;
 
         public CommandListener(Type type, MethodInfo method, string queueName)
         {
@@ -57,7 +58,25 @@ namespace Minor.Nijn.WebScale.Commands
 
         public void Dispose()
         {
-            _receiver?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~CommandListener()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                _receiver?.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

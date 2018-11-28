@@ -12,7 +12,8 @@ namespace Minor.Nijn.RabbitMQBus
     {
         private readonly ILogger _logger;
         private readonly EventingBasicConsumerFactory _eventingBasicConsumerFactory;
-        
+        private bool _disposed;
+
         public IModel Channel { get; }
 
         internal RabbitMQCommandSender(IRabbitMQBusContext context, EventingBasicConsumerFactory factory) : this(context)
@@ -31,7 +32,7 @@ namespace Minor.Nijn.RabbitMQBus
         public Task<ResponseCommandMessage> SendCommandAsync(RequestCommandMessage request)
         {
             _logger.LogInformation("Sending command to {0}", request.RoutingKey);
-            string replyQueueName = Channel.QueueDeclare().QueueName;;
+            string replyQueueName = Channel.QueueDeclare().QueueName;
 
             var props = Channel.CreateBasicProperties();
             props.ReplyTo = replyQueueName;
@@ -110,7 +111,25 @@ namespace Minor.Nijn.RabbitMQBus
         
         public void Dispose()
         {
-            Channel?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~RabbitMQCommandSender()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                Channel?.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

@@ -10,8 +10,6 @@ namespace Minor.Nijn.RabbitMQBus
     public class RabbitMQContextBuilder
     {
         private readonly IConnectionFactory _factory;
-
-        private ILoggerFactory _loggerFactory;
         private ILogger _logger;
         
         public string ExchangeName { get; private set; }
@@ -25,17 +23,14 @@ namespace Minor.Nijn.RabbitMQBus
 
         public RabbitMQContextBuilder()
         {
-            _loggerFactory = NijnLogger.DefaultFactory;
-
-            _loggerFactory
+            NijnLogger.DefaultFactory
                 .AddSerilog(new LoggerConfiguration()
                     .MinimumLevel.Verbose()
                     .Enrich.FromLogContext()
                     .WriteTo.Console()
                     .CreateLogger());
 
-            NijnLogger.LoggerFactory = _loggerFactory;
-            _logger = _loggerFactory.CreateLogger<RabbitMQContextBuilder>();
+            _logger = NijnLogger.CreateLogger<RabbitMQContextBuilder>();
         }
         
         internal RabbitMQContextBuilder(IConnectionFactory factory) : this()
@@ -64,11 +59,9 @@ namespace Minor.Nijn.RabbitMQBus
         }
 
         public RabbitMQContextBuilder SetLoggerFactory(ILoggerFactory loggerFactory)
-        {
-            _loggerFactory = loggerFactory;
-            
-            NijnLogger.LoggerFactory = _loggerFactory;
-            _logger = _loggerFactory.CreateLogger<RabbitMQContextBuilder>();
+        {            
+            NijnLogger.LoggerFactory = loggerFactory;
+            _logger = NijnLogger.CreateLogger<RabbitMQContextBuilder>();
             
             return this;
         }

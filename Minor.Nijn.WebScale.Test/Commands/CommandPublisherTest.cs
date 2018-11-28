@@ -39,9 +39,9 @@ namespace Minor.Nijn.WebScale.Commands.Test
             
             var target = new CommandPublisher(contextMock.Object);
             target.Dispose();
+            target.Dispose(); // Don't call dispose the second time
 
-            contextMock.VerifyAll();
-            senderMock.VerifyAll();
+            senderMock.Verify(s => s.Dispose(), Times.Once);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Minor.Nijn.WebScale.Events
         public long Timestamp { get; }
         public Guid ID { get; }
 
-        public DomainEvent(string routingKey)
+        protected DomainEvent(string routingKey)
         {
             RoutingKey = routingKey;
             Timestamp = DateTime.Now.Ticks;

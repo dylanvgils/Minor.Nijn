@@ -96,10 +96,11 @@ namespace Minor.Nijn.WebScale.Test
             busContextMock.Setup(ctx => ctx.Dispose());
 
             target.Dispose();
+            target.Dispose(); // Don't call dispose the second time
 
             eventListenerMock.VerifyAll();
             commandListenerMock.VerifyAll();
-            busContextMock.VerifyAll();
+            busContextMock.Verify(ctx => ctx.Dispose(), Times.Once);
         }
     }
 }

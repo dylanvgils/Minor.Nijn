@@ -50,7 +50,10 @@ namespace Minor.Nijn.TestBus.CommandBus
                 callback(args.Message.Command as RequestCommandMessage);
             });
         }
-        
-        public void Dispose() { }
+
+        public void Dispose()
+        {
+            // No need to dispose anything in the TestBus
+        }
     }
 }

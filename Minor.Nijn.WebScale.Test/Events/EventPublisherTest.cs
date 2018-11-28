@@ -38,9 +38,9 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             var target = new EventPublisher(busContextMock.Object);
             target.Dispose();
+            target.Dispose(); // Don't call dispose the second time
 
-            senderMock.VerifyAll();
-            busContextMock.VerifyAll();
+            senderMock.Verify(s => s.Dispose(), Times.Once());
         }
     }
 }

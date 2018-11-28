@@ -19,6 +19,7 @@ namespace Minor.Nijn.WebScale.Events
 
         private IMessageReceiver _receiver;
         private bool _isListening;
+        private bool _disposed;
 
         internal EventListener(Type type, MethodInfo method, string queueName, IEnumerable<string> topicExpressions)
         {
@@ -57,7 +58,25 @@ namespace Minor.Nijn.WebScale.Events
 
         public void Dispose()
         {
-            _receiver?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~EventListener()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                _receiver?.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

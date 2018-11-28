@@ -49,6 +49,9 @@ namespace Minor.Nijn.TestBus.CommandBus
             });
         }
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            // No need to dispose anything in the TestBus
+        }
     }
 }

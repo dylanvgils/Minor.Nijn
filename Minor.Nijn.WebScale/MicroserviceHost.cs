@@ -15,6 +15,7 @@ namespace Minor.Nijn.WebScale
     public class MicroserviceHost : IMicroserviceHost
     {
         private readonly ILogger _logger;
+        private bool _disposed;
 
         public IBusContext<IConnection> Context { get; }
         public List<IEventListener> EventListeners { get; }
@@ -63,9 +64,27 @@ namespace Minor.Nijn.WebScale
 
         public void Dispose()
         {
-            EventListeners.ForEach(e => e.Dispose());
-            CommandListeners.ForEach(c => c.Dispose());
-            Context.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~MicroserviceHost()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                EventListeners.ForEach(e => e.Dispose());
+                CommandListeners.ForEach(c => c.Dispose());
+                Context.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

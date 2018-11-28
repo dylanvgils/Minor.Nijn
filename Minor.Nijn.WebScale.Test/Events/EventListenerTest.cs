@@ -145,10 +145,9 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             target.StartListening(microServiceHostMock.Object);
             target.Dispose();
+            target.Dispose(); // Don't call dispose the second time
 
-            microServiceHostMock.VerifyAll();
-            busContextMock.VerifyAll();
-            messageReceiverMock.VerifyAll();
+            messageReceiverMock.Verify(recv => recv.Dispose(), Times.Once);
         }
     }
 }

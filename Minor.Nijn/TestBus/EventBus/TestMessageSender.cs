@@ -14,6 +14,9 @@
             _context.EventBus.DispatchMessage(message);
         }
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            // No need to dispose anything in the TestBus
+        }
     }
 }
