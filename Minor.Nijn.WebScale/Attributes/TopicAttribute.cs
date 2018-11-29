@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Minor.Nijn.WebScale.Attributes
 {
@@ -11,11 +12,11 @@ namespace Minor.Nijn.WebScale.Attributes
     [AttributeUsage(AttributeTargets.Method)]
     public class TopicAttribute : Attribute
     {
-        public string TopicExpression { get; set; }
+        public IEnumerable<string> TopicExpressions { get; set; }
 
-        public TopicAttribute(string topicExpression)
+        public TopicAttribute(string topicExpression, params string[] topicExpressions)
         {
-            TopicExpression = topicExpression;
+            TopicExpressions = new List<string>(topicExpressions) { topicExpression };
         }
     }
 }

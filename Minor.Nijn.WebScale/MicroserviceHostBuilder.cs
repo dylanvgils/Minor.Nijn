@@ -108,7 +108,7 @@ namespace Minor.Nijn.WebScale
                 var attribute = method.GetCustomAttribute<TopicAttribute>();
                 if (attribute != null)
                 {
-                    CreateEventListener(type, method, queueName, attribute.TopicExpression);
+                    CreateEventListener(type, method, queueName, attribute.TopicExpressions);
                 }
             }
         }
@@ -126,10 +126,10 @@ namespace Minor.Nijn.WebScale
             }
         }
 
-        private void CreateEventListener(Type type, MethodInfo method, string queueName, string topicExpression)
+        private void CreateEventListener(Type type, MethodInfo method, string queueName, IEnumerable<string> topicExpressions)
         {
             CheckParameterType(type, method, typeof(DomainEvent));
-            _eventListeners.Add(new EventListener(type, method, queueName, new List<string> { topicExpression }));
+            _eventListeners.Add(new EventListener(type, method, queueName, topicExpressions));
         }
 
         private void CreateCommandListener(Type type, MethodInfo method, string queueName)
