@@ -51,7 +51,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
             var message = new EventMessage(
                 routingKey: routingKey,
                 message: messageBody,
-                eventType: type,
+                type: type,
                 timestamp: timestamp,
                 correlationId: correlationId
             );

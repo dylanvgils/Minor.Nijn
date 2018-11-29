@@ -148,7 +148,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
             Assert.AreEqual(result.Message, replyCommandMessage);
             Assert.AreEqual(result.RoutingKey, routingKey);
             Assert.AreEqual(result.Timestamp, timestamp.UnixTime);
-            Assert.AreEqual(result.EventType, type);
+            Assert.AreEqual(result.Type, type);
             Assert.AreEqual(result.CorrelationId, correlationId);
         }
 

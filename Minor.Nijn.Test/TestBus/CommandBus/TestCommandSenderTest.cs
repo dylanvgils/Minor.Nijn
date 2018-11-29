@@ -20,9 +20,9 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
         [TestMethod]
         public void SendCommandAsync_ShouldCallDispatchMessage()
         {
-            var request = new RequestCommandMessage("Test message.", "type", "id");
-
-            var response = new ResponseCommandMessage("Reply message", "type", "id");
+            var correlationId = "correlationId";
+            var request = new RequestCommandMessage("Test message.", "type", correlationId);
+            var response = new ResponseCommandMessage("Reply message", "type", correlationId);
             var responseCommand = new TestBusCommand(null, response);
 
             CommandBusQueue commandQueue = null;
@@ -34,7 +34,8 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
                 })
                 .Returns(() => commandQueue);
 
-            contextMock.Setup(ctx => ctx.CommandBus.DispatchMessage(It.IsAny<TestBusCommand>()));
+            contextMock.Setup(ctx => ctx.CommandBus.DispatchMessage(It.IsAny<TestBusCommand>()))
+                .Callback((TestBusCommand c) => Assert.AreEqual(correlationId, c.CorrelationId));
 
             var result = target.SendCommandAsync(request);
             commandQueue.Enqueue(responseCommand);
@@ -59,14 +60,39 @@ namespace Minor.Nijn.TestBus.CommandBus.Test
                 })
                 .Returns(() => commandQueue);
 
-            contextMock.Setup(ctx => ctx.CommandBus.DispatchMessage(It.IsAny<TestBusCommand>()))
-                .Callback((TestBusCommand c) => Assert.AreEqual(correlationId, c.CorrelationId));
+            contextMock.Setup(ctx => ctx.CommandBus.DispatchMessage(It.IsAny<TestBusCommand>()));
 
             var result = target.SendCommandAsync(request);
 
             contextMock.VerifyAll();
 
             while(!result.IsFaulted) { }
+            Assert.IsTrue(result.IsFaulted);
+        }
+
+        [TestMethod]
+        public void SendCommandAsync_ShouldThrowTimeoutExceptionAfter_5_SecondsWhenCorrelationIdNotMatches()
+        {
+            var request = new RequestCommandMessage("Test message.", "type", "correlationId");
+            var response = new ResponseCommandMessage("Reply message", "type", "wrongId");
+
+            CommandBusQueue commandQueue = null;
+            contextMock.Setup(ctx => ctx.CommandBus.DeclareCommandQueue(It.IsAny<string>()))
+                .Callback<string>(name =>
+                {
+                    response.RoutingKey = name;
+                    commandQueue = new CommandBusQueue(name);
+                })
+                .Returns(() => commandQueue);
+
+            contextMock.Setup(ctx => ctx.CommandBus.DispatchMessage(It.IsAny<TestBusCommand>()));
+
+            var result = target.SendCommandAsync(request);
+            commandQueue.Enqueue(new TestBusCommand(response.RoutingKey, response));
+
+            contextMock.VerifyAll();
+
+            while (!result.IsFaulted) { }
             Assert.IsTrue(result.IsFaulted);
         }
 
