@@ -27,7 +27,7 @@ namespace Minor.Nijn.RabbitMQBus
             _logger.LogInformation("Send message to routing key: {0}", message.RoutingKey);
 
             var props = Channel.CreateBasicProperties();
-            props.Type = message.EventType ?? "";
+            props.Type = message.Type ?? "";
             props.CorrelationId = message?.CorrelationId ?? Guid.NewGuid().ToString();
             props.Timestamp = message.Timestamp == 0 
                 ? new AmqpTimestamp(DateTime.Now.Ticks) 

@@ -86,7 +86,7 @@ namespace Minor.Nijn.RabbitMQBus
                 callback.Invoke(new EventMessage(
                     routingKey: ea.RoutingKey,
                     message: body,
-                    eventType: ea.BasicProperties.Type,
+                    type: ea.BasicProperties.Type,
                     timestamp: ea.BasicProperties.Timestamp.UnixTime,
                     correlationId: ea.BasicProperties.CorrelationId
                 ));
