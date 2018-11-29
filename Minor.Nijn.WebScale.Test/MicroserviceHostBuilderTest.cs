@@ -1,10 +1,13 @@
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.WebScale.Test.TestClasses;
 using Moq;
 using RabbitMQ.Client;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using Minor.Nijn.WebScale.Test.InvalidTestClasses;
 
 namespace Minor.Nijn.WebScale.Test
 {
@@ -79,6 +82,38 @@ namespace Minor.Nijn.WebScale.Test
             Assert.AreEqual(2, listeners.Count());
             Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.ProductCommandListenerQueueName));
             Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.OrderCommandListenerQueueName));
+        }
+
+        [TestMethod]
+        public void AddListener_ShouldThrowArgumentExceptionWhenEventMethodHasToManyParameters()
+        {
+            Action action = () => { target.AddListener<InvalidEventParametersLength>(); };
+            var ex = Assert.ThrowsException<ArgumentException>(action);
+            Assert.AreEqual("Method 'ToManyParameters' in type 'InvalidEventParametersLength' has to many parameters", ex.Message);
+        }
+
+        [TestMethod]
+        public void AddListener_ShouldThrowArgumentExceptionWhenCommandMethodHasToManyParameters()
+        {
+            Action action = () => { target.AddListener<InvalidCommandParameterLength>(); };
+            var ex = Assert.ThrowsException<ArgumentException>(action);
+            Assert.AreEqual("Method 'ToManyParameters' in type 'InvalidCommandParameterLength' has to many parameters", ex.Message);
+        }
+
+        [TestMethod]
+        public void AddListener_ShouldThrowArgumentExceptionWhenParameterTypeNotADerivedTypeOfDomainEvent()
+        {
+            Action action = () => { target.AddListener<InvalidEventParameterType>(); };
+            var ex = Assert.ThrowsException<ArgumentException>(action);
+            Assert.AreEqual("Invalid parameter type in 'ParameterTypeInvalid', parameter has to be derived type of DomainEvent", ex.Message);
+        }
+
+        [TestMethod]
+        public void AddListener_ShouldThrowArgumentExceptionWhenParameterTypeNotADerivedTypeOfDomainCommand()
+        {
+            Action action = () => { target.AddListener<InvalidCommandParameterType>(); };
+            var ex = Assert.ThrowsException<ArgumentException>(action);
+            Assert.AreEqual("Invalid parameter type in 'ParameterTypeInvalid', parameter has to be derived type of DomainCommand", ex.Message);
         }
 
         [TestMethod]
