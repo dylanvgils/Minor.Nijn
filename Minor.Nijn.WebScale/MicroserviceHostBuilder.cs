@@ -4,6 +4,7 @@ using Minor.Nijn.WebScale.Attributes;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Minor.Nijn.WebScale.Commands;
 using Minor.Nijn.WebScale.Events;
@@ -53,9 +54,12 @@ namespace Minor.Nijn.WebScale
         /// </summary>
         public MicroserviceHostBuilder UseConventions()
         {
-            // Find Event listeners
             foreach (var type in _callingAssembly.GetTypes())
             {
+                #if DEBUG
+                if (type.Name.StartsWith("Invalid")) continue;
+                #endif
+
                 ParseType(type);
             }
 
@@ -124,12 +128,28 @@ namespace Minor.Nijn.WebScale
 
         private void CreateEventListener(Type type, MethodInfo method, string queueName, string topicExpression)
         {
+            CheckParameterType(type, method, typeof(DomainEvent));
             _eventListeners.Add(new EventListener(type, method, queueName, new List<string> { topicExpression }));
         }
 
         private void CreateCommandListener(Type type, MethodInfo method, string queueName)
         {
+            CheckParameterType(type, method, typeof(DomainCommand));
             _commandListeners.Add(new CommandListener(type, method, queueName));
+        }
+
+        private static void CheckParameterType(MemberInfo type, MethodBase method, Type derivedTypeOf)
+        {
+            var parameters = method.GetParameters();
+            if (parameters.Length > 1)
+            {
+                throw new ArgumentException($"Method '{method.Name}' in type '{type.Name}' has to many parameters");
+            }
+
+            if (!parameters.ElementAtOrDefault(0)?.ParameterType.IsSubclassOf(derivedTypeOf) ?? true)
+            {
+                throw new ArgumentException($"Invalid parameter type in '{method.Name}', parameter has to be derived type of {derivedTypeOf.Name}");
+            }
         }
 
         /// <summary>

@@ -13,8 +13,9 @@ namespace Minor.Nijn.WebScale.Events
         public string QueueName { get; }
         public IEnumerable<string> TopicExpressions { get; }
 
-        public readonly Type _type;
+        private readonly Type _type;
         private readonly MethodInfo _method;
+        private readonly Type _eventType;
         private object _instance;
 
         private IMessageReceiver _receiver;
@@ -25,8 +26,10 @@ namespace Minor.Nijn.WebScale.Events
         {
             QueueName = queueName;
             TopicExpressions = topicExpressions;
+
             _type = type;
             _method = method;
+            _eventType = method.GetParameters()[0].ParameterType;
 
             _logger = NijnWebScaleLogger.CreateLogger<EventListener>();
         }
@@ -49,11 +52,9 @@ namespace Minor.Nijn.WebScale.Events
             _isListening = true;
         }
 
-        // TODO: Add parameter check, parameter has to be derived type of DomainEvent
         internal void HandleEventMessage(EventMessage message)
         {
-            var paramType = _method.GetParameters()[0].ParameterType;
-            var payload = JsonConvert.DeserializeObject(message.Message, paramType);
+            var payload = JsonConvert.DeserializeObject(message.Message, _eventType);
             _method.Invoke(_instance, new [] { payload });
         }
 

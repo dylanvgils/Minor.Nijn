@@ -1,7 +1,7 @@
-﻿using System;
-using System.Reflection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System;
+using System.Reflection;
 
 namespace Minor.Nijn.WebScale.Commands
 {
@@ -13,6 +13,7 @@ namespace Minor.Nijn.WebScale.Commands
 
         private readonly Type _type;
         private readonly MethodInfo _method;
+        private readonly Type _commandType;
         private object _instance;
 
         private ICommandReceiver _receiver;
@@ -23,7 +24,9 @@ namespace Minor.Nijn.WebScale.Commands
         {
             QueueName = queueName;
             _type = type;
+
             _method = method;
+            _commandType = method.GetParameters()[0].ParameterType;
 
             _logger = NijnWebScaleLogger.CreateLogger<CommandListener>();
         }
@@ -45,11 +48,9 @@ namespace Minor.Nijn.WebScale.Commands
             _isListening = true;
         }
 
-        // TODO: Add parameter check, parameter has to be derived type of DomainCommand
         internal ResponseCommandMessage HandleCommandMessage(RequestCommandMessage message)
         {
-            var paramType = _method.GetParameters()[0].ParameterType;
-            var payload = JsonConvert.DeserializeObject(message.Message, paramType);
+            var payload = JsonConvert.DeserializeObject(message.Message, _commandType);
 
             var result = _method.Invoke(_instance, new [] { payload });
             var json = JsonConvert.SerializeObject(result);
