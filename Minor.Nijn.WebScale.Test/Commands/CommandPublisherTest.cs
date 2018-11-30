@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Minor.Nijn.WebScale.Test.InvalidTestClasses;
 using Minor.Nijn.WebScale.Test.TestClasses.Commands;
 using Minor.Nijn.WebScale.Test.TestClasses.Domain;
 using Moq;
@@ -36,6 +37,56 @@ namespace Minor.Nijn.WebScale.Commands.Test
             Assert.AreEqual(JsonConvert.SerializeObject(command), request.Message);
 
             Assert.AreEqual(42, result.Result);
+        }
+
+        [TestMethod, ExpectedException(typeof(ArgumentException))]
+        public async Task Publish_ShouldReThrowSystemExceptionWhenCommandResponseIsASystemException()
+        {
+            var requestCommand = new AddProductCommand("RoutingKey", 42);
+            var exception = new ArgumentException("Some exception message");
+
+            var responseCommand = new ResponseCommandMessage(
+                message: JsonConvert.SerializeObject(exception),
+                type: exception.GetType().Name,
+                correlationId: requestCommand.CorrelationId,
+                timestamp: requestCommand.Timestamp
+            );
+
+            var senderMock = new Mock<ICommandSender>(MockBehavior.Strict);
+            senderMock.Setup(s => s.SendCommandAsync(It.IsAny<RequestCommandMessage>()))
+                .ReturnsAsync(responseCommand);
+
+            var contextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            contextMock.Setup(ctx => ctx.CreateCommandSender()).Returns(senderMock.Object);
+
+            var target = new CommandPublisher(contextMock.Object);
+
+            await target.Publish<int>(requestCommand);
+        }
+
+        [TestMethod, ExpectedException(typeof(Exception))]
+        public async Task Publish_ShouldReThrowExceptionWhenNoExceptionHasBeenFound()
+        {
+            var requestCommand = new AddProductCommand("RoutingKey", 42);
+            var exception = new InvalidException();
+
+            var responseCommand = new ResponseCommandMessage(
+                message: JsonConvert.SerializeObject(exception),
+                type: exception.GetType().Name,
+                correlationId: requestCommand.CorrelationId,
+                timestamp: requestCommand.Timestamp
+            );
+
+            var senderMock = new Mock<ICommandSender>(MockBehavior.Strict);
+            senderMock.Setup(s => s.SendCommandAsync(It.IsAny<RequestCommandMessage>()))
+                .ReturnsAsync(responseCommand);
+
+            var contextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            contextMock.Setup(ctx => ctx.CreateCommandSender()).Returns(senderMock.Object);
+
+            var target = new CommandPublisher(contextMock.Object);
+
+            await target.Publish<int>(requestCommand);
         }
 
         [TestMethod, ExpectedException(typeof(ObjectDisposedException))]

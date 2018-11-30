@@ -1,7 +1,8 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
+using System;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace Minor.Nijn.WebScale.Commands
 {
@@ -30,7 +31,36 @@ namespace Minor.Nijn.WebScale.Commands
             );
 
             var result = await _sender.SendCommandAsync(command);
+
+            if (result.Type.Contains("Exception"))
+            {
+                ThrowException(result);
+            }
+
             return JsonConvert.DeserializeObject<T>(result.Message);
+        }
+
+        private static void ThrowException(CommandMessage result)
+        {
+            object exception;
+
+            try
+            {
+                var jsonObject = JObject.Parse(result.Message);
+                var type = Type.GetType(jsonObject["ClassName"].ToString());
+                exception = jsonObject.ToObject(type);
+
+                if (!exception.GetType().IsSubclassOf(typeof(Exception)))
+                {
+                    throw new Exception();
+                }
+            }
+            catch (Exception)
+            {
+                throw new Exception($"Unknown exception occurred of type '{result.Type}' with message: {result.Message}");
+            }
+
+            throw exception as Exception;
         }
 
         private void CheckDisposed()
