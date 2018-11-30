@@ -1,4 +1,5 @@
-﻿using Minor.Nijn.WebScale.Attributes;
+﻿using System;
+using Minor.Nijn.WebScale.Attributes;
 using Minor.Nijn.WebScale.Commands;
 using Minor.Nijn.WebScale.Test.TestClasses.Commands;
 using Minor.Nijn.WebScale.Test.TestClasses.Injectable;
@@ -16,7 +17,7 @@ namespace Minor.Nijn.WebScale.Test.TestClasses
         [Command(TestClassesConstants.ProductCommandListenerQueueName)]
         public int HandleAddProductCommand(AddProductCommand command)
         {
-            return 1;
+            throw new ArgumentException("Some exception message");
         }
     }
 }
