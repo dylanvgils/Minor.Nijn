@@ -103,10 +103,16 @@ namespace Minor.Nijn.WebScale.Commands.Test
         [TestMethod]
         public void HandleCommandMessage_ShouldHandleRequestCommandMessageAndReturnTheRightResult()
         {
-            var correlationId = "correlationId";
             var order = new Order { Id = 1, Description = "Some description" };
             var command = new AddOrderCommand(queueName, order);
-            var commandMessage = new RequestCommandMessage(JsonConvert.SerializeObject(command), "Order", correlationId, queueName);
+
+            var commandMessage = new RequestCommandMessage(
+                message: JsonConvert.SerializeObject(command), 
+                type: command.GetType().Name, 
+                correlationId: command.CorrelationId, 
+                routingKey: queueName, 
+                timestamp: command.Timestamp
+            );
 
             var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
             commandReceiverMock.Setup(recv => recv.DeclareCommandQueue());
@@ -128,9 +134,48 @@ namespace Minor.Nijn.WebScale.Commands.Test
 
             var result = OrderCommandListener.HandleOrderCreatedEventHasBeenCalledWith;
             Assert.IsTrue(OrderCommandListener.HandleOrderCreatedEventHasBeenCalled);
+
             Assert.IsNotNull(result);
+            Assert.AreEqual(queueName, result.RoutingKey);
+            Assert.AreEqual(command.CorrelationId, result.CorrelationId);
+            Assert.AreEqual(command.Timestamp, result.Timestamp);
             Assert.AreEqual(order.Id, result.Order.Id);
             Assert.AreEqual(order.Description, result.Order.Description);
+        }
+
+        [TestMethod]
+        public void HandleCommandMessage_ShouldHandleRequestCommandWithWrongType()
+        {
+            var order = new Order { Id = 1, Description = "Some description" };
+            var command = new AddOrderCommand(queueName, order);
+
+            var commandMessage = new RequestCommandMessage(
+                message: JsonConvert.SerializeObject(command),
+                type: "WrongType",
+                correlationId: command.CorrelationId,
+                routingKey: queueName,
+                timestamp: command.Timestamp
+            );
+
+            var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
+            commandReceiverMock.Setup(recv => recv.DeclareCommandQueue());
+            commandReceiverMock.Setup(recv => recv.StartReceivingCommands(It.IsAny<CommandReceivedCallback>()));
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(queueName)).Returns(commandReceiverMock.Object);
+
+            var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            hostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+            hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+            target.StartListening(hostMock.Object);
+
+            target.HandleCommandMessage(commandMessage);
+
+            commandReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+            hostMock.VerifyAll();
+
+            Assert.IsFalse(OrderCommandListener.HandleOrderCreatedEventHasBeenCalled);
         }
 
         [TestMethod]

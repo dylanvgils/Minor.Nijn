@@ -113,7 +113,13 @@ namespace Minor.Nijn.WebScale.Events.Test
             var routingKey = "a.b.c";
             var order = new Order { Id = 1, Description = "Some Description" };
             var orderCreatedEvent = new OrderCreatedEvent(routingKey, order);
-            var eventMessage = new EventMessage(routingKey, JsonConvert.SerializeObject(orderCreatedEvent));
+            var eventMessage = new EventMessage(
+                routingKey: routingKey, 
+                message: JsonConvert.SerializeObject(orderCreatedEvent),
+                type: orderCreatedEvent.GetType().Name,
+                timestamp: orderCreatedEvent.Timestamp,
+                correlationId: orderCreatedEvent.CorrelationId
+            );
 
             var messageReceiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
             messageReceiverMock.Setup(recv => recv.DeclareQueue());
@@ -132,8 +138,43 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             var result = OrderEventListener.HandleOrderCreatedEventHasBeenCalledWith;
             Assert.IsTrue(OrderEventListener.HandleOrderCreatedEventHasBeenCalled);
+            Assert.AreEqual(orderCreatedEvent.RoutingKey, result.RoutingKey);
+            Assert.AreEqual(orderCreatedEvent.CorrelationId, result.CorrelationId);
+            Assert.AreEqual(orderCreatedEvent.Timestamp, result.Timestamp);
             Assert.AreEqual(order.Id, result.Order.Id);
             Assert.AreEqual(order.Description, result.Order.Description);
+        }
+
+        [TestMethod]
+        public void HandleEventMessage_ShouldHandleEventMessageWithWrongType()
+        {
+            var routingKey = "a.b.c";
+            var order = new Order { Id = 1, Description = "Some Description" };
+            var orderCreatedEvent = new OrderCreatedEvent(routingKey, order);
+            var eventMessage = new EventMessage(
+                routingKey: routingKey,
+                message: JsonConvert.SerializeObject(orderCreatedEvent),
+                type: "WrongType",
+                timestamp: orderCreatedEvent.Timestamp,
+                correlationId: orderCreatedEvent.CorrelationId
+            );
+
+            var messageReceiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
+            messageReceiverMock.Setup(recv => recv.DeclareQueue());
+            messageReceiverMock.Setup(recv => recv.StartReceivingMessages(It.IsAny<EventMessageReceivedCallback>()));
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(queueName, topicExpressions))
+                .Returns(messageReceiverMock.Object);
+
+            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+            microServiceHostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+            target.StartListening(microServiceHostMock.Object);
+
+            target.HandleEventMessage(eventMessage);
+
+            Assert.IsFalse(OrderEventListener.HandleOrderCreatedEventHasBeenCalled);
         }
 
         [TestMethod]
