@@ -1,12 +1,18 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace Minor.Nijn.WebScale.Events
 {
     public abstract class DomainEvent
     {
+        [JsonProperty]
         public string RoutingKey { get; }
-        public long Timestamp { get; }
-        public string CorrelationId { get; }
+
+        [JsonProperty]
+        public long Timestamp { get; internal set; }
+
+        [JsonProperty]
+        public string CorrelationId { get; internal set; }
 
         protected DomainEvent(string routingKey)
         {

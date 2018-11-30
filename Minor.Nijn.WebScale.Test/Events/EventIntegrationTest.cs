@@ -45,7 +45,14 @@ namespace Minor.Nijn.WebScale.Events.Test
         {
             var routingKey = TestClassesConstants.OrderEventHandlerTopic;
             var order = new Order {Id = 1, Description = "Some description"};
-            var orderCreatedEvent = new OrderCreatedEvent(routingKey, order); 
+            var orderCreatedEvent = new OrderCreatedEvent(routingKey, order);
+            var eventMessage = new EventMessage(
+                routingKey: routingKey,
+                message: JsonConvert.SerializeObject(orderCreatedEvent),
+                type: orderCreatedEvent.GetType().Name,
+                timestamp: orderCreatedEvent.Timestamp,
+                correlationId: orderCreatedEvent.CorrelationId
+            );
 
             var busContext = new TestBusContextBuilder().CreateTestContext();
             var messageSender = busContext.CreateMessageSender();
@@ -56,12 +63,15 @@ namespace Minor.Nijn.WebScale.Events.Test
             using (var host = hostBuilder.CreateHost())
             {
                 host.RegisterListeners();
-                messageSender.SendMessage(new EventMessage(routingKey, JsonConvert.SerializeObject(orderCreatedEvent)));
+                messageSender.SendMessage(eventMessage);
 
                 Assert.IsTrue(host.ListenersRegistered);
                 Assert.IsTrue(OrderEventListener.HandleOrderCreatedEventHasBeenCalled);
 
                 var result = OrderEventListener.HandleOrderCreatedEventHasBeenCalledWith;
+                Assert.AreEqual(orderCreatedEvent.RoutingKey, result.RoutingKey);
+                Assert.AreEqual(orderCreatedEvent.Timestamp, result.Timestamp);
+                Assert.AreEqual(orderCreatedEvent.CorrelationId, result.CorrelationId);
                 Assert.AreEqual(order.Id, result.Order.Id);
                 Assert.AreEqual(order.Description, result.Order.Description);
             }

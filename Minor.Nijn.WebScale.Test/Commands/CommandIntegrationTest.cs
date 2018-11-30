@@ -47,11 +47,18 @@ namespace Minor.Nijn.WebScale.Commands.Test
         [TestMethod]
         public void CommandListenerCanReceiveDomainCommands()
         {
-            var correlationId = Guid.NewGuid().ToString();
             var commandQueue = TestClassesConstants.OrderCommandListenerQueueName;
             var order = new Order { Id = 1, Description = "Some description" };
             var addOrderCommand = new AddOrderCommand(commandQueue, order);
-            var commandMessage = new RequestCommandMessage(JsonConvert.SerializeObject(addOrderCommand), "type", correlationId, commandQueue);
+
+            var commandMessage = new RequestCommandMessage(
+                message: JsonConvert.SerializeObject(addOrderCommand), 
+                type: addOrderCommand.GetType().Name, 
+                correlationId: addOrderCommand.CorrelationId, 
+                routingKey:commandQueue,
+                timestamp: addOrderCommand.Timestamp
+            );
+
             var command = new TestBusCommand(null, commandMessage);
 
             var busContext = new TestBusContextBuilder().CreateTestContext();
@@ -68,6 +75,9 @@ namespace Minor.Nijn.WebScale.Commands.Test
                 Assert.IsTrue(OrderCommandListener.HandleOrderCreatedEventHasBeenCalled, "Event listener has been called");
 
                 var result = OrderCommandListener.HandleOrderCreatedEventHasBeenCalledWith;
+                Assert.AreEqual(commandMessage.RoutingKey, result.RoutingKey);
+                Assert.AreEqual(commandMessage.CorrelationId, result.CorrelationId);
+                Assert.AreEqual(commandMessage.Timestamp, result.Timestamp);
                 Assert.AreEqual(order.Id, result.Order.Id);
                 Assert.AreEqual(order.Description, result.Order.Description);
             }
