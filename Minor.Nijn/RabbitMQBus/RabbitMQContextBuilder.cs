@@ -104,10 +104,8 @@ namespace Minor.Nijn.RabbitMQBus
         {
             _logger.LogInformation("Creating RabbitMQBusContext for exchange: {0} on host {1}:{2}", ExchangeName, Hostname, Port);
             _logger.LogDebug("Context configuration: type={1}, username={2}, password={3}", Type, Username, Password);
-            
-            var factory = _factory ?? new ConnectionFactory{ HostName = Hostname, Port = Port };
-            var connection = factory.CreateConnection();
 
+            var connection = CreateConnection();
             using (var channel = connection.CreateModel())
             {
                 channel.ExchangeDeclare(
@@ -120,6 +118,24 @@ namespace Minor.Nijn.RabbitMQBus
             }
 
             return new RabbitMQBusContext(connection, ExchangeName);
+        }
+
+        private IConnection CreateConnection()
+        {
+            IConnection connection;
+            var factory = _factory ?? new ConnectionFactory { HostName = Hostname, Port = Port };
+
+            try
+            {
+                connection = factory.CreateConnection();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Unable to connect to the RabbitMQ host on address: {0}:{1}", Hostname, Port);
+                throw new BusConfigurationException("Unable to connect to the RabbitMQ host", e);
+            }
+
+            return connection;
         }
     }
 }
