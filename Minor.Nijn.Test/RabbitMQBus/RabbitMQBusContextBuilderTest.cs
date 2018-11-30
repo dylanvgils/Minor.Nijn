@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Exceptions;
 
 namespace Minor.Nijn.RabbitMQBus.Test
 {
@@ -94,6 +95,24 @@ namespace Minor.Nijn.RabbitMQBus.Test
             connectionMock.VerifyAll();
             modelMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(RabbitMQBusContext));
+        }
+
+        [TestMethod]
+        public void CreateContext_ShouldThrowExceptionWhenUnableToConnectToTheRabbitMQHost()
+        {
+            var factoryMock = new Mock<IConnectionFactory>(MockBehavior.Strict);
+            factoryMock.Setup(fact => fact.CreateConnection())
+                .Throws(new BrokerUnreachableException(new Exception()));
+
+            var target = new RabbitMQContextBuilder(factoryMock.Object)
+                .WithExchange("ExchangeName")
+                .WithAddress(hostName: "localhost", port: 5642)
+                .WithCredentials(userName: "username", password: "password");
+
+            Action action = () => { target.CreateContext(); };
+
+            var ex = Assert.ThrowsException<BusConfigurationException>(action);
+            Assert.AreEqual("Unable to connect to the RabbitMQ host", ex.Message);
         }
 
         [TestMethod]
