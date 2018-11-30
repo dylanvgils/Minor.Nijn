@@ -85,19 +85,22 @@ namespace Minor.Nijn.RabbitMQBus.Test
 
             var type = "Type";
             var correlationId = "CorrelationId";
+            var timestamp = DateTime.Now.Ticks;
             var replyToQueueName = "ReplyToQueueName";
             var requestMessageBody = "Test message";
             var replyMessageBody = "Reply message";
-            var replyMessage = new ResponseCommandMessage(replyMessageBody, type, correlationId);
+            var replyMessage = new ResponseCommandMessage(replyMessageBody, type, correlationId, timestamp);
             
             var propsRequestMock = new Mock<IBasicProperties>(MockBehavior.Strict);
             propsRequestMock.SetupGet(props => props.Type).Returns(type);
             propsRequestMock.SetupGet(props => props.ReplyTo).Returns(replyToQueueName);
             propsRequestMock.SetupGet(props => props.CorrelationId).Returns(correlationId);
+            propsRequestMock.SetupGet(props => props.Timestamp).Returns(new AmqpTimestamp(timestamp));
 
             var propsReplyMock = new Mock<IBasicProperties>(MockBehavior.Strict);
             propsReplyMock.SetupSet(props => props.CorrelationId = correlationId);
             propsReplyMock.SetupSet(props => props.Type = type);
+            propsReplyMock.SetupSet(props => props.Timestamp = new AmqpTimestamp(timestamp));
 
             channelMock.Setup(chan => chan.CreateBasicProperties()).Returns(propsReplyMock.Object);
             channelMock.Setup(chan =>
@@ -135,9 +138,74 @@ namespace Minor.Nijn.RabbitMQBus.Test
             eventingBasicConsumerFactoryMock.VerifyAll();
             contextMock.VerifyAll();
             
-            Assert.AreEqual(requestMessage.Message, requestMessageBody);
-            Assert.AreEqual(replyMessage.Type, type);
-            Assert.AreEqual(requestMessage.CorrelationId, correlationId);
+            Assert.AreEqual(requestMessageBody, requestMessage.Message);
+            Assert.AreEqual(type, replyMessage.Type);
+            Assert.AreEqual(correlationId, requestMessage.CorrelationId);
+            Assert.AreEqual(timestamp, replyMessage.Timestamp);
+        }
+
+        [TestMethod]
+        public void StartReceivingCommands_ShouldUseDefaultValuesInBasicPropertiesWhenNotProvided()
+        {
+            var consumer = new EventingBasicConsumer(channelMock.Object);
+
+            var type = "Type";
+            var correlationId = "CorrelationId";
+            var replyToQueueName = "ReplyToQueueName";
+            var requestMessageBody = "Test message";
+            var replyMessageBody = "Reply message";
+            var replyMessage = new ResponseCommandMessage(replyMessageBody, type, correlationId);
+
+            var propsRequestMock = new Mock<IBasicProperties>(MockBehavior.Strict);
+            propsRequestMock.SetupGet(props => props.Type).Returns(type);
+            propsRequestMock.SetupGet(props => props.ReplyTo).Returns(replyToQueueName);
+            propsRequestMock.SetupGet(props => props.CorrelationId).Returns(correlationId);
+            propsRequestMock.SetupGet(props => props.Timestamp).Returns(new AmqpTimestamp());
+
+            var propsReplyMock = new Mock<IBasicProperties>(MockBehavior.Strict);
+            propsReplyMock.SetupSet(props => props.CorrelationId = correlationId);
+            propsReplyMock.SetupSet(props => props.Type = type);
+            propsReplyMock.SetupSet(props => props.Timestamp = It.IsAny<AmqpTimestamp>());
+
+            channelMock.Setup(chan => chan.CreateBasicProperties()).Returns(propsReplyMock.Object);
+            channelMock.Setup(chan =>
+                    chan.BasicConsume(queueName, false, "", false, false, null, consumer))
+                .Returns("Ok");
+            channelMock.Setup(chan => chan.QueueDeclare(queueName, false, false, false, null)).Returns(new QueueDeclareOk(queueName, 0, 0));
+            channelMock.Setup(chan => chan.BasicQos(0, 1, false));
+
+            channelMock.Setup(chan => chan.BasicPublish(
+                "",
+                replyToQueueName,
+                false,
+                propsReplyMock.Object,
+                It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == replyMessageBody)
+            ));
+
+            channelMock.Setup(chan => chan.BasicAck(1, false));
+
+            eventingBasicConsumerFactoryMock.Setup(fact => fact.CreateEventingBasicConsumer(channelMock.Object))
+                .Returns(consumer);
+
+            CommandMessage requestMessage = null;
+            target.DeclareCommandQueue();
+            target.StartReceivingCommands(eventMessage =>
+            {
+                requestMessage = eventMessage;
+                return replyMessage;
+            });
+
+            consumer.HandleBasicDeliver("", 1, false, "", "routingKey", propsRequestMock.Object, Encoding.UTF8.GetBytes(requestMessageBody));
+
+            propsRequestMock.VerifyAll();
+            propsReplyMock.VerifyAll();
+            channelMock.VerifyAll();
+            eventingBasicConsumerFactoryMock.VerifyAll();
+            contextMock.VerifyAll();
+
+            Assert.AreEqual(requestMessageBody, requestMessage.Message);
+            Assert.AreEqual(type, replyMessage.Type);
+            Assert.AreEqual(correlationId, requestMessage.CorrelationId);
         }
 
         [TestMethod]
