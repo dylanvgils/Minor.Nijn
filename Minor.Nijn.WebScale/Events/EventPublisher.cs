@@ -19,7 +19,15 @@ namespace Minor.Nijn.WebScale.Events
             CheckDisposed();
 
             var body = JsonConvert.SerializeObject(domainEvent);
-            var message = new EventMessage(domainEvent.RoutingKey, body);
+
+            var message = new EventMessage(
+                routingKey: domainEvent.RoutingKey,
+                message: body,
+                type: domainEvent.GetType().Name,
+                timestamp: domainEvent.Timestamp,
+                correlationId: domainEvent.CorrelationId
+            );
+
             _sender.SendMessage(message);
         }
 

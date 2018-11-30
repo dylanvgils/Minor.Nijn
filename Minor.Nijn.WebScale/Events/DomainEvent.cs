@@ -6,13 +6,13 @@ namespace Minor.Nijn.WebScale.Events
     {
         public string RoutingKey { get; }
         public long Timestamp { get; }
-        public Guid ID { get; }
+        public string CorrelationId { get; }
 
         protected DomainEvent(string routingKey)
         {
             RoutingKey = routingKey;
             Timestamp = DateTime.Now.Ticks;
-            ID = Guid.NewGuid();
+            CorrelationId = Guid.NewGuid().ToString();
         }
     }
 }
