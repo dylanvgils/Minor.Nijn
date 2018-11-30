@@ -90,7 +90,8 @@ namespace Minor.Nijn.RabbitMQBus
                 var replyMessage = callback(new RequestCommandMessage(
                     message: requestBody,
                     type: args.BasicProperties.Type,
-                    correlationId: args.BasicProperties.CorrelationId
+                    correlationId: args.BasicProperties.CorrelationId,
+                    timestamp: args.BasicProperties.Timestamp.UnixTime
                 ));
 
                 PublishResponse(args, replyMessage);
@@ -106,6 +107,9 @@ namespace Minor.Nijn.RabbitMQBus
             var replyProps = Channel.CreateBasicProperties();
             replyProps.CorrelationId = args.BasicProperties.CorrelationId;
             replyProps.Type = replyMessage.Type ?? "";
+            replyProps.Timestamp = replyMessage.Timestamp == 0
+                ? new AmqpTimestamp(DateTime.Now.Ticks)
+                : new AmqpTimestamp(replyMessage.Timestamp);
 
             Channel.BasicPublish(
                 exchange: "",

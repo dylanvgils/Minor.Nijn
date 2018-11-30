@@ -6,24 +6,28 @@ namespace Minor.Nijn
     {
         public string RoutingKey { get; protected set; }
         public string Type { get; }
+        public long Timestamp { get; }
         public string CorrelationId { get; }
         public string Message { get; }
 
-        protected CommandMessage(string message, string type, string correlationId)
+        protected CommandMessage(string message, string type, string correlationId, long timestamp = 0)
         {
             Message = message;
             Type = type;
             CorrelationId = correlationId;
+            Timestamp = timestamp;
         }
     }
 
     public class RequestCommandMessage : CommandMessage
     {
-        internal RequestCommandMessage(string message, string type, string correlationId) : base(message, type, correlationId)
+        internal RequestCommandMessage(string message, string type, string correlationId, long timestamp = 0) 
+            : base(message, type, correlationId, timestamp)
         {
         }
 
-        public RequestCommandMessage(string message, string type, string correlationId, string routingKey) : base(message, type, correlationId)
+        public RequestCommandMessage(string message, string type, string correlationId, string routingKey, long timestamp = 0) 
+            : base(message, type, correlationId, timestamp)
         {
             RoutingKey = routingKey;
         }
@@ -37,7 +41,8 @@ namespace Minor.Nijn
             set => base.RoutingKey = value;
         }
 
-        public ResponseCommandMessage(string message, string type, string correlationId) : base(message, type, correlationId)
+        public ResponseCommandMessage(string message, string type, string correlationId, long timestamp = 0) 
+            : base(message, type, correlationId, timestamp)
         {
         }
     }

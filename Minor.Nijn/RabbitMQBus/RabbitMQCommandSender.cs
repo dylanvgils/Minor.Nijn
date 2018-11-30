@@ -40,6 +40,9 @@ namespace Minor.Nijn.RabbitMQBus
             props.ReplyTo = replyQueueName;
             props.CorrelationId = request.CorrelationId;
             props.Type = request.Type;
+            props.Timestamp = request.Timestamp == 0
+                ? new AmqpTimestamp(DateTime.Now.Ticks)
+                : new AmqpTimestamp(request.Timestamp);
 
             var task = SubscribeToResponseQueue(replyQueueName, request.CorrelationId);
 
@@ -93,9 +96,10 @@ namespace Minor.Nijn.RabbitMQBus
                     string body = Encoding.UTF8.GetString(args.Body);
                     
                     response = new ResponseCommandMessage(
-                        body,
-                        args.BasicProperties.Type,
-                        args.BasicProperties.CorrelationId
+                        message: body,
+                        type: args.BasicProperties.Type,
+                        correlationId: args.BasicProperties.CorrelationId,
+                        timestamp: args.BasicProperties.Timestamp.UnixTime
                     );
 
                     flag.Set();
