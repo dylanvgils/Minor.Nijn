@@ -18,15 +18,22 @@ namespace Minor.Nijn.WebScale.Commands.Test
             var input = 21;
             var command = new AddProductCommand("RoutingKey", input);
 
+            CommandMessage request = null;
             var senderMock = new Mock<ICommandSender>(MockBehavior.Strict);
             senderMock.Setup(s => s.SendCommandAsync(It.IsAny<RequestCommandMessage>()))
-                .ReturnsAsync(new ResponseCommandMessage(JsonConvert.SerializeObject(input * 2), "int", "correlationId"));
+                .ReturnsAsync(new ResponseCommandMessage(JsonConvert.SerializeObject(input * 2), "int", "correlationId"))
+                .Callback((RequestCommandMessage m) => request = m);
 
             var contextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
             contextMock.Setup(ctx => ctx.CreateCommandSender()).Returns(senderMock.Object);
 
             var target = new CommandPublisher(contextMock.Object);
             var result = target.Publish<int>(command);
+
+            Assert.AreEqual(command.RoutingKey, request.RoutingKey);
+            Assert.AreEqual(command.CorrelationId, request.CorrelationId);
+            Assert.AreEqual(command.Timestamp, request.Timestamp);
+            Assert.AreEqual(JsonConvert.SerializeObject(command), request.Message);
 
             Assert.AreEqual(42, result.Result);
         }

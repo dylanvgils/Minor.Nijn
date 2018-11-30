@@ -20,7 +20,15 @@ namespace Minor.Nijn.WebScale.Commands
             CheckDisposed();
 
             var body = JsonConvert.SerializeObject(domainCommand);
-            var command = new RequestCommandMessage(body, typeof(T).Name, domainCommand.CorrelationId, domainCommand.RoutingKey);
+
+            var command = new RequestCommandMessage(
+                message: body, 
+                type: domainCommand.GetType().Name, 
+                correlationId: domainCommand.CorrelationId, 
+                routingKey: domainCommand.RoutingKey,
+                timestamp: domainCommand.Timestamp
+            );
+
             var result = await _sender.SendCommandAsync(command);
             return JsonConvert.DeserializeObject<T>(result.Message);
         }
