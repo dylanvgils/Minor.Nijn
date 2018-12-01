@@ -1,12 +1,12 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.WebScale.Test.TestClasses;
-using Moq;
-using RabbitMQ.Client;
-using System;
-using Minor.Nijn.WebScale.Commands;
 using Minor.Nijn.WebScale.Test.TestClasses.Commands;
 using Minor.Nijn.WebScale.Test.TestClasses.Domain;
+using Moq;
 using Newtonsoft.Json;
+using RabbitMQ.Client;
+using System;
+using Minor.Nijn.WebScale.Test.InvalidTestClasses;
 
 namespace Minor.Nijn.WebScale.Commands.Test
 {
@@ -170,13 +170,56 @@ namespace Minor.Nijn.WebScale.Commands.Test
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
             target.StartListening(hostMock.Object);
 
-            target.HandleCommandMessage(commandMessage);
+            var result = target.HandleCommandMessage(commandMessage);
 
             commandReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
             hostMock.VerifyAll();
 
             Assert.IsFalse(OrderCommandListener.HandleOrderCreatedEventHasBeenCalled);
+            Assert.AreEqual("ArgumentException", result.Type);
+            Assert.AreEqual(command.CorrelationId, result.CorrelationId);
+        }
+
+        [TestMethod]
+        public void HandleCommandMessage_ShouldHandleExceptionThrownByCommandListenerMethod()
+        {
+            var queueName = "InvalidCommandQueue";
+            var command = new AddProductCommand(queueName, 42);
+
+            var commandMessage = new RequestCommandMessage(
+                message: JsonConvert.SerializeObject(command),
+                type: command.GetType().Name,
+                correlationId: command.CorrelationId,
+                routingKey: queueName,
+                timestamp: command.Timestamp
+            );
+
+            var type = typeof(InvalidCommandListener);
+            var method = type.GetMethod("ThrowException");
+            var target = new CommandListener(type, method, queueName);
+
+            var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
+            commandReceiverMock.Setup(recv => recv.DeclareCommandQueue());
+            commandReceiverMock.Setup(recv => recv.StartReceivingCommands(It.IsAny<CommandReceivedCallback>()));
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(queueName)).Returns(commandReceiverMock.Object);
+
+            var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            hostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+            hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+
+            target.StartListening(hostMock.Object);
+
+            var result = target.HandleCommandMessage(commandMessage);
+
+            commandReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+            hostMock.VerifyAll();
+
+            Assert.AreEqual("NullReferenceException", result.Type);
+            Assert.AreEqual(command.CorrelationId, result.CorrelationId);
         }
 
         [TestMethod]
