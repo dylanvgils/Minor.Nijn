@@ -4,10 +4,8 @@ using Minor.Nijn.TestBus;
 using Minor.Nijn.TestBus.CommandBus;
 using Minor.Nijn.WebScale.Test.TestClasses;
 using Minor.Nijn.WebScale.Test.TestClasses.Commands;
-using Minor.Nijn.WebScale.Test.TestClasses.Domain;
 using Minor.Nijn.WebScale.Test.TestClasses.Injectable;
 using Newtonsoft.Json;
-using System;
 using System.Threading.Tasks;
 using Order = Minor.Nijn.WebScale.Test.TestClasses.Domain.Order;
 
