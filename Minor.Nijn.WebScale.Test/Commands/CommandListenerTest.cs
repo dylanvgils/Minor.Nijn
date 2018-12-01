@@ -3,6 +3,7 @@ using Minor.Nijn.WebScale.Test.TestClasses;
 using Moq;
 using RabbitMQ.Client;
 using System;
+using Minor.Nijn.WebScale.Commands;
 using Minor.Nijn.WebScale.Test.TestClasses.Commands;
 using Minor.Nijn.WebScale.Test.TestClasses.Domain;
 using Newtonsoft.Json;

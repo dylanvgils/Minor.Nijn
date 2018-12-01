@@ -1,12 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.WebScale.Test.InvalidTestClasses;
 using Minor.Nijn.WebScale.Test.TestClasses.Commands;
 using Minor.Nijn.WebScale.Test.TestClasses.Domain;
+using Minor.Nijn.WebScale.TestClasses.Exceptions.Test;
 using Moq;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
+using System;
+using System.Threading.Tasks;
 
 namespace Minor.Nijn.WebScale.Commands.Test
 {
@@ -40,7 +41,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
         }
 
         [TestMethod, ExpectedException(typeof(ArgumentException))]
-        public async Task Publish_ShouldReThrowSystemExceptionWhenCommandResponseIsASystemException()
+        public async Task Publish_ShouldReThrowArgumentException()
         {
             var requestCommand = new AddProductCommand("RoutingKey", 42);
             var exception = new ArgumentException("Some exception message");
@@ -64,8 +65,58 @@ namespace Minor.Nijn.WebScale.Commands.Test
             await target.Publish<int>(requestCommand);
         }
 
+        [TestMethod, ExpectedException(typeof(TestException))]
+        public async Task Publish_ShouldReThrowExceptionLocatedInCallingAssembly()
+        {
+            var requestCommand = new AddProductCommand("RoutingKey", 42);
+            var exception = new TestException("Some exception message");
+
+            var responseCommand = new ResponseCommandMessage(
+                message: JsonConvert.SerializeObject(exception),
+                type: exception.GetType().Name,
+                correlationId: requestCommand.CorrelationId,
+                timestamp: requestCommand.Timestamp
+            );
+
+            var senderMock = new Mock<ICommandSender>(MockBehavior.Strict);
+            senderMock.Setup(s => s.SendCommandAsync(It.IsAny<RequestCommandMessage>()))
+                .ReturnsAsync(responseCommand);
+
+            var contextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            contextMock.Setup(ctx => ctx.CreateCommandSender()).Returns(senderMock.Object);
+
+            var target = new CommandPublisher(contextMock.Object);
+
+            await target.Publish<int>(requestCommand);
+        }
+
         [TestMethod, ExpectedException(typeof(Exception))]
         public async Task Publish_ShouldReThrowExceptionWhenNoExceptionHasBeenFound()
+        {
+            var requestCommand = new AddProductCommand("RoutingKey", 42);
+            var exception = new BusConfigurationException("Some exception message");
+
+            var responseCommand = new ResponseCommandMessage(
+                message: JsonConvert.SerializeObject(exception),
+                type: exception.GetType().Name,
+                correlationId: requestCommand.CorrelationId,
+                timestamp: requestCommand.Timestamp
+            );
+
+            var senderMock = new Mock<ICommandSender>(MockBehavior.Strict);
+            senderMock.Setup(s => s.SendCommandAsync(It.IsAny<RequestCommandMessage>()))
+                .ReturnsAsync(responseCommand);
+
+            var contextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            contextMock.Setup(ctx => ctx.CreateCommandSender()).Returns(senderMock.Object);
+
+            var target = new CommandPublisher(contextMock.Object);
+
+            await target.Publish<int>(requestCommand);
+        }
+
+        [TestMethod, ExpectedException(typeof(InvalidCastException))]
+        public async Task Publish_ShouldThrowInvalidCastExceptionWhenUnableToCastTheOccuredException()
         {
             var requestCommand = new AddProductCommand("RoutingKey", 42);
             var exception = new InvalidException();

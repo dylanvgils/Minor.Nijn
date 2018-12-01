@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
@@ -8,11 +9,13 @@ namespace Minor.Nijn.WebScale.Commands
 {
     public class CommandPublisher : ICommandPublisher
     {
+        private readonly Assembly _callingAssembly;
         private readonly ICommandSender _sender;
         private bool _disposed;
 
         public CommandPublisher(IBusContext<IConnection> context)
         {
+            _callingAssembly = Assembly.GetCallingAssembly();
             _sender = context.CreateCommandSender();
         }
 
@@ -40,24 +43,24 @@ namespace Minor.Nijn.WebScale.Commands
             return JsonConvert.DeserializeObject<T>(result.Message);
         }
 
-        private static void ThrowException(CommandMessage result)
+        private void ThrowException(CommandMessage result)
         {
             object exception;
 
             try
             {
-                var jsonObject = JObject.Parse(result.Message);
-                var type = Type.GetType(jsonObject["ClassName"].ToString());
-                exception = jsonObject.ToObject(type);
+                var jObject = JObject.Parse(result.Message);
 
-                if (!exception.GetType().IsSubclassOf(typeof(Exception)))
-                {
-                    throw new Exception();
-                }
+                var type =
+                    _callingAssembly.GetType((string) jObject.GetValue("ClassName"))
+                    ?? Type.GetType((string) jObject.GetValue("ClassName")) 
+                    ?? typeof(Exception);
+
+                exception = jObject.ToObject(type);
             }
             catch (Exception)
             {
-                throw new Exception($"Unknown exception occurred of type '{result.Type}' with message: {result.Message}");
+                throw new InvalidCastException($"Unknown exception occurred of type '{result.Type}' with message: {result.Message}");
             }
 
             throw exception as Exception;
