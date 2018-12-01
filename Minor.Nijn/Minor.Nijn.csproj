@@ -4,12 +4,14 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>Dylan van Gils, Dion de Koning, Justin Moor, Martine Mulder</Authors>
     <Company>_</Company>
-    <Version>0.0.7</Version>
+    <Version>0.1.0</Version>
     <PackageId>Minor.Nijn.Bloem</PackageId>
     <Product>Minor.Nijn</Product>
     <Description>Wrapper around RabbitMQ</Description>
-    <PackageReleaseNotes>Throw exception when queue is not declared</PackageReleaseNotes>
+    <PackageReleaseNotes>Updated TestBus</PackageReleaseNotes>
     <PackageTags>RabbitMQ, Wrapper, EventBus, Messages, Commands</PackageTags>
+    <PackageProjectUrl>https://github.com/dylanvgils/Minor.Nijn</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
