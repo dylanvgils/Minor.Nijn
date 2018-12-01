@@ -50,23 +50,58 @@ namespace Minor.Nijn.WebScale.Commands
 
         internal ResponseCommandMessage HandleCommandMessage(RequestCommandMessage request)
         {
-            if (request.Type != _commandType.Name)
+            ResponseCommandMessage response;
+
+            try
             {
-                _logger.LogError("Received command in invalid format, expected message to be of type {0} and got {1}",
-                    _commandType.Name, request.Type);
-                return null; // TODO: Throw exception as response
+                CheckInputType(request);
+
+                var payload = CreatePayload(request);
+                var json = InvokeListener(payload);
+
+                response = new ResponseCommandMessage(json, _method.ReturnType.Name, request.CorrelationId);
+            }
+            catch (TargetInvocationException e)
+            {
+                var json = JsonConvert.SerializeObject(e.InnerException);
+                response = new ResponseCommandMessage(json, e.InnerException.GetType().Name, request.CorrelationId);
+            }
+            catch (Exception e)
+            {
+                var json = JsonConvert.SerializeObject(e);
+                response = new ResponseCommandMessage(json, e.GetType().Name, request.CorrelationId);
             }
 
+            return response;
+        }
+
+        private void CheckInputType(RequestCommandMessage request)
+        {
+            if (request.Type == _commandType.Name) return;
+
+            _logger.LogError(
+                "Received command in invalid format, expected message to be of type {0} and got {1}",
+                _commandType.Name, request.Type);
+
+            throw new ArgumentException(
+                $"Received command with wrong type, type was {request.Type} and expected {_commandType.Name}");
+        }
+
+        private object CreatePayload(RequestCommandMessage request)
+        {
             var payload = JsonConvert.DeserializeObject(request.Message, _commandType);
 
             // TODO: Set these properties through the JSON Deserializer
             payload.GetType().GetProperty("CorrelationId").SetValue(payload, request.CorrelationId);
             payload.GetType().GetProperty("Timestamp").SetValue(payload, request.Timestamp);
 
-            var result = _method.Invoke(_instance, new [] { payload });
-            var json = JsonConvert.SerializeObject(result);
+            return payload;
+        }
 
-            return new ResponseCommandMessage(json, _method.ReturnType.Name, request.CorrelationId);
+        private string InvokeListener(params object[] payload)
+        {
+            var result = _method.Invoke(_instance, payload);
+            return JsonConvert.SerializeObject(result);
         }
 
         private void CheckDisposed()
