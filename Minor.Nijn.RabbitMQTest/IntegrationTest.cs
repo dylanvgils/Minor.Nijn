@@ -4,6 +4,7 @@ using Minor.Nijn.RabbitMQBus;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RabbitMQ
 {
@@ -11,110 +12,100 @@ namespace RabbitMQ
     public class IntegrationTest
     {
         [TestMethod]
-        public void RabbitMQTest()
-        {
-            var connectionBuilder = new RabbitMQContextBuilder()
-                    .WithExchange("MVM.EventExchange")
-                    .WithAddress("localhost", 5672)
-                    .WithCredentials(userName: "guest", password: "guest")
-                    .WithType("topic");
-
-            string queue = "testqueue";
-            List<string> topics = new List<string> { "topic1", "topic2" };
-
-            using (IRabbitMQBusContext connection = connectionBuilder.CreateContext())
-            {
-                var receiver = connection.CreateMessageReceiver(queue, topics);
-                receiver.DeclareQueue();
-                var sender = connection.CreateMessageSender();
-
-                bool callbackGingAf = false;
-
-                EventMessageReceivedCallback e = new EventMessageReceivedCallback((EventMessage a) => callbackGingAf = true);
-                receiver.StartReceivingMessages(e);
-
-                sender.SendMessage(new EventMessage("topic1", "berichtje"));
-
-                Thread.Sleep(5000);
-
-                Assert.IsTrue(callbackGingAf);
-            }
-        }
-
-        [TestMethod]
         public void CorrectMessageReceived()
         {
-            var connectionBuilder = new RabbitMQContextBuilder()
-                    .WithExchange("MVM.EventExchange")
-                    .WithAddress("localhost", 5672)
-                    .WithCredentials(userName: "guest", password: "guest")
-                    .WithType("topic");
+            var queue = "testQueue";
+            var topics = new List<string> { "topic1", "topic2" };
+            var message = new EventMessage("topic1", "Message 1", "string", DateTime.Now.Ticks, "correlationId");
 
-            string queue = "testqueue";
-            List<string> topics = new List<string> { "topic1", "topic2" };
+            var connectionBuilder = new RabbitMQContextBuilder()
+                .WithExchange("MVM.EventExchange")
+                .WithAddress("localhost", 5672)
+                .WithCredentials(userName: "guest", password: "guest")
+                .WithType("topic");
 
             using (IRabbitMQBusContext connection = connectionBuilder.CreateContext())
             {
                 var receiver = connection.CreateMessageReceiver(queue, topics);
                 receiver.DeclareQueue();
+
                 var sender = connection.CreateMessageSender();
 
-                string msg = "";
+                var flag = new ManualResetEvent(false);
+                EventMessage result = null;
+                receiver.StartReceivingMessages(msg =>
+                {
+                    result = msg;
+                    flag.Set();
+                });
 
-                EventMessageReceivedCallback e = new EventMessageReceivedCallback((EventMessage a) => msg = a.Message);
-                receiver.StartReceivingMessages(e);
+                sender.SendMessage(message);
+                flag.WaitOne(5000);
 
-                sender.SendMessage(new EventMessage("topic1", "berichtje"));
-
-                Thread.Sleep(5000);
-
-                Assert.AreEqual("berichtje", msg);
+                Assert.AreEqual(message.RoutingKey, result.RoutingKey);
+                Assert.AreEqual(message.CorrelationId, result.CorrelationId);
+                Assert.AreEqual(message.Type, result.Type);
+                Assert.AreEqual(message.Timestamp, result.Timestamp);
+                Assert.AreEqual(message.Message, result.Message);
             }
         }
 
         [TestMethod]
         public void ReceiverListeningToCorrectTopics()
         {
-            var connectionBuilder = new RabbitMQContextBuilder()
-                    .WithExchange("MVM.EventExchange")
-                    .WithAddress("localhost", 5672)
-                    .WithCredentials(userName: "guest", password: "guest")
-                    .WithType("topic");
+            var queue = "testQueue";
+            var topics = new List<string> { "topic1", "topic2" };
+            var message1 = new EventMessage("topic1", "Message 1", "string", DateTime.Now.Ticks, "correlationId");
+            var message2 = new EventMessage("topic2", "Message 2", "string", DateTime.Now.Ticks, "anotherCorrelationId");
 
-            string queue = "testqueue";
-            List<string> topics = new List<string> { "topic1", "topic2" };
+            var connectionBuilder = new RabbitMQContextBuilder()
+                .WithExchange("MVM.EventExchange")
+                .WithAddress("localhost", 5672)
+                .WithCredentials(userName: "guest", password: "guest")
+                .WithType("topic");
 
             using (IRabbitMQBusContext connection = connectionBuilder.CreateContext())
             {
                 var receiver = connection.CreateMessageReceiver(queue, topics);
                 receiver.DeclareQueue();
+
                 var sender = connection.CreateMessageSender();
 
-                string msg = "";
+                var flag = new ManualResetEvent(false);
+                EventMessage result = null;
+                receiver.StartReceivingMessages(msg =>
+                {
+                    result = msg;
+                    flag.Set();
+                });
 
-                EventMessageReceivedCallback e = new EventMessageReceivedCallback((EventMessage a) => msg = a.Message);
-                receiver.StartReceivingMessages(e);
+                sender.SendMessage(message1);
+                flag.WaitOne(5000);
 
-                sender.SendMessage(new EventMessage("topic1", "berichtTopic1"));
-              
-                Thread.Sleep(3000);
+                Assert.AreEqual(message1.RoutingKey, result.RoutingKey);
+                Assert.AreEqual(message1.CorrelationId, result.CorrelationId);
+                Assert.AreEqual(message1.Type, result.Type);
+                Assert.AreEqual(message1.Timestamp, result.Timestamp);
+                Assert.AreEqual(message1.Message, result.Message);
 
-                Assert.AreEqual("berichtTopic1", msg);
+                flag.Reset();
+                sender.SendMessage(message2);
+                flag.WaitOne(5000);
 
-                sender.SendMessage(new EventMessage("topic2", "BerichtTopic2"));
-
-                Thread.Sleep(3000);
-
-                Assert.AreEqual("BerichtTopic2", msg);
+                Assert.AreEqual(message2.RoutingKey, result.RoutingKey);
+                Assert.AreEqual(message2.CorrelationId, result.CorrelationId);
+                Assert.AreEqual(message2.Type, result.Type);
+                Assert.AreEqual(message2.Timestamp, result.Timestamp);
+                Assert.AreEqual(message2.Message, result.Message);
             }
         }
-        
+
         [TestMethod]
-        public void CommandCanBeSentAndReceived()
+        public async Task CommandCanBeSentAndReceived()
         {
             var queueName = "TestCommandQueue";
-            var requestCommand = new RequestCommandMessage("Request message", "type", "correlationId",  queueName);
-            var responseCommand = new ResponseCommandMessage("Reply message", "type", requestCommand.CorrelationId);
+            var requestCommand = new RequestCommandMessage("Request message", "type", "correlationId",  queueName, DateTime.Now.Ticks);
+            var responseCommand = new ResponseCommandMessage("Reply message", "type", requestCommand.CorrelationId, DateTime.Now.Ticks);
             
             var connectionBuilder = new RabbitMQContextBuilder()
                 .WithExchange("MVM.EventExchange")
@@ -126,15 +117,27 @@ namespace RabbitMQ
             {
                 var receiver = context.CreateCommandReceiver(queueName);
                 receiver.DeclareCommandQueue();
-                receiver.StartReceivingCommands(request => responseCommand);
+
+                RequestCommandMessage request = null;
+                receiver.StartReceivingCommands(req =>
+                {
+                    request = req;
+                    return responseCommand;
+                });
 
                 var sender = context.CreateCommandSender();
-                var result = sender.SendCommandAsync(requestCommand);
+                var response = await sender.SendCommandAsync(requestCommand);
+
+                Assert.AreEqual(requestCommand.CorrelationId, request.CorrelationId);
+                Assert.AreEqual(requestCommand.Timestamp, request.Timestamp);
+                Assert.AreEqual(requestCommand.Type, request.Type);
+                Assert.AreEqual(requestCommand.Message, request.Message);
 
                 Assert.IsNull(responseCommand.RoutingKey);
-                Assert.AreEqual(responseCommand.CorrelationId, result.Result.CorrelationId);
-                Assert.AreEqual(responseCommand.Type, result.Result.Type);
-                Assert.AreEqual(responseCommand.Message, result.Result.Message);
+                Assert.AreEqual(responseCommand.CorrelationId, response.CorrelationId);
+                Assert.AreEqual(responseCommand.Timestamp, response.Timestamp);
+                Assert.AreEqual(responseCommand.Type, response.Type);
+                Assert.AreEqual(responseCommand.Message, response.Message);
             }
         }
     }
