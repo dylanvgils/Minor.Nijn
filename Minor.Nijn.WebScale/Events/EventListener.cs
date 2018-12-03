@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Minor.Nijn.WebScale.Events
 {
-    public class EventListener : IEventListener
+    internal class EventListener : IEventListener
     {
         private readonly ILogger _logger;
 

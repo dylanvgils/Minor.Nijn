@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Minor.Nijn.WebScale.Commands
 {
-    public class CommandListener : ICommandListener
+    internal class CommandListener : ICommandListener
     {
         private readonly ILogger _logger;
 
