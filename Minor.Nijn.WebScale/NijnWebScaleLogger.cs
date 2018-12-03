@@ -2,7 +2,7 @@
 
 namespace Minor.Nijn.WebScale
 {
-    public static class NijnWebScaleLogger
+    internal static class NijnWebScaleLogger
     {
         public static ILoggerFactory DefaultFactory { get; } = new LoggerFactory();
         public static ILoggerFactory LoggerFactory { get; set; }

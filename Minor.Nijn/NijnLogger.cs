@@ -2,7 +2,7 @@
 
 namespace Minor.Nijn
 {
-    public static class NijnLogger
+    internal static class NijnLogger
     {
         public static ILoggerFactory DefaultFactory { get; } = new LoggerFactory();
         public static ILoggerFactory LoggerFactory { get; set; }
