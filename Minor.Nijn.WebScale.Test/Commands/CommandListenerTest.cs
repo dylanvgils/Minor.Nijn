@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System;
 using Minor.Nijn.WebScale.Test.InvalidTestClasses;
+using Minor.Nijn.WebScale.Test.TestClasses.Injectable;
+using ProductCommandListener = Minor.Nijn.WebScale.Test.TestClasses.ProductCommandListener;
 
 namespace Minor.Nijn.WebScale.Commands.Test
 {
@@ -127,21 +129,66 @@ namespace Minor.Nijn.WebScale.Commands.Test
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
             target.StartListening(hostMock.Object);
 
-            target.HandleCommandMessage(commandMessage);
+            OrderCommandListener.ReplyWith = order;
+            var response = target.HandleCommandMessage(commandMessage);
 
             commandReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
             hostMock.VerifyAll();
 
-            var result = OrderCommandListener.HandleOrderCreatedEventHasBeenCalledWith;
+            var request = OrderCommandListener.HandleOrderCreatedEventHasBeenCalledWith;
             Assert.IsTrue(OrderCommandListener.HandleOrderCreatedEventHasBeenCalled);
 
-            Assert.IsNotNull(result);
-            Assert.AreEqual(queueName, result.RoutingKey);
-            Assert.AreEqual(command.CorrelationId, result.CorrelationId);
-            Assert.AreEqual(command.Timestamp, result.Timestamp);
-            Assert.AreEqual(order.Id, result.Order.Id);
-            Assert.AreEqual(order.Description, result.Order.Description);
+            Assert.IsNotNull(response, "Response command should not be null");
+            Assert.AreEqual(command.CorrelationId, response.CorrelationId);
+            Assert.AreEqual(JsonConvert.SerializeObject(order), response.Message);
+
+            Assert.IsNotNull(request, "Request command should not be null");
+            Assert.AreEqual(queueName, request.RoutingKey);
+            Assert.AreEqual(command.CorrelationId, request.CorrelationId);
+            Assert.AreEqual(command.Timestamp, request.Timestamp);
+            Assert.AreEqual(order.Id, request.Order.Id);
+            Assert.AreEqual(order.Description, request.Order.Description);
+        }
+
+        [TestMethod]
+        public void HandleCommandMessage_ShouldHandleAsyncCommandListeners()
+        {
+            var order = new Order { Id = 1, Description = "Some description" };
+            var command = new AddProductCommand(queueName, 42);
+
+            var commandMessage = new RequestCommandMessage(
+                message: JsonConvert.SerializeObject(command),
+                type: command.GetType().Name,
+                correlationId: command.CorrelationId,
+                routingKey: queueName,
+                timestamp: command.Timestamp
+            );
+
+
+            var type = typeof(ProductCommandListener);
+            var method = type.GetMethod(TestClassesConstants.ProductCommandHandlerMethodName);
+            var target = new CommandListener(type, method, queueName);
+
+            var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
+            commandReceiverMock.Setup(recv => recv.DeclareCommandQueue());
+            commandReceiverMock.Setup(recv => recv.StartReceivingCommands(It.IsAny<CommandReceivedCallback>()));
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(queueName)).Returns(commandReceiverMock.Object);
+
+            var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            hostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type, new object[] { new Foo() }));
+            hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+            target.StartListening(hostMock.Object);
+
+            var response = target.HandleCommandMessage(commandMessage);
+
+            commandReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+            hostMock.VerifyAll();
+
+            Assert.AreEqual("42", response.Message);
         }
 
         [TestMethod]
