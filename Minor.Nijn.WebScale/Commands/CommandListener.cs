@@ -2,6 +2,8 @@
 using Newtonsoft.Json;
 using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Minor.Nijn.WebScale.Commands
 {
@@ -13,6 +15,7 @@ namespace Minor.Nijn.WebScale.Commands
 
         private readonly Type _type;
         private readonly MethodInfo _method;
+        private readonly bool _isAsyncMethod;
         private readonly Type _commandType;
         private object _instance;
 
@@ -23,10 +26,12 @@ namespace Minor.Nijn.WebScale.Commands
         public CommandListener(Type type, MethodInfo method, string queueName)
         {
             QueueName = queueName;
+
             _type = type;
+            _commandType = method.GetParameters()[0].ParameterType;
 
             _method = method;
-            _commandType = method.GetParameters()[0].ParameterType;
+            _isAsyncMethod = method.GetCustomAttribute<AsyncStateMachineAttribute>() != null;
 
             _logger = NijnWebScaleLogger.CreateLogger<CommandListener>();
         }
@@ -101,6 +106,16 @@ namespace Minor.Nijn.WebScale.Commands
         private string InvokeListener(params object[] payload)
         {
             var result = _method.Invoke(_instance, payload);
+
+            if (_isAsyncMethod)
+            {
+                var task = (Task) result;
+                task.Wait();
+
+                var resultProperty = task.GetType().GetProperty("Result");
+                result = resultProperty.GetValue(task);
+            }
+
             return JsonConvert.SerializeObject(result);
         }
 
