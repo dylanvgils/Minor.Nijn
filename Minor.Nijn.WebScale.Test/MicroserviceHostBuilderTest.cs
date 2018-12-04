@@ -14,37 +14,37 @@ namespace Minor.Nijn.WebScale.Test
     [TestClass]
     public class MicroserviceHostBuilderTest
     {
-        private Mock<IMessageReceiver> receiverMock;
-        private Mock<IBusContext<IConnection>> busContextMock;
+        private Mock<IMessageReceiver> _receiverMock;
+        private Mock<IBusContext<IConnection>> _busContextMock;
 
-        private MicroserviceHostBuilder target;
+        private MicroserviceHostBuilder _target;
 
         [TestInitialize]
         public void BeforeEach()
         {
-            receiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
-            receiverMock.Setup(recv => recv.DeclareQueue());
-            receiverMock.Setup(recv => recv.StartReceivingMessages(It.IsAny<EventMessageReceivedCallback>()));
+            _receiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
+            _receiverMock.Setup(recv => recv.DeclareQueue());
+            _receiverMock.Setup(recv => recv.StartReceivingMessages(It.IsAny<EventMessageReceivedCallback>()));
 
-            busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(It.IsAny<string>(), It.IsAny<List<string>>()))
-                .Returns(receiverMock.Object);
+            _busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            _busContextMock.Setup(ctx => ctx.CreateMessageReceiver(It.IsAny<string>(), It.IsAny<List<string>>()))
+                .Returns(_receiverMock.Object);
 
-            target = new MicroserviceHostBuilder();
+            _target = new MicroserviceHostBuilder();
         }
 
         [TestMethod]
         public void CreateHost_ShouldReturnMicroserviceHost()
         {
             var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            var result = target.WithContext(busContextMock.Object).CreateHost();
+            var result = _target.WithContext(busContextMock.Object).CreateHost();
             Assert.IsInstanceOfType(result, typeof(MicroserviceHost));
         }
 
         [TestMethod]
         public void CreateHost_ShouldReturnMicroserviceHostWithOneEventListenerWhenCalledWithAddEventListener()
         {
-            var result = target.AddListener<ProductEventListener>().WithContext(busContextMock.Object).CreateHost();
+            var result = _target.AddListener<ProductEventListener>().WithContext(_busContextMock.Object).CreateHost();
 
             var listener = result.EventListeners.First();
             Assert.AreEqual(1, result.EventListeners.Count());
@@ -55,7 +55,7 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod]
         public void CreateHost_ShouldReturnMicroserviceHostWithOneCommandListenerWhenCalledWithAddEventListener()
         {
-            var result = target.AddListener<OrderCommandListener>().WithContext(busContextMock.Object).CreateHost();
+            var result = _target.AddListener<OrderCommandListener>().WithContext(_busContextMock.Object).CreateHost();
 
             var listener = result.CommandListeners.First();
             Assert.AreEqual(1, result.CommandListeners.Count());
@@ -65,7 +65,7 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod]
         public void CreateHost_ShouldReturnMicroserviceHostWithEventListenersWhenCalledWithUseConventions()
         {
-            var result = target.UseConventions().WithContext(busContextMock.Object).CreateHost();
+            var result = _target.UseConventions().WithContext(_busContextMock.Object).CreateHost();
 
             var listeners = result.EventListeners;
             Assert.AreEqual(2, listeners.Count());
@@ -76,7 +76,7 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod]
         public void CreateHost_ShouldReturnMicroserviceHostWithCommandListenersWhenCalledWithUseConventions()
         {
-            var result = target.UseConventions().WithContext(busContextMock.Object).CreateHost();
+            var result = _target.UseConventions().WithContext(_busContextMock.Object).CreateHost();
 
             var listeners = result.CommandListeners;
             Assert.AreEqual(2, listeners.Count());
@@ -87,7 +87,7 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod]
         public void AddListener_ShouldThrowArgumentExceptionWhenEventMethodHasToManyParameters()
         {
-            Action action = () => { target.AddListener<InvalidEventParametersLength>(); };
+            Action action = () => { _target.AddListener<InvalidEventParametersLength>(); };
             var ex = Assert.ThrowsException<ArgumentException>(action);
             Assert.AreEqual("Method 'ToManyParameters' in type 'InvalidEventParametersLength' has to many parameters", ex.Message);
         }
@@ -95,7 +95,7 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod]
         public void AddListener_ShouldThrowArgumentExceptionWhenCommandMethodHasToManyParameters()
         {
-            Action action = () => { target.AddListener<InvalidCommandParameterLength>(); };
+            Action action = () => { _target.AddListener<InvalidCommandParameterLength>(); };
             var ex = Assert.ThrowsException<ArgumentException>(action);
             Assert.AreEqual("Method 'ToManyParameters' in type 'InvalidCommandParameterLength' has to many parameters", ex.Message);
         }
@@ -103,7 +103,7 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod]
         public void AddListener_ShouldThrowArgumentExceptionWhenParameterTypeNotADerivedTypeOfDomainEvent()
         {
-            Action action = () => { target.AddListener<InvalidEventParameterType>(); };
+            Action action = () => { _target.AddListener<InvalidEventParameterType>(); };
             var ex = Assert.ThrowsException<ArgumentException>(action);
             Assert.AreEqual("Invalid parameter type in 'ParameterTypeInvalid', parameter has to be derived type of DomainEvent", ex.Message);
         }
@@ -111,7 +111,7 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod]
         public void AddListener_ShouldThrowArgumentExceptionWhenParameterTypeNotADerivedTypeOfDomainCommand()
         {
-            Action action = () => { target.AddListener<InvalidCommandParameterType>(); };
+            Action action = () => { _target.AddListener<InvalidCommandParameterType>(); };
             var ex = Assert.ThrowsException<ArgumentException>(action);
             Assert.AreEqual("Invalid parameter type in 'ParameterTypeInvalid', parameter has to be derived type of DomainCommand", ex.Message);
         }
@@ -120,7 +120,7 @@ namespace Minor.Nijn.WebScale.Test
         public void SetLoggerFactory_ShouldSetTheLoggerFactoryForTheProject()
         {
             var factory = new LoggerFactory();
-            target.SetLoggerFactory(factory);
+            _target.SetLoggerFactory(factory);
             Assert.AreEqual(NijnWebScaleLogger.LoggerFactory, factory);
         }
     }

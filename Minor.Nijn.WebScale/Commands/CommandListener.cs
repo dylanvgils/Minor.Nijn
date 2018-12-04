@@ -4,6 +4,7 @@ using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Minor.Nijn.WebScale.Helpers;
 
 namespace Minor.Nijn.WebScale.Commands
 {
@@ -105,16 +106,9 @@ namespace Minor.Nijn.WebScale.Commands
 
         private string InvokeListener(params object[] payload)
         {
-            var result = _method.Invoke(_instance, payload);
-
-            if (_isAsyncMethod)
-            {
-                var task = (Task) result;
-                task.Wait();
-
-                var resultProperty = task.GetType().GetProperty("Result");
-                result = resultProperty.GetValue(task);
-            }
+            var result = _isAsyncMethod 
+                ? _method.InvokeAsync(_instance, payload).Result 
+                : _method.Invoke(_instance, payload);
 
             return JsonConvert.SerializeObject(result);
         }
