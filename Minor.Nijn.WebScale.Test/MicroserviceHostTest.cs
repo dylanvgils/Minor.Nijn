@@ -14,50 +14,50 @@ namespace Minor.Nijn.WebScale.Test
     [TestClass]
     public class MicroserviceHostTest
     {
-        private Mock<IBusContext<IConnection>> busContextMock;
-        private Mock<IEventListener> eventListenerMock;
-        private Mock<ICommandListener> commandListenerMock;
+        private Mock<IBusContext<IConnection>> _busContextMock;
+        private Mock<IEventListener> _eventListenerMock;
+        private Mock<ICommandListener> _commandListenerMock;
 
-        private MicroserviceHost target;
+        private MicroserviceHost _target;
 
         [TestInitialize]
         public void BeforeEach()
         {
             var serviceCollection = new ServiceCollection();
 
-            eventListenerMock = new Mock<IEventListener>(MockBehavior.Strict);
-            var eventListeners = new List<IEventListener> { eventListenerMock.Object };
+            _eventListenerMock = new Mock<IEventListener>(MockBehavior.Strict);
+            var eventListeners = new List<IEventListener> { _eventListenerMock.Object };
 
-            commandListenerMock = new Mock<ICommandListener>(MockBehavior.Strict);
-            var commandListeners = new List<ICommandListener> { commandListenerMock.Object };
+            _commandListenerMock = new Mock<ICommandListener>(MockBehavior.Strict);
+            var commandListeners = new List<ICommandListener> { _commandListenerMock.Object };
 
-            busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            target = new MicroserviceHost(busContextMock.Object, eventListeners, commandListeners, serviceCollection);
+            _busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            _target = new MicroserviceHost(_busContextMock.Object, eventListeners, commandListeners, serviceCollection);
         }
 
         [TestMethod]
         public void RegisterEventListeners_ShouldCreateMessageReceivers()
         {
-            eventListenerMock.Setup(l => l.StartListening(target));
-            commandListenerMock.Setup(c => c.StartListening(target));
+            _eventListenerMock.Setup(l => l.StartListening(_target));
+            _commandListenerMock.Setup(c => c.StartListening(_target));
 
-            target.RegisterListeners();
+            _target.RegisterListeners();
 
-            busContextMock.VerifyAll();
-            eventListenerMock.VerifyAll();
-            commandListenerMock.VerifyAll();
+            _busContextMock.VerifyAll();
+            _eventListenerMock.VerifyAll();
+            _commandListenerMock.VerifyAll();
         }
 
         [TestMethod]
         public void RegisterEventListeners_ShouldThrowExceptionWhenCalledForTheSecondTime()
         {
-            eventListenerMock.Setup(l => l.StartListening(target));
-            commandListenerMock.Setup(c => c.StartListening(target));
+            _eventListenerMock.Setup(l => l.StartListening(_target));
+            _commandListenerMock.Setup(c => c.StartListening(_target));
 
-            target.RegisterListeners();
+            _target.RegisterListeners();
             Action action = () =>
             {
-                target.RegisterListeners();
+                _target.RegisterListeners();
             };
 
             var ex = Assert.ThrowsException<InvalidOperationException>(action);
@@ -67,19 +67,19 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod, ExpectedException(typeof(ObjectDisposedException))]
         public void RegisterEventListeners_ShouldThrowExceptionWhenDisposed()
         {
-            eventListenerMock.Setup(e => e.Dispose());
-            commandListenerMock.Setup(c => c.Dispose());
-            busContextMock.Setup(ctx => ctx.Dispose());
+            _eventListenerMock.Setup(e => e.Dispose());
+            _commandListenerMock.Setup(c => c.Dispose());
+            _busContextMock.Setup(ctx => ctx.Dispose());
 
-            target.Dispose();
-            target.RegisterListeners();
+            _target.Dispose();
+            _target.RegisterListeners();
         }
 
         [TestMethod]
         public void CreateInstance_ShouldReturnInstanceOfType()
         {
             var type = typeof(OrderEventListener);
-            var result = target.CreateInstance(type);
+            var result = _target.CreateInstance(type);
             Assert.IsInstanceOfType(result, typeof(OrderEventListener));
         }
 
@@ -102,16 +102,16 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod]
         public void Dispose_ShouldCallDisposeOnResources()
         {
-            eventListenerMock.Setup(e => e.Dispose());
-            commandListenerMock.Setup(c => c.Dispose());
-            busContextMock.Setup(ctx => ctx.Dispose());
+            _eventListenerMock.Setup(e => e.Dispose());
+            _commandListenerMock.Setup(c => c.Dispose());
+            _busContextMock.Setup(ctx => ctx.Dispose());
 
-            target.Dispose();
-            target.Dispose(); // Don't call dispose the second time
+            _target.Dispose();
+            _target.Dispose(); // Don't call dispose the second time
 
-            eventListenerMock.VerifyAll();
-            commandListenerMock.VerifyAll();
-            busContextMock.Verify(ctx => ctx.Dispose(), Times.Once);
+            _eventListenerMock.VerifyAll();
+            _commandListenerMock.VerifyAll();
+            _busContextMock.Verify(ctx => ctx.Dispose(), Times.Once);
         }
     }
 }

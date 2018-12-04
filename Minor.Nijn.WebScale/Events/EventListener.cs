@@ -3,6 +3,9 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Minor.Nijn.WebScale.Helpers;
 
 namespace Minor.Nijn.WebScale.Events
 {
@@ -15,6 +18,7 @@ namespace Minor.Nijn.WebScale.Events
 
         private readonly Type _type;
         private readonly MethodInfo _method;
+        private readonly bool _isAsyncMethod;
         private readonly Type _eventType;
         private object _instance;
 
@@ -28,8 +32,10 @@ namespace Minor.Nijn.WebScale.Events
             TopicExpressions = topicExpressions;
 
             _type = type;
-            _method = method;
             _eventType = method.GetParameters()[0].ParameterType;
+
+            _method = method;
+            _isAsyncMethod = method.GetCustomAttribute<AsyncStateMachineAttribute>() != null;
 
             _logger = NijnWebScaleLogger.CreateLogger<EventListener>();
         }
@@ -67,7 +73,19 @@ namespace Minor.Nijn.WebScale.Events
             payload.GetType().GetProperty("CorrelationId").SetValue(payload, message.CorrelationId);
             payload.GetType().GetProperty("Timestamp").SetValue(payload, message.Timestamp);
 
-            _method.Invoke(_instance, new [] { payload });
+            InvokeListener(payload);
+        }
+
+        private void InvokeListener(params object[] payload)
+        {
+            if (_isAsyncMethod)
+            {
+                var task = (Task) _method.Invoke(_instance, payload);
+                task.Wait();
+                return;
+            }
+
+            _method.Invoke(_instance, payload);
         }
 
         private void CheckDisposed()

@@ -15,19 +15,19 @@ namespace Minor.Nijn.WebScale.Commands.Test
     [TestClass]
     public class CommandListenerTest
     {
-        private Type type;
-        private string queueName;
+        private Type _type;
+        private string _queueName;
 
-        private CommandListener target;
+        private CommandListener _target;
 
         [TestInitialize]
         public void BeforeEach()
         {
-            type = typeof(OrderCommandListener);
-            var method = type.GetMethod(TestClassesConstants.OrderCommandHandlerMethodName);
-            queueName = "queueName";
+            _type = typeof(OrderCommandListener);
+            var method = _type.GetMethod(TestClassesConstants.OrderCommandHandlerMethodName);
+            _queueName = "queueName";
 
-            target = new CommandListener(type, method, queueName);
+            _target = new CommandListener(_type, method, _queueName);
         }
 
         [TestCleanup]
@@ -57,13 +57,13 @@ namespace Minor.Nijn.WebScale.Commands.Test
             commandReceiverMock.Setup(recv => recv.StartReceivingCommands(It.IsAny<CommandReceivedCallback>()));
 
             var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(queueName)).Returns(commandReceiverMock.Object);
+            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(_queueName)).Returns(commandReceiverMock.Object);
 
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
-            hostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+            hostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
 
-            target.StartListening(hostMock.Object);
+            _target.StartListening(hostMock.Object);
 
             commandReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
@@ -78,14 +78,14 @@ namespace Minor.Nijn.WebScale.Commands.Test
             commandReceiverMock.Setup(recv => recv.StartReceivingCommands(It.IsAny<CommandReceivedCallback>()));
 
             var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(queueName)).Returns(commandReceiverMock.Object);
+            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(_queueName)).Returns(commandReceiverMock.Object);
 
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
-            hostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+            hostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
 
-            target.StartListening(hostMock.Object);
-            Action action = () => { target.StartListening(hostMock.Object); };
+            _target.StartListening(hostMock.Object);
+            Action action = () => { _target.StartListening(hostMock.Object); };
 
             commandReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
@@ -99,21 +99,21 @@ namespace Minor.Nijn.WebScale.Commands.Test
         public void StartListening_ShouldThrowExceptionWhenDisposed()
         {
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
-            target.Dispose();
-            target.StartListening(hostMock.Object);
+            _target.Dispose();
+            _target.StartListening(hostMock.Object);
         }
 
         [TestMethod]
         public void HandleCommandMessage_ShouldHandleRequestCommandMessageAndReturnTheRightResult()
         {
             var order = new Order { Id = 1, Description = "Some description" };
-            var command = new AddOrderCommand(queueName, order);
+            var command = new AddOrderCommand(_queueName, order);
 
             var commandMessage = new RequestCommandMessage(
                 message: JsonConvert.SerializeObject(command), 
                 type: command.GetType().Name, 
                 correlationId: command.CorrelationId, 
-                routingKey: queueName, 
+                routingKey: _queueName, 
                 timestamp: command.Timestamp
             );
 
@@ -122,15 +122,15 @@ namespace Minor.Nijn.WebScale.Commands.Test
             commandReceiverMock.Setup(recv => recv.StartReceivingCommands(It.IsAny<CommandReceivedCallback>()));
 
             var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(queueName)).Returns(commandReceiverMock.Object);
+            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(_queueName)).Returns(commandReceiverMock.Object);
 
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
-            hostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+            hostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
-            target.StartListening(hostMock.Object);
+            _target.StartListening(hostMock.Object);
 
             OrderCommandListener.ReplyWith = order;
-            var response = target.HandleCommandMessage(commandMessage);
+            var response = _target.HandleCommandMessage(commandMessage);
 
             commandReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
@@ -144,7 +144,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
             Assert.AreEqual(JsonConvert.SerializeObject(order), response.Message);
 
             Assert.IsNotNull(request, "Request command should not be null");
-            Assert.AreEqual(queueName, request.RoutingKey);
+            Assert.AreEqual(_queueName, request.RoutingKey);
             Assert.AreEqual(command.CorrelationId, request.CorrelationId);
             Assert.AreEqual(command.Timestamp, request.Timestamp);
             Assert.AreEqual(order.Id, request.Order.Id);
@@ -155,27 +155,27 @@ namespace Minor.Nijn.WebScale.Commands.Test
         public void HandleCommandMessage_ShouldHandleAsyncCommandListeners()
         {
             var order = new Order { Id = 1, Description = "Some description" };
-            var command = new AddProductCommand(queueName, 42);
+            var command = new AddProductCommand(_queueName, 42);
 
             var commandMessage = new RequestCommandMessage(
                 message: JsonConvert.SerializeObject(command),
                 type: command.GetType().Name,
                 correlationId: command.CorrelationId,
-                routingKey: queueName,
+                routingKey: _queueName,
                 timestamp: command.Timestamp
             );
 
 
             var type = typeof(ProductCommandListener);
             var method = type.GetMethod(TestClassesConstants.ProductCommandHandlerMethodName);
-            var target = new CommandListener(type, method, queueName);
+            var target = new CommandListener(type, method, _queueName);
 
             var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
             commandReceiverMock.Setup(recv => recv.DeclareCommandQueue());
             commandReceiverMock.Setup(recv => recv.StartReceivingCommands(It.IsAny<CommandReceivedCallback>()));
 
             var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(queueName)).Returns(commandReceiverMock.Object);
+            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(_queueName)).Returns(commandReceiverMock.Object);
 
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             hostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type, new object[] { new Foo() }));
@@ -195,13 +195,13 @@ namespace Minor.Nijn.WebScale.Commands.Test
         public void HandleCommandMessage_ShouldHandleRequestCommandWithWrongType()
         {
             var order = new Order { Id = 1, Description = "Some description" };
-            var command = new AddOrderCommand(queueName, order);
+            var command = new AddOrderCommand(_queueName, order);
 
             var commandMessage = new RequestCommandMessage(
                 message: JsonConvert.SerializeObject(command),
                 type: "WrongType",
                 correlationId: command.CorrelationId,
-                routingKey: queueName,
+                routingKey: _queueName,
                 timestamp: command.Timestamp
             );
 
@@ -210,14 +210,14 @@ namespace Minor.Nijn.WebScale.Commands.Test
             commandReceiverMock.Setup(recv => recv.StartReceivingCommands(It.IsAny<CommandReceivedCallback>()));
 
             var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(queueName)).Returns(commandReceiverMock.Object);
+            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(_queueName)).Returns(commandReceiverMock.Object);
 
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
-            hostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+            hostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
-            target.StartListening(hostMock.Object);
+            _target.StartListening(hostMock.Object);
 
-            var result = target.HandleCommandMessage(commandMessage);
+            var result = _target.HandleCommandMessage(commandMessage);
 
             commandReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
@@ -278,15 +278,15 @@ namespace Minor.Nijn.WebScale.Commands.Test
             commandReceiverMock.Setup(recv => recv.Dispose());
 
             var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(queueName)).Returns(commandReceiverMock.Object);
+            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(_queueName)).Returns(commandReceiverMock.Object);
 
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
-            hostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+            hostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
 
-            target.StartListening(hostMock.Object);
-            target.Dispose();
-            target.Dispose(); // Don't call dispose the second time
+            _target.StartListening(hostMock.Object);
+            _target.Dispose();
+            _target.Dispose(); // Don't call dispose the second time
 
             commandReceiverMock.Verify(c => c.Dispose(), Times.Once);
         }
