@@ -242,7 +242,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
                 timestamp: command.Timestamp
             );
 
-            var type = typeof(InvalidCommandListener);
+            var type = typeof(InvalidCommandListenerException);
             var method = type.GetMethod("ThrowException");
             var target = new CommandListener(type, method, queueName);
 

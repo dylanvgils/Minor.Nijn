@@ -135,6 +135,12 @@ namespace Minor.Nijn.WebScale
         private void CreateCommandListener(Type type, MethodInfo method, string queueName)
         {
             CheckParameterType(type, method, typeof(DomainCommand));
+
+            if (method.ReturnType == typeof(void))
+            {
+                throw new ArgumentException($"Invalid return type by '{method.Name}', return types by command is required");
+            }
+
             _commandListeners.Add(new CommandListener(type, method, queueName));
         }
 

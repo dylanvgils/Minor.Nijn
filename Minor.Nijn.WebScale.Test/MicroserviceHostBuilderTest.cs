@@ -117,6 +117,15 @@ namespace Minor.Nijn.WebScale.Test
         }
 
         [TestMethod]
+        public void AddListener_ShouldThrowArgumentExceptionWhenReturnTypeIsInvalid()
+        {
+            Action action = () => { _target.AddListener<InvalidCommandListenerReturnType>(); };
+            var ex = Assert.ThrowsException<ArgumentException>(action);
+            Assert.AreEqual("Invalid return type by 'InvalidReturnType', return types by command is required", ex.Message);
+        }
+
+
+        [TestMethod]
         public void SetLoggerFactory_ShouldSetTheLoggerFactoryForTheProject()
         {
             var factory = new LoggerFactory();
