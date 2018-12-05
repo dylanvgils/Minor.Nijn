@@ -1,10 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using Minor.Nijn.WebScale.Helpers;
 using Newtonsoft.Json;
 using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Minor.Nijn.WebScale.Helpers;
 
 namespace Minor.Nijn.WebScale.Commands
 {

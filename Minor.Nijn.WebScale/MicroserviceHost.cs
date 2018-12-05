@@ -1,11 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Minor.Nijn.WebScale.Commands;
 using Minor.Nijn.WebScale.Events;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Minor.Nijn.WebScale.Commands;
 
 namespace Minor.Nijn.WebScale
 {

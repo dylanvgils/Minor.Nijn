@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Minor.Nijn.WebScale.Helpers;
 
 namespace Minor.Nijn.WebScale.Events
 {
