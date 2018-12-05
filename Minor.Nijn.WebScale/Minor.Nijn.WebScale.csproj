@@ -4,11 +4,13 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <Authors>Dylan van Gils</Authors>
     <PackageId>Minor.Nijn.Bloem.WebScale</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Company>-</Company>
     <Description>WebScale wrapper arround Minor.Nijn framework.</Description>
     <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>
     <PackageProjectUrl>https://github.com/dylanvgils/Minor.Nijn</PackageProjectUrl>
+    <PackageTags>RabbitMQ, Wrapper, EventBus, Messages, Commands, Attributes</PackageTags>
+    <PackageReleaseNotes>Allow async command and event listner methods and added documentation</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

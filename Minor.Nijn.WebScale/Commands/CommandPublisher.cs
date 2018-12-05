@@ -1,14 +1,17 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RabbitMQ.Client;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace Minor.Nijn.WebScale.Commands
 {
     public class CommandPublisher : ICommandPublisher
     {
+        private readonly ILogger logger;
+
         private readonly Assembly _callingAssembly;
         private readonly ICommandSender _sender;
         private bool _disposed;
@@ -17,6 +20,8 @@ namespace Minor.Nijn.WebScale.Commands
         {
             _callingAssembly = Assembly.GetCallingAssembly();
             _sender = context.CreateCommandSender();
+
+            logger = NijnWebScaleLogger.CreateLogger<CommandPublisher>();
         }
 
         public async Task<T> Publish<T>(DomainCommand domainCommand)
@@ -60,6 +65,7 @@ namespace Minor.Nijn.WebScale.Commands
             }
             catch (Exception)
             {
+                logger.LogWarning("Unknown exception occured of type {0}", result.Type);
                 throw new InvalidCastException($"Unknown exception occurred of type '{result.Type}' with message: {result.Message}");
             }
 
