@@ -103,7 +103,7 @@ namespace Minor.Nijn.RabbitMQBus
         public IRabbitMQBusContext CreateContext()
         {
             _logger.LogInformation("Creating RabbitMQBusContext for exchange: {0} on host {1}:{2}", ExchangeName, Hostname, Port);
-            _logger.LogDebug("Context configuration: type={1}, username={2}, password={3}", Type, Username, Password);
+            _logger.LogDebug("Context configuration: type={1}, username={2}", Type, Username);
 
             var connection = CreateConnection();
             using (var channel = connection.CreateModel())

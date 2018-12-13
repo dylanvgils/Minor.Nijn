@@ -72,9 +72,9 @@ The Minor.Nijn.WebScale framework is an abstraction built on top of the Minor.Ni
 ILoggerFactory loggerFactory = new LoggerFactory();
 loggerFactory.AddProvider(
   new ConsoleLoggerProvider(
-    (text, logLevel) => logLevel >= LogLevel.Verbose , true));
+    (text, logLevel) => logLevel >= LogLevel.Information , true));
 
-// Creating a RabbitMQ context
+// Create a RabbitMQ context
 var context = new RabbitMQContextBuilder()
         .SetLoggerFactory(loggerFactory) // Optional
         .ReadFromEnvironmentVariables()
@@ -89,7 +89,7 @@ var hostBuilder = new MicroserviceHostBuilder()
         .WithContext(context)
         .UseConventions();
 
-// Creating the microservice host and start listening
+// Create the microservice host and start listening
 using (var host = hostBuilder.CreateHost())
 {
     host.RegisterListeners();
@@ -236,7 +236,8 @@ public class SomeCustomException : Exception
 Currently, there are some limitations with throwing exceptions. To allow the framework to resolve the exceptions it's important that the exceptions used have the same name and namespace. Resolving exception types will happen in the following order:
 
 1. Look in the calling assembly
-2. Look in the `mscorlib` assembly
-3. When the above doesn't work use the base class `Exception`
+2. Look in the entry assembly
+3. Look in the `mscorlib` assembly
+4. When the above doesn't work use the base class `Exception`
 
 When the exception couldn't be created an `InvalidCastException` will be thrown.

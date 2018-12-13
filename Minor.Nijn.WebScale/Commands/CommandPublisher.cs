@@ -55,10 +55,12 @@ namespace Minor.Nijn.WebScale.Commands
             try
             {
                 var jObject = JObject.Parse(result.Message);
+                var className = (string) jObject.GetValue("ClassName");
 
                 var type =
-                    _callingAssembly.GetType((string) jObject.GetValue("ClassName"))
-                    ?? Type.GetType((string) jObject.GetValue("ClassName")) 
+                    _callingAssembly.GetType(className)
+                    ?? Assembly.GetEntryAssembly().GetType(className)
+                    ?? Type.GetType(className) 
                     ?? typeof(Exception);
 
                 exception = jObject.ToObject(type);
