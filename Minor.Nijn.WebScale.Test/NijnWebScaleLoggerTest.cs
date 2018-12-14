@@ -7,22 +7,6 @@ namespace Minor.Nijn.WebScale.Test
     [TestClass]
     public class NijnWebScaleLoggerTest
     {
-        [TestCleanup]
-        public void AfterEach()
-        {
-            NijnWebScaleLogger.LoggerFactory = null;
-        }
-
-        [TestMethod]
-        public void NijnWebScaleLoggerShouldCreateLoggerWhenNoLoggerFactoryIsProvided()
-        {
-            NijnWebScaleLogger.LoggerFactory = null;
-            var result = NijnWebScaleLogger.CreateLogger<NijnWebScaleLoggerTest>();
-
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(ILogger));
-        }
-
         [TestMethod]
         public void NijnWebScaleLoggerShouldUseProvidedLoggerFactory()
         {

@@ -1,8 +1,7 @@
-﻿using System;
-using RabbitMQ.Client;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Minor.Nijn.Helpers;
-using Serilog;
+using RabbitMQ.Client;
+using System;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Minor.Nijn.RabbitMQBus
@@ -23,13 +22,6 @@ namespace Minor.Nijn.RabbitMQBus
 
         public RabbitMQContextBuilder()
         {
-            NijnLogger.DefaultFactory
-                .AddSerilog(new LoggerConfiguration()
-                    .MinimumLevel.Verbose()
-                    .Enrich.FromLogContext()
-                    .WriteTo.Console()
-                    .CreateLogger());
-
             _logger = NijnLogger.CreateLogger<RabbitMQContextBuilder>();
         }
         

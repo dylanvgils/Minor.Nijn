@@ -7,22 +7,6 @@ namespace Minor.Nijn.Test
     [TestClass]
     public class NijnLoggerTest
     {
-        [TestCleanup]
-        public void AfterEach()
-        {
-            NijnLogger.LoggerFactory = null;
-        }
-
-        [TestMethod]
-        public void NijnLoggerShouldCreateLoggerWhenNoLoggerFactoryIsProvided()
-        {
-            NijnLogger.LoggerFactory = null;
-            var result = NijnLogger.CreateLogger<NijnLoggerTest>();
-
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(ILogger));
-        }
-
         [TestMethod]
         public void NijnLoggerShouldUseProvidedLoggerFactory()
         {
