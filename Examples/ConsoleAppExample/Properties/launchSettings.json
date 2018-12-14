@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "ConsoleAppExample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "NIJN_EXCHANGE_NAME": "ConsoleAppExampleExchange",
+        "NIJN_HOSTNAME": "localhost",
+        "NIJN_PORT": "5672",
+        "NIJN_USERNAME": "guest",
+        "NIJN_PASSWORD": "guest"
+      }
+    }
+  }
+}
