@@ -8,6 +8,7 @@ using RabbitMQ.Client;
 using Serilog;
 using System;
 using System.Threading.Tasks;
+using Minor.Nijn.WebScale.Events;
 using LoggerFactory = Microsoft.Extensions.Logging.LoggerFactory;
 
 namespace ConsoleAppExample
@@ -45,13 +46,14 @@ namespace ConsoleAppExample
                     {
                         nijnServices.AddTransient<IDataMapper<string, long>, SimpleDataMapper>();
                     })
-                .UseConventions()
-                .WithContext(busContext);
+                .WithContext(busContext)
+                .UseConventions();
 
             // Create the service collection for the example console application
             var services = new ServiceCollection();
             services.AddSingleton<IBusContext<IConnection>>(busContext);
             services.AddTransient<ICommandPublisher, CommandPublisher>();
+            services.AddTransient<IEventPublisher, EventPublisher>();
 
             // Create instance of controller, with ICommandPublisher injected
             var serviceProvider = services.BuildServiceProvider();
@@ -64,7 +66,8 @@ namespace ConsoleAppExample
 
                 await controller.SayHello("John");
                 await controller.WhoopsExceptionThrown();
-                await controller.AsyncCommandResponse();
+                await controller.AsyncCommandListenerMethod();
+                controller.AsyncEventListenerMethod();
 
                 Console.ReadKey();
             }
