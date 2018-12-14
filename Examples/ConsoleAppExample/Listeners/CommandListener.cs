@@ -26,7 +26,7 @@ namespace ConsoleAppExample.Listeners
         {
             var response = "Hello, " + request.Name;
 
-            var saidHelloEvent = new SaidHelloEvent(response, "ConsoleAppExample.SaidHello");
+            var saidHelloEvent = new SaidHelloEvent(response, "SaidHello");
             _publisher.Publish(saidHelloEvent);
 
             return response;
@@ -47,7 +47,7 @@ namespace ConsoleAppExample.Listeners
             await Task.Run(() => { Thread.Sleep(1000); });
             stopwatch.Stop();
 
-            _logger.LogInformation("Hi from async command method, time elapsed is: {0}ms", stopwatch.ElapsedMilliseconds);
+            _logger.LogInformation("Hi from async CommandListener method, time elapsed is: {0} ms", stopwatch.ElapsedMilliseconds);
             return "Hello, " + request.Name;
         }
     }

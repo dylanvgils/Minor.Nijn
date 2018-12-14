@@ -50,13 +50,13 @@ The `TestBusContext` provides you with some extra features that can come handy d
 
 ```cs
 // Get the number of messages in a queue
-context.EventBus.Queues['QueueName'].MessageQueueLength;
+context.EventBus.Queues["QueueName"].MessageQueueLength;
 
 // Get the number of declared queues
 context.EventBus.QueueCount;
 
 // Enqueue a message in a specific queue
-context.EventBus.Queues['QueueName'].Enqueue(message);
+context.EventBus.Queues["QueueName"].Enqueue(message);
 
 // Dispatch a message
 context.EventBus.DispatchMessage(message);
