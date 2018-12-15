@@ -66,6 +66,7 @@ namespace ConsoleAppExample
 
                 await controller.SayHello("John");
                 await controller.WhoopsExceptionThrown();
+                await controller.WhoopsExternalExceptionThrown();
                 await controller.AsyncCommandListenerMethod();
                 controller.AsyncEventListenerMethod();
 

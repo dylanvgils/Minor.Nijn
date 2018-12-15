@@ -7,6 +7,7 @@ using Moq;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Minor.Nijn.WebScale.Commands.Test
@@ -14,6 +15,12 @@ namespace Minor.Nijn.WebScale.Commands.Test
     [TestClass]
     public class CommandPublisherTest
     {
+        [TestCleanup]
+        public void AfterEach()
+        {
+            CommandPublisher.ExceptionTypes = null;
+        }
+
         [TestMethod]
         public void Publish_ShouldSendCommandAndReturnResult()
         {
@@ -155,6 +162,35 @@ namespace Minor.Nijn.WebScale.Commands.Test
             target.Dispose();
 
             await target.Publish<long>(command);
+        }
+
+        [TestMethod, ExpectedException(typeof(BusConfigurationException))]
+        public async Task Publish_ShouldThrowExceptionFromExceptionTypesDictionary()
+        {
+            var exceptionType = typeof(BusConfigurationException);
+            var exceptions = new Dictionary<string, Type> { { exceptionType.Name, exceptionType } };
+            CommandPublisher.ExceptionTypes = exceptions;
+
+            var requestCommand = new AddProductCommand("RoutingKey", 42);
+            var exception = new BusConfigurationException("Exception message");
+
+            var responseCommand = new ResponseCommandMessage(
+                message: JsonConvert.SerializeObject(exception),
+                type: exception.GetType().Name,
+                correlationId: requestCommand.CorrelationId,
+                timestamp: requestCommand.Timestamp
+            );
+
+            var senderMock = new Mock<ICommandSender>(MockBehavior.Strict);
+            senderMock.Setup(s => s.SendCommandAsync(It.IsAny<RequestCommandMessage>()))
+                .ReturnsAsync(responseCommand);
+
+            var contextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            contextMock.Setup(ctx => ctx.CreateCommandSender()).Returns(senderMock.Object);
+
+            var target = new CommandPublisher(contextMock.Object);
+
+            await target.Publish<int>(requestCommand);
         }
 
         [TestMethod]

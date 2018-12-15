@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RabbitMQ.Client;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -10,8 +11,9 @@ namespace Minor.Nijn.WebScale.Commands
 {
     public class CommandPublisher : ICommandPublisher
     {
-        private readonly ILogger logger;
+        internal static IDictionary<string, Type> ExceptionTypes { get; set; }
 
+        private readonly ILogger _logger;
         private readonly Assembly _callingAssembly;
         private readonly ICommandSender _sender;
         private bool _disposed;
@@ -20,8 +22,7 @@ namespace Minor.Nijn.WebScale.Commands
         {
             _callingAssembly = Assembly.GetCallingAssembly();
             _sender = context.CreateCommandSender();
-
-            logger = NijnWebScaleLogger.CreateLogger<CommandPublisher>();
+            _logger = NijnWebScaleLogger.CreateLogger<CommandPublisher>();
         }
 
         public async Task<T> Publish<T>(DomainCommand domainCommand)
@@ -57,17 +58,19 @@ namespace Minor.Nijn.WebScale.Commands
                 var jObject = JObject.Parse(result.Message);
                 var className = (string) jObject.GetValue("ClassName");
 
-                var type =
-                    _callingAssembly.GetType(className)
-                    ?? Assembly.GetEntryAssembly().GetType(className)
-                    ?? Type.GetType(className) 
+                Type type = null;
+                ExceptionTypes?.TryGetValue(result.Type, out type);
+
+                type = type
+                    ?? _callingAssembly.GetType(className)
+                    ?? Type.GetType(className)
                     ?? typeof(Exception);
 
                 exception = jObject.ToObject(type);
             }
             catch (Exception)
             {
-                logger.LogWarning("Unknown exception occured of type {0}", result.Type);
+                _logger.LogWarning("Unknown exception occured of type {0}", result.Type);
                 throw new InvalidCastException($"Unknown exception occurred of type '{result.Type}' with message: {result.Message}");
             }
 

@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Minor.Nijn.WebScale\Minor.Nijn.WebScale.csproj" />
+    <ProjectReference Include="..\ClassLibraryExample\ClassLibraryExample.csproj" />
   </ItemGroup>
 
 </Project>

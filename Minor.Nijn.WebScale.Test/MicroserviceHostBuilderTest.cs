@@ -1,13 +1,14 @@
-using System;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Minor.Nijn.WebScale.Commands;
+using Minor.Nijn.WebScale.Test.InvalidTestClasses;
 using Minor.Nijn.WebScale.Test.TestClasses;
+using Minor.Nijn.WebScale.TestClasses.Exceptions.Test;
 using Moq;
 using RabbitMQ.Client;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using Microsoft.Extensions.Logging;
-using Minor.Nijn.WebScale.Test.InvalidTestClasses;
 
 namespace Minor.Nijn.WebScale.Test
 {
@@ -31,6 +32,12 @@ namespace Minor.Nijn.WebScale.Test
                 .Returns(_receiverMock.Object);
 
             _target = new MicroserviceHostBuilder();
+        }
+
+        [TestCleanup]
+        public void AfterEach()
+        {
+            CommandPublisher.ExceptionTypes = null;
         }
 
         [TestMethod]
@@ -85,6 +92,40 @@ namespace Minor.Nijn.WebScale.Test
         }
 
         [TestMethod]
+        public void CreateHost_ShouldBuildExceptionTypeDictionaryForCallingAssembly()
+        {
+            _target.UseConventions().WithContext(_busContextMock.Object).CreateHost();
+
+            Assert.IsTrue(CommandPublisher.ExceptionTypes.Any(kv => kv.Key == typeof(TestException).Name));
+            Assert.IsTrue(CommandPublisher.ExceptionTypes.Any(kv => kv.Key == typeof(BusConfigurationException).Name));
+        }
+
+        [TestMethod]
+        public void AddException_ShouldAddExceptionTypeToTheExceptionTypeDictionary()
+        {
+            _target.AddException<TestException>().WithContext(_busContextMock.Object).CreateHost();
+
+            Assert.AreEqual(1, CommandPublisher.ExceptionTypes.Count);
+            Assert.IsTrue(CommandPublisher.ExceptionTypes.ContainsKey(typeof(TestException).Name));
+        }
+
+        [TestMethod]
+        public void AddException_ShouldThrowExceptionWhenExceptionAlreadyExists()
+        {
+            Action action = () =>
+            {
+                _target
+                    .AddException<TestException>()
+                    .AddException<TestException>()
+                    .WithContext(_busContextMock.Object)
+                    .CreateHost();
+            };
+
+            var ex = Assert.ThrowsException<ArgumentException>(action);
+            Assert.AreEqual($"Can not add exception to exception types, exception with name: {typeof(TestException).FullName} already exists", ex.Message);
+        }
+
+        [TestMethod]
         public void AddListener_ShouldThrowArgumentExceptionWhenEventMethodHasToManyParameters()
         {
             Action action = () => { _target.AddListener<InvalidEventParametersLength>(); };
@@ -123,7 +164,6 @@ namespace Minor.Nijn.WebScale.Test
             var ex = Assert.ThrowsException<ArgumentException>(action);
             Assert.AreEqual("Invalid return type by 'InvalidReturnType', return types by command is required", ex.Message);
         }
-
 
         [TestMethod]
         public void SetLoggerFactory_ShouldSetTheLoggerFactoryForTheProject()
