@@ -5,6 +5,7 @@ using Minor.Nijn.WebScale.Events;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using ClassLibraryExample;
 
 namespace ConsoleAppExample.Listeners
 {
@@ -36,6 +37,12 @@ namespace ConsoleAppExample.Listeners
         public string HandleException(SayHelloCommand request)
         {
             throw new CustomException("Some custom exception message");
+        }
+
+        [Command("ConsoleAppExampleExternalExceptionCommandQueue")]
+        public string HandleExternalException(SayHelloCommand request)
+        {
+            throw new ExternalCustomException("Some custom external exception message");
         }
 
         [Command("ConsoleAppExampleAsyncCommandQueue")]

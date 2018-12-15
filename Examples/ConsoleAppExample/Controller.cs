@@ -1,7 +1,9 @@
-﻿using ConsoleAppExample.Domain;
+﻿using System;
+using ConsoleAppExample.Domain;
 using Microsoft.Extensions.Logging;
 using Minor.Nijn.WebScale.Commands;
 using System.Threading.Tasks;
+using ClassLibraryExample;
 using Minor.Nijn.WebScale.Events;
 
 namespace ConsoleAppExample
@@ -40,6 +42,22 @@ namespace ConsoleAppExample
             catch (CustomException e)
             {
                 _logger.LogInformation("Custom exception with message was thrown: {0}", e.Message);
+                return "Exception thrown";
+            }
+        }
+
+        public async Task<string> WhoopsExternalExceptionThrown()
+        {
+            var request = new SayHelloCommand("ThrowException", "ConsoleAppExampleExternalExceptionCommandQueue");
+
+            try
+            {
+                await _commandPublisher.Publish<string>(request);
+                return "No exception thrown";
+            }
+            catch (ExternalCustomException e)
+            {
+                _logger.LogInformation("External custom exception with message was thrown: {0}", e.Message);
                 return "Exception thrown";
             }
         }

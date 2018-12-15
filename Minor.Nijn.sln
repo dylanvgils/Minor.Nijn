@@ -26,6 +26,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleAppExample", "Exampl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleAppExample.Test", "Examples\ConsoleAppExample.Test\ConsoleAppExample.Test.csproj", "{6C1D51EF-98FA-41A1-97AA-897109BE95CB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibraryExample", "Examples\ClassLibraryExample\ClassLibraryExample.csproj", "{B2215245-BFE5-4F0E-8CCC-0C40BAC4DDF8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,6 +62,10 @@ Global
 		{6C1D51EF-98FA-41A1-97AA-897109BE95CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C1D51EF-98FA-41A1-97AA-897109BE95CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C1D51EF-98FA-41A1-97AA-897109BE95CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2215245-BFE5-4F0E-8CCC-0C40BAC4DDF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2215245-BFE5-4F0E-8CCC-0C40BAC4DDF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2215245-BFE5-4F0E-8CCC-0C40BAC4DDF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2215245-BFE5-4F0E-8CCC-0C40BAC4DDF8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +73,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{A929AC17-3423-4B86-BBD9-93547A60CD79} = {24C1645F-3FD9-4D9B-BE11-EB85599ADD5D}
 		{6C1D51EF-98FA-41A1-97AA-897109BE95CB} = {24C1645F-3FD9-4D9B-BE11-EB85599ADD5D}
+		{B2215245-BFE5-4F0E-8CCC-0C40BAC4DDF8} = {24C1645F-3FD9-4D9B-BE11-EB85599ADD5D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {65CC8ED6-1A87-446A-956E-AB4D9AD4C3B4}

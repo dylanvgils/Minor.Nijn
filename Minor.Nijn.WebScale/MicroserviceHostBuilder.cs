@@ -25,12 +25,15 @@ namespace Minor.Nijn.WebScale
     /// </summary>
     public class MicroserviceHostBuilder
     {
-        IBusContext<IConnection> Context { get; set; }
+        private readonly ILogger _logger;
+
+        private IBusContext<IConnection> Context { get; set; }
 
         private readonly Assembly _callingAssembly;
         private readonly List<IEventListener> _eventListeners;
         private readonly List<ICommandListener> _commandListeners;
         private readonly IServiceCollection _serviceCollection;
+        private readonly IDictionary<string, Type> _exceptionTypes;
 
         public MicroserviceHostBuilder()
         {
@@ -38,6 +41,9 @@ namespace Minor.Nijn.WebScale
             _eventListeners = new List<IEventListener>();
             _commandListeners = new List<ICommandListener>();
             _serviceCollection = new ServiceCollection();
+            _exceptionTypes = new Dictionary<string, Type>();
+
+            _logger = NijnWebScaleLogger.CreateLogger<MicroserviceHostBuilder>();
         }
 
         /// <summary>
@@ -63,6 +69,8 @@ namespace Minor.Nijn.WebScale
                 ParseType(type);
             }
 
+            ScanForExceptionTypes();
+
             return this;
         }
 
@@ -73,6 +81,16 @@ namespace Minor.Nijn.WebScale
         {
             var type = typeof(T);
             ParseType(type);
+            return this;
+        }
+
+        /// <summary>
+        /// Manually adds exception type to the exception type dictionary
+        /// </summary>
+        public MicroserviceHostBuilder AddException<T>()
+        {
+            var type = typeof(T);
+            AddExceptionTypeToDictionary(type.Name, type);
             return this;
         }
 
@@ -158,6 +176,41 @@ namespace Minor.Nijn.WebScale
             }
         }
 
+        private void ScanForExceptionTypes()
+        {
+            var exceptions = new List<KeyValuePair<string, Type>>(QueryAssemblyForExceptionTypes(_callingAssembly));
+
+            foreach (var assemblyName in _callingAssembly.GetReferencedAssemblies())
+            {
+                var assembly = Assembly.Load(assemblyName);
+                exceptions.AddRange(QueryAssemblyForExceptionTypes(assembly));
+            }
+
+            _logger.LogInformation("Found {0} exceptions during exception scan", exceptions.Count);
+            exceptions.ForEach(kv => AddExceptionTypeToDictionary(kv.Key, kv.Value));
+        }
+
+        private static IEnumerable<KeyValuePair<string, Type>> QueryAssemblyForExceptionTypes(Assembly assembly)
+        {
+            var query = assembly.GetTypes()
+                .Where(type => typeof(Exception).IsAssignableFrom(type)
+                               && !Constants.ExceptionScanExclusions.Any(e => type.FullName.StartsWith(e)))
+                .Select(type => new KeyValuePair<string, Type>(type.Name, type));
+
+            return query.ToList();
+        }
+
+        private void AddExceptionTypeToDictionary(string key, Type value)
+        {
+            if (_exceptionTypes.ContainsKey(key))
+            {
+                throw new ArgumentException($"Can not add exception to exception types, exception with name: {value.FullName} already exists");
+            }
+
+            _logger.LogDebug("{0} added to exception dictionary", value.FullName);
+            _exceptionTypes.Add(key, value);
+        }
+
         /// <summary>
         /// Configures Dependency Injection for the MicroserviceHost
         /// </summary>
@@ -173,6 +226,8 @@ namespace Minor.Nijn.WebScale
         /// <returns></returns>
         public IMicroserviceHost CreateHost()
         {
+            _logger.LogInformation("Creating MicroserviceHost, {0} dependencies registered", _serviceCollection.Count);
+            CommandPublisher.ExceptionTypes = _exceptionTypes;
             return new MicroserviceHost(Context, _eventListeners, _commandListeners, _serviceCollection);
         }
     }

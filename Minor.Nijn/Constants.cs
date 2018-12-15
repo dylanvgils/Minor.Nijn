@@ -1,6 +1,6 @@
 ﻿namespace Minor.Nijn
 {
-    public static class Constants
+    internal static class Constants
     {
         // General
         public const string DefaultRabbitMqExchangeType = "topic";
