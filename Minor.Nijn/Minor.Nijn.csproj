@@ -4,11 +4,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>Dylan van Gils, Dion de Koning, Justin Moor, Martine Mulder</Authors>
     <Company>_</Company>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <PackageId>Minor.Nijn.Bloem</PackageId>
     <Product>Minor.Nijn</Product>
     <Description>Wrapper around RabbitMQ</Description>
-    <PackageReleaseNotes>Documentation</PackageReleaseNotes>
+    <PackageReleaseNotes>- Various non-breaking code improvements</PackageReleaseNotes>
     <PackageTags>RabbitMQ, Wrapper, EventBus, Messages, Commands</PackageTags>
     <PackageProjectUrl>https://github.com/dylanvgils/Minor.Nijn</PackageProjectUrl>
     <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>

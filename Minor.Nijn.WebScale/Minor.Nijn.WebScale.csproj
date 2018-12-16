@@ -4,13 +4,14 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <Authors>Dylan van Gils</Authors>
     <PackageId>Minor.Nijn.Bloem.WebScale</PackageId>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <Company>-</Company>
     <Description>WebScale wrapper arround Minor.Nijn framework.</Description>
     <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>
     <PackageProjectUrl>https://github.com/dylanvgils/Minor.Nijn</PackageProjectUrl>
     <PackageTags>RabbitMQ, Wrapper, EventBus, Messages, Commands, Attributes</PackageTags>
-    <PackageReleaseNotes>Allow async command and event listner methods and added documentation</PackageReleaseNotes>
+    <PackageReleaseNotes>- Added exception scan methods to MicroServiceHostBuilder for creating exception type dictionary
+- Various non-breaking code improvements</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

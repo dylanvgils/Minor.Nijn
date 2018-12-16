@@ -43,7 +43,7 @@ namespace Minor.Nijn.WebScale
                 throw new InvalidOperationException("Event listeners already registered");
             }
 
-            _logger.LogInformation("Registering {0} event listeners and {1} command listeners", EventListeners.Count, CommandListeners.Count);
+            _logger.LogInformation("Registering {0} EventListeners and {1} CommandListeners", EventListeners.Count, CommandListeners.Count);
             EventListeners.ForEach(e => e.StartListening(this));
             CommandListeners.ForEach(c => c.StartListening(this));
 
