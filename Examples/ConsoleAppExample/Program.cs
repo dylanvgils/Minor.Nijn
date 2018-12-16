@@ -47,7 +47,8 @@ namespace ConsoleAppExample
                         nijnServices.AddTransient<IDataMapper<string, long>, SimpleDataMapper>();
                     })
                 .WithContext(busContext)
-                .UseConventions();
+                .UseConventions()
+                .ScanForExceptions();
 
             // Create the service collection for the example console application
             var services = new ServiceCollection();

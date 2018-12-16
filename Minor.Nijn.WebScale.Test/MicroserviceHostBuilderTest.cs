@@ -94,10 +94,26 @@ namespace Minor.Nijn.WebScale.Test
         [TestMethod]
         public void CreateHost_ShouldBuildExceptionTypeDictionaryForCallingAssembly()
         {
-            _target.UseConventions().WithContext(_busContextMock.Object).CreateHost();
+            _target
+                .UseConventions()
+                .ScanForExceptions()
+                .WithContext(_busContextMock.Object)
+                .CreateHost();
 
-            Assert.IsTrue(CommandPublisher.ExceptionTypes.Any(kv => kv.Key == typeof(TestException).Name));
-            Assert.IsTrue(CommandPublisher.ExceptionTypes.Any(kv => kv.Key == typeof(BusConfigurationException).Name));
+            Assert.IsTrue(CommandPublisher.ExceptionTypes.Any(kv => kv.Key == typeof(TestException).Name), "Should contain TestException");
+            Assert.IsTrue(CommandPublisher.ExceptionTypes.Any(kv => kv.Key == typeof(BusConfigurationException).Name), "Should contain BusConfigurationException");
+        }
+
+        [TestMethod] public void CreateHost_ShouldExcludeExceptionsFromScanWhenMatchesExclusionPattern()
+        {
+            _target
+                .UseConventions()
+                .ScanForExceptions(new List<string> { "Minor.Nijn.WebScale" })
+                .WithContext(_busContextMock.Object)
+                .CreateHost();
+
+            Assert.IsFalse(CommandPublisher.ExceptionTypes.Any(kv => kv.Key == typeof(TestException).Name), "Should not contain TestException");
+            Assert.IsTrue(CommandPublisher.ExceptionTypes.Any(kv => kv.Key == typeof(BusConfigurationException).Name), "Should contain BusConfigurationException");
         }
 
         [TestMethod]
@@ -122,7 +138,7 @@ namespace Minor.Nijn.WebScale.Test
             };
 
             var ex = Assert.ThrowsException<ArgumentException>(action);
-            Assert.AreEqual($"Can not add exception to exception types, exception with name: {typeof(TestException).FullName} already exists", ex.Message);
+            Assert.AreEqual($"Unable to add exception to exception type dictionary, exception with name: {typeof(TestException).Name} already exists", ex.Message);
         }
 
         [TestMethod]
@@ -130,7 +146,7 @@ namespace Minor.Nijn.WebScale.Test
         {
             Action action = () => { _target.AddListener<InvalidEventParametersLength>(); };
             var ex = Assert.ThrowsException<ArgumentException>(action);
-            Assert.AreEqual("Method 'ToManyParameters' in type 'InvalidEventParametersLength' has to many parameters", ex.Message);
+            Assert.AreEqual("Method: 'ToManyParameters' in type: 'InvalidEventParametersLength' has to many parameters", ex.Message);
         }
 
         [TestMethod]
@@ -138,7 +154,7 @@ namespace Minor.Nijn.WebScale.Test
         {
             Action action = () => { _target.AddListener<InvalidCommandParameterLength>(); };
             var ex = Assert.ThrowsException<ArgumentException>(action);
-            Assert.AreEqual("Method 'ToManyParameters' in type 'InvalidCommandParameterLength' has to many parameters", ex.Message);
+            Assert.AreEqual("Method: 'ToManyParameters' in type: 'InvalidCommandParameterLength' has to many parameters", ex.Message);
         }
 
         [TestMethod]
@@ -146,7 +162,7 @@ namespace Minor.Nijn.WebScale.Test
         {
             Action action = () => { _target.AddListener<InvalidEventParameterType>(); };
             var ex = Assert.ThrowsException<ArgumentException>(action);
-            Assert.AreEqual("Invalid parameter type in 'ParameterTypeInvalid', parameter has to be derived type of DomainEvent", ex.Message);
+            Assert.AreEqual("Invalid parameter type in method: 'ParameterTypeInvalid', parameter has to be derived type of DomainEvent", ex.Message);
         }
 
         [TestMethod]
@@ -154,7 +170,7 @@ namespace Minor.Nijn.WebScale.Test
         {
             Action action = () => { _target.AddListener<InvalidCommandParameterType>(); };
             var ex = Assert.ThrowsException<ArgumentException>(action);
-            Assert.AreEqual("Invalid parameter type in 'ParameterTypeInvalid', parameter has to be derived type of DomainCommand", ex.Message);
+            Assert.AreEqual("Invalid parameter type in method: 'ParameterTypeInvalid', parameter has to be derived type of DomainCommand", ex.Message);
         }
 
         [TestMethod]
@@ -162,7 +178,7 @@ namespace Minor.Nijn.WebScale.Test
         {
             Action action = () => { _target.AddListener<InvalidCommandListenerReturnType>(); };
             var ex = Assert.ThrowsException<ArgumentException>(action);
-            Assert.AreEqual("Invalid return type by 'InvalidReturnType', return types by command is required", ex.Message);
+            Assert.AreEqual("Invalid return of method: 'InvalidReturnType', returning a value from a CommandListener method is required", ex.Message);
         }
 
         [TestMethod]

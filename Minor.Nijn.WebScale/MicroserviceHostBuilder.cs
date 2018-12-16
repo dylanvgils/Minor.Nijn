@@ -25,7 +25,7 @@ namespace Minor.Nijn.WebScale
     /// </summary>
     public class MicroserviceHostBuilder
     {
-        private readonly ILogger _logger;
+        private ILogger _logger;
 
         private IBusContext<IConnection> Context { get; set; }
 
@@ -69,8 +69,7 @@ namespace Minor.Nijn.WebScale
                 ParseType(type);
             }
 
-            ScanForExceptionTypes();
-
+            _logger.LogInformation("Found {0} EventListeners and {1} CommandListeners", _eventListeners.Count, _commandListeners.Count);
             return this;
         }
 
@@ -81,6 +80,28 @@ namespace Minor.Nijn.WebScale
         {
             var type = typeof(T);
             ParseType(type);
+            return this;
+        }
+
+        /// <summary>
+        /// Scans te calling assembly for exception types and adds them to the exception type dictionary
+        /// </summary>
+        /// <returns></returns>
+        public MicroserviceHostBuilder ScanForExceptions()
+        {
+            ScanForExceptions(new List<string>());
+            return this;
+        }
+
+        /// <summary>
+        /// Scans the calling assembly for exceptions and exclude the given exclusions, adds the found
+        /// exception type to the exception type dictionary
+        /// </summary>
+        /// <param name="exclusions">Assembly namespace prefixes to exclude</param>
+        /// <returns></returns>
+        public MicroserviceHostBuilder ScanForExceptions(IEnumerable<string> exclusions)
+        {
+            ScanForExceptionTypes(exclusions.ToList());
             return this;
         }
 
@@ -100,6 +121,7 @@ namespace Minor.Nijn.WebScale
         public MicroserviceHostBuilder SetLoggerFactory(ILoggerFactory loggerFactory)
         {
             NijnWebScaleLogger.LoggerFactory = loggerFactory;
+            _logger = NijnWebScaleLogger.CreateLogger<MicroserviceHostBuilder>();
             return this;
         }
 
@@ -156,45 +178,49 @@ namespace Minor.Nijn.WebScale
 
             if (method.ReturnType == typeof(void))
             {
-                throw new ArgumentException($"Invalid return type by '{method.Name}', return types by command is required");
+                _logger.LogError("Invalid return type of method: {0}, returning a value from a CommandListener method is required", method.Name);
+                throw new ArgumentException($"Invalid return of method: '{method.Name}', returning a value from a CommandListener method is required");
             }
 
             _commandListeners.Add(new CommandListener(type, method, queueName));
         }
 
-        private static void CheckParameterType(MemberInfo type, MethodBase method, Type derivedTypeOf)
+        private void CheckParameterType(MemberInfo type, MethodBase method, Type derivedTypeOf)
         {
             var parameters = method.GetParameters();
             if (parameters.Length > 1)
             {
-                throw new ArgumentException($"Method '{method.Name}' in type '{type.Name}' has to many parameters");
+                _logger.LogError("Method: {0} int type {1} has to many parameters, found {3} expected 1", method.Name, type.Name, parameters.Length);
+                throw new ArgumentException($"Method: '{method.Name}' in type: '{type.Name}' has to many parameters");
             }
 
             if (!parameters.ElementAtOrDefault(0)?.ParameterType.IsSubclassOf(derivedTypeOf) ?? true)
             {
-                throw new ArgumentException($"Invalid parameter type in '{method.Name}', parameter has to be derived type of {derivedTypeOf.Name}");
+                _logger.LogError("Invalid parameter type in method: {0}, parameter has to be derived type of {1}", method.Name, derivedTypeOf.Name);
+                throw new ArgumentException($"Invalid parameter type in method: '{method.Name}', parameter has to be derived type of {derivedTypeOf.Name}");
             }
         }
 
-        private void ScanForExceptionTypes()
+        private void ScanForExceptionTypes(IReadOnlyCollection<string> exclusions)
         {
-            var exceptions = new List<KeyValuePair<string, Type>>(QueryAssemblyForExceptionTypes(_callingAssembly));
+            var exceptions = new List<KeyValuePair<string, Type>>(QueryAssemblyForExceptionTypes(_callingAssembly, exclusions));
 
             foreach (var assemblyName in _callingAssembly.GetReferencedAssemblies())
             {
                 var assembly = Assembly.Load(assemblyName);
-                exceptions.AddRange(QueryAssemblyForExceptionTypes(assembly));
+                exceptions.AddRange(QueryAssemblyForExceptionTypes(assembly, exclusions));
             }
 
             _logger.LogInformation("Found {0} exceptions during exception scan", exceptions.Count);
             exceptions.ForEach(kv => AddExceptionTypeToDictionary(kv.Key, kv.Value));
         }
 
-        private static IEnumerable<KeyValuePair<string, Type>> QueryAssemblyForExceptionTypes(Assembly assembly)
+        private static IEnumerable<KeyValuePair<string, Type>> QueryAssemblyForExceptionTypes(Assembly assembly, IReadOnlyCollection<string> exclusions)
         {
             var query = assembly.GetTypes()
                 .Where(type => typeof(Exception).IsAssignableFrom(type)
-                               && !Constants.ExceptionScanExclusions.Any(e => type.FullName.StartsWith(e)))
+                               && !Constants.ExceptionScanExclusions.Any(e => type.FullName.StartsWith(e))
+                               && !exclusions.Any(e => type.FullName.StartsWith(e)))
                 .Select(type => new KeyValuePair<string, Type>(type.Name, type));
 
             return query.ToList();
@@ -204,7 +230,8 @@ namespace Minor.Nijn.WebScale
         {
             if (_exceptionTypes.ContainsKey(key))
             {
-                throw new ArgumentException($"Can not add exception to exception types, exception with name: {value.FullName} already exists");
+                _logger.LogError("Unable to add exception to exception type dictionary, exception with name: {0} already exists", value.Name);
+                throw new ArgumentException($"Unable to add exception to exception type dictionary, exception with name: {value.Name} already exists");
             }
 
             _logger.LogDebug("{0} added to exception dictionary", value.FullName);

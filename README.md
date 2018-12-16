@@ -87,7 +87,8 @@ var hostBuilder = new MicroserviceHostBuilder()
             // Dependencies
         })
         .WithContext(context)
-        .UseConventions();
+        .UseConventions()
+        .ScanForExceptions();
 
 // Create the microservice host and start listening
 using (var host = hostBuilder.CreateHost())
@@ -233,11 +234,13 @@ public class SomeCustomException : Exception
 
 **Note:** It's important that the custom exception is serializable, when serializable is not used the exception will not work!
 
-Currently, there are some limitations with throwing exceptions. To allow the framework to resolve the exceptions it's important that the exceptions used have the same name and namespace. Resolving exception types will happen in the following order:
+When using the `MicroserviceHostBuilder` you have the option to scan for exceptions with the `ScanForExceptions()` or `ScanForExceptions(exclusions)` methods, these methods will create an exception type dictionary which the `CommandPublisher` can use. The `CommandPublisher` will do it's best to resolve the exception type, which will happen in the following order:
 
-1. Look in the calling assembly
-2. Look in the entry assembly
+1. Look in the exception type dictionary
+2. Look in the calling assembly
 3. Look in the `mscorlib` assembly
 4. When the above doesn't work use the base class `Exception`
 
 When the exception couldn't be created an `InvalidCastException` will be thrown.
+
+To exclude exceptions from the exception scanning process pass a list of type `List<string>` to the `ScanForExceptions(exclusions)` method, the `MicroserviceHostBuilder` will use this list to match the namespace prefixes. For example `new list<string> { "Minor.Nijn" }` will exclude all exceptions located in namespaces starting with `Minor.Nijn`. 
