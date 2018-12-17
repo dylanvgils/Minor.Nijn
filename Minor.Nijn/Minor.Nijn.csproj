@@ -1,14 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <Authors>Dylan van Gils, Dion de Koning, Justin Moor, Martine Mulder</Authors>
     <Company>_</Company>
-    <Version>0.1.2</Version>
+    <Version>0.2.0</Version>
     <PackageId>Minor.Nijn.Bloem</PackageId>
     <Product>Minor.Nijn</Product>
     <Description>Wrapper around RabbitMQ</Description>
-    <PackageReleaseNotes>- Various non-breaking code improvements</PackageReleaseNotes>
+    <PackageReleaseNotes>- Updated dotnet core version to 2.2
+- Various non-breaking code improvements</PackageReleaseNotes>
     <PackageTags>RabbitMQ, Wrapper, EventBus, Messages, Commands</PackageTags>
     <PackageProjectUrl>https://github.com/dylanvgils/Minor.Nijn</PackageProjectUrl>
     <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>
