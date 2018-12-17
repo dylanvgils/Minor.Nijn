@@ -24,6 +24,7 @@ namespace Minor.Nijn.WebScale.Commands
             Meta = meta;
             _logger = NijnWebScaleLogger.CreateLogger<CommandListener>();
         }
+
         public void StartListening(IMicroserviceHost host)
         {
             CheckDisposed();
@@ -42,7 +43,7 @@ namespace Minor.Nijn.WebScale.Commands
             _isListening = true;
         }
 
-        internal ResponseCommandMessage HandleCommandMessage(RequestCommandMessage request)
+        public ResponseCommandMessage HandleCommandMessage(RequestCommandMessage request)
         {
             ResponseCommandMessage response;
 
