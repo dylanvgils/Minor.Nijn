@@ -83,16 +83,6 @@ namespace Minor.Nijn.WebScale
             return this;
         }
 
-        /// <summary>
-        /// Scans te calling assembly for exception types and adds them to the exception type dictionary
-        /// </summary>
-        /// <returns></returns>
-        public MicroserviceHostBuilder ScanForExceptions()
-        {
-            ScanForExceptions(new List<string>());
-            return this;
-        }
-
         private void ParseType(Type type)
         {
             var eventAttribute = type.GetCustomAttribute<EventListenerAttribute>();
@@ -202,11 +192,19 @@ namespace Minor.Nijn.WebScale
         }
 
         /// <summary>
+        /// Scans te calling assembly for exception types and adds them to the exception type dictionary
+        /// </summary>
+        public MicroserviceHostBuilder ScanForExceptions()
+        {
+            ScanForExceptions(new List<string>());
+            return this;
+        }
+
+        /// <summary>
         /// Scans the calling assembly for exceptions and exclude the given exclusions, adds the found
         /// exception type to the exception type dictionary
         /// </summary>
         /// <param name="exclusions">Assembly namespace prefixes to exclude</param>
-        /// <returns></returns>
         public MicroserviceHostBuilder ScanForExceptions(IEnumerable<string> exclusions)
         {
             ScanForExceptionTypes(exclusions.ToList());
