@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Minor.Nijn.WebScale.Attributes;
+﻿using Minor.Nijn.WebScale.Attributes;
 using Minor.Nijn.WebScale.Test.TestClasses.Commands;
 using Minor.Nijn.WebScale.Test.TestClasses.Domain;
 

@@ -13,6 +13,11 @@ namespace Minor.Nijn.WebScale.Commands
         string QueueName { get; }
 
         /// <summary>
+        /// Metadata describing the CommandListener method
+        /// </summary>
+        CommandListenerInfo Meta { get; }
+
+        /// <summary>
         /// Registers the command listener to the Minor.Nijn command listener
         /// </summary>
         /// <param name="host">Microservice host containing the preferred Minor.Nijn context</param>

@@ -2,8 +2,6 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Minor.Nijn.WebScale.Events
@@ -12,30 +10,19 @@ namespace Minor.Nijn.WebScale.Events
     {
         private readonly ILogger _logger;
 
-        public string QueueName { get; }
-        public IEnumerable<string> TopicExpressions { get; }
+        public EventListenerInfo Meta { get; }
+        public string QueueName => Meta.QueueName;
+        public IEnumerable<string> TopicExpressions => Meta.TopicExpressions;
 
-        private readonly Type _type;
-        private readonly MethodInfo _method;
-        private readonly bool _isAsyncMethod;
-        private readonly Type _eventType;
         private object _instance;
 
         private IMessageReceiver _receiver;
         private bool _isListening;
         private bool _disposed;
 
-        internal EventListener(Type type, MethodInfo method, string queueName, IEnumerable<string> topicExpressions)
+        internal EventListener(EventListenerInfo meta)
         {
-            QueueName = queueName;
-            TopicExpressions = topicExpressions;
-
-            _type = type;
-            _eventType = method.GetParameters()[0].ParameterType;
-
-            _method = method;
-            _isAsyncMethod = method.GetCustomAttribute<AsyncStateMachineAttribute>() != null;
-
+            Meta = meta;
             _logger = NijnWebScaleLogger.CreateLogger<EventListener>();
         }
 
@@ -48,7 +35,7 @@ namespace Minor.Nijn.WebScale.Events
                 throw new InvalidOperationException("Already listening for events");
             }
 
-            _instance = host.CreateInstance(_type);
+            _instance = host.CreateInstance(Meta.Type);
 
             _receiver = host.Context.CreateMessageReceiver(QueueName, TopicExpressions);
             _receiver.DeclareQueue();
@@ -59,14 +46,14 @@ namespace Minor.Nijn.WebScale.Events
 
         internal void HandleEventMessage(EventMessage message)
         {
-            if (message.Type != _eventType.Name)
+            if (message.Type != Meta.EventType.Name)
             {
                 _logger.LogError("Received message in invalid format, expected message to be of type {0} and got {1}", 
-                    _eventType.Name, message.Type);
+                    Meta.EventType.Name, message.Type);
                 return;
             }
 
-            var payload = JsonConvert.DeserializeObject(message.Message, _eventType);
+            var payload = JsonConvert.DeserializeObject(message.Message, Meta.EventType);
 
             // TODO: Set these properties through the JSON Deserializer
             payload.GetType().GetProperty("CorrelationId").SetValue(payload, message.CorrelationId);
@@ -77,14 +64,14 @@ namespace Minor.Nijn.WebScale.Events
 
         private void InvokeListener(params object[] payload)
         {
-            if (_isAsyncMethod)
+            if (Meta.IsAsyncMethod)
             {
-                var task = (Task) _method.Invoke(_instance, payload);
+                var task = (Task) Meta.Method.Invoke(_instance, payload);
                 task.Wait();
                 return;
             }
 
-            _method.Invoke(_instance, payload);
+            Meta.Method.Invoke(_instance, payload);
         }
 
         private void CheckDisposed()

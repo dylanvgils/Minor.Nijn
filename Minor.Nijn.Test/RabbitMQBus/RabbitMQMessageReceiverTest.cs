@@ -111,7 +111,6 @@ namespace Minor.Nijn.RabbitMQBus.Test
         {
             var consumer = new EventingBasicConsumer(channelMock.Object);
 
-            var messageId = "messageId";
             var replyCommandMessage = "Reply message";
             var routingKey = "a.b.c";
             var type = "type";

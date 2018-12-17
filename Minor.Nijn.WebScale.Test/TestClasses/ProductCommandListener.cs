@@ -1,8 +1,7 @@
 ﻿using Minor.Nijn.WebScale.Attributes;
 using Minor.Nijn.WebScale.Test.TestClasses.Commands;
-using System;
-using System.Threading.Tasks;
 using Minor.Nijn.WebScale.Test.TestClasses.Injectable;
+using System.Threading.Tasks;
 
 namespace Minor.Nijn.WebScale.Test.TestClasses
 {
