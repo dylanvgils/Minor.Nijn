@@ -1,13 +1,13 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Minor.Nijn.WebScale.Test.InvalidTestClasses;
 using Minor.Nijn.WebScale.Test.TestClasses;
 using Minor.Nijn.WebScale.Test.TestClasses.Commands;
 using Minor.Nijn.WebScale.Test.TestClasses.Domain;
+using Minor.Nijn.WebScale.Test.TestClasses.Injectable;
 using Moq;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System;
-using Minor.Nijn.WebScale.Test.InvalidTestClasses;
-using Minor.Nijn.WebScale.Test.TestClasses.Injectable;
 using ProductCommandListener = Minor.Nijn.WebScale.Test.TestClasses.ProductCommandListener;
 
 namespace Minor.Nijn.WebScale.Commands.Test
@@ -27,7 +27,16 @@ namespace Minor.Nijn.WebScale.Commands.Test
             var method = _type.GetMethod(TestClassesConstants.OrderCommandHandlerMethodName);
             _queueName = "queueName";
 
-            _target = new CommandListener(_type, method, _queueName);
+            var meta = new CommandListenerInfo
+            {
+                QueueName = _queueName,
+                Type = _type,
+                Method = method,
+                IsAsyncMethod = false,
+                CommandType = method.GetParameters()[0].ParameterType
+            };
+
+            _target = new CommandListener(meta);
         }
 
         [TestCleanup]
@@ -44,7 +53,16 @@ namespace Minor.Nijn.WebScale.Commands.Test
             var method = type.GetMethod(TestClassesConstants.OrderEventHandlerMethodName);
             var queueName = "queueName";
 
-            var listener = new CommandListener(type, method, queueName);
+            var meta = new CommandListenerInfo
+            {
+                QueueName = queueName,
+                Type = type,
+                Method = method,
+                IsAsyncMethod = false,
+                CommandType = method.GetParameters()[0].ParameterType
+            };
+
+            var listener = new CommandListener(meta);
 
             Assert.AreEqual(queueName, listener.QueueName);
         }
@@ -154,7 +172,6 @@ namespace Minor.Nijn.WebScale.Commands.Test
         [TestMethod]
         public void HandleCommandMessage_ShouldHandleAsyncCommandListeners()
         {
-            var order = new Order { Id = 1, Description = "Some description" };
             var command = new AddProductCommand(_queueName, 42);
 
             var commandMessage = new RequestCommandMessage(
@@ -168,7 +185,16 @@ namespace Minor.Nijn.WebScale.Commands.Test
 
             var type = typeof(ProductCommandListener);
             var method = type.GetMethod(TestClassesConstants.ProductCommandHandlerMethodName);
-            var target = new CommandListener(type, method, _queueName);
+            var meta = new CommandListenerInfo
+            {
+                QueueName = _queueName,
+                Type = type,
+                Method = method,
+                IsAsyncMethod = true,
+                CommandType = method.GetParameters()[0].ParameterType
+            };
+
+            var target = new CommandListener(meta);
 
             var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
             commandReceiverMock.Setup(recv => recv.DeclareCommandQueue());
@@ -244,7 +270,16 @@ namespace Minor.Nijn.WebScale.Commands.Test
 
             var type = typeof(InvalidCommandListenerException);
             var method = type.GetMethod("ThrowException");
-            var target = new CommandListener(type, method, queueName);
+            var meta = new CommandListenerInfo
+            {
+                QueueName = queueName,
+                Type = type,
+                Method = method,
+                IsAsyncMethod = false,
+                CommandType = method.GetParameters()[0].ParameterType
+            };
+
+            var target = new CommandListener(meta);
 
             var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
             commandReceiverMock.Setup(recv => recv.DeclareCommandQueue());

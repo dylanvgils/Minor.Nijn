@@ -19,6 +19,11 @@ namespace Minor.Nijn.WebScale.Events
         IEnumerable<string> TopicExpressions { get; }
 
         /// <summary>
+        /// Metadata describing the EventListener method
+        /// </summary>
+        EventListenerInfo Meta { get; }
+
+        /// <summary>
         /// Registers the event listener to the Minor.Nijn event listener
         /// </summary>
         /// <param name="host">Microservice host containing the preferred Minor.Nijn context</param>

@@ -2,13 +2,13 @@
 using Minor.Nijn.WebScale.Test.TestClasses;
 using Minor.Nijn.WebScale.Test.TestClasses.Domain;
 using Minor.Nijn.WebScale.Test.TestClasses.Events;
+using Minor.Nijn.WebScale.Test.TestClasses.Injectable;
 using Moq;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Minor.Nijn.WebScale.Test.TestClasses.Injectable;
 using ProductAddedEvent = Minor.Nijn.WebScale.Test.TestClasses.Events.ProductAddedEvent;
 using ProductEventListener = Minor.Nijn.WebScale.Test.TestClasses.ProductEventListener;
 
@@ -31,7 +31,17 @@ namespace Minor.Nijn.WebScale.Events.Test
             _queueName = "queueName";
             _topicExpressions = new List<string> { "a.b.c" };
 
-            _target = new EventListener(_type, method, _queueName, _topicExpressions);
+            var meta = new EventListenerInfo
+            {
+                QueueName = _queueName,
+                TopicExpressions = _topicExpressions,
+                Type = _type,
+                Method = method,
+                IsAsyncMethod = false,
+                EventType = method.GetParameters()[0].ParameterType
+            };
+
+            _target = new EventListener(meta);
         }
 
         [TestCleanup]
@@ -48,8 +58,17 @@ namespace Minor.Nijn.WebScale.Events.Test
             var method = type.GetMethod(TestClassesConstants.OrderEventHandlerMethodName);
             var queueName = "queueName";
             var topicExpressions = new List<string> {"a.b.c"};
+            var meta = new EventListenerInfo
+            {
+                QueueName = queueName,
+                TopicExpressions = topicExpressions,
+                Type = type,
+                Method = method,
+                IsAsyncMethod = false,
+                EventType = method.GetParameters()[0].ParameterType
+            };
 
-            var listener = new EventListener(type, method, queueName, topicExpressions);
+            var listener = new EventListener(meta);
 
             Assert.AreEqual(queueName, listener.QueueName);
             Assert.AreEqual(topicExpressions, listener.TopicExpressions);
@@ -164,7 +183,17 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             var type = typeof(ProductEventListener);
             var method = type.GetMethod(TestClassesConstants.ProductEventHandlerMethodName);
-            var target = new EventListener(type, method, _queueName, _topicExpressions);
+            var meta = new EventListenerInfo
+            {
+                QueueName = _queueName,
+                TopicExpressions = _topicExpressions,
+                Type = type,
+                Method = method,
+                IsAsyncMethod = true,
+                EventType = method.GetParameters()[0].ParameterType
+            };
+
+            var target = new EventListener(meta);
 
             var messageReceiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
             messageReceiverMock.Setup(recv => recv.DeclareQueue());

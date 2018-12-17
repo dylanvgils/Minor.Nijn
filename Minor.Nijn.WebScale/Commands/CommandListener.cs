@@ -3,7 +3,6 @@ using Minor.Nijn.WebScale.Helpers;
 using Newtonsoft.Json;
 using System;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Minor.Nijn.WebScale.Commands
 {
@@ -11,28 +10,18 @@ namespace Minor.Nijn.WebScale.Commands
     {
         private readonly ILogger _logger;
 
-        public string QueueName { get; }
+        public CommandListenerInfo Meta { get; }
+        public string QueueName => Meta.QueueName;
 
-        private readonly Type _type;
-        private readonly MethodInfo _method;
-        private readonly bool _isAsyncMethod;
-        private readonly Type _commandType;
         private object _instance;
 
         private ICommandReceiver _receiver;
         private bool _isListening;
         private bool _disposed;
 
-        public CommandListener(Type type, MethodInfo method, string queueName)
+        public CommandListener(CommandListenerInfo meta)
         {
-            QueueName = queueName;
-
-            _type = type;
-            _commandType = method.GetParameters()[0].ParameterType;
-
-            _method = method;
-            _isAsyncMethod = method.GetCustomAttribute<AsyncStateMachineAttribute>() != null;
-
+            Meta = meta;
             _logger = NijnWebScaleLogger.CreateLogger<CommandListener>();
         }
         public void StartListening(IMicroserviceHost host)
@@ -44,7 +33,7 @@ namespace Minor.Nijn.WebScale.Commands
                 throw new InvalidOperationException("Already listening for commands");
             }
 
-            _instance = host.CreateInstance(_type);
+            _instance = host.CreateInstance(Meta.Type);
 
             _receiver = host.Context.CreateCommandReceiver(QueueName);
             _receiver.DeclareCommandQueue();
@@ -64,7 +53,7 @@ namespace Minor.Nijn.WebScale.Commands
                 var payload = CreatePayload(request);
                 var json = InvokeListener(payload);
 
-                response = new ResponseCommandMessage(json, _method.ReturnType.Name, request.CorrelationId);
+                response = new ResponseCommandMessage(json, Meta.Method.ReturnType.Name, request.CorrelationId);
             }
             catch (TargetInvocationException e)
             {
@@ -82,19 +71,19 @@ namespace Minor.Nijn.WebScale.Commands
 
         private void CheckInputType(RequestCommandMessage request)
         {
-            if (request.Type == _commandType.Name) return;
+            if (request.Type == Meta.CommandType.Name) return;
 
             _logger.LogError(
                 "Received command in invalid format, expected message to be of type {0} and got {1}",
-                _commandType.Name, request.Type);
+                Meta.CommandType.Name, request.Type);
 
             throw new ArgumentException(
-                $"Received command with wrong type, type was {request.Type} and expected {_commandType.Name}");
+                $"Received command with wrong type, type was {request.Type} and expected {Meta.CommandType.Name}");
         }
 
         private object CreatePayload(RequestCommandMessage request)
         {
-            var payload = JsonConvert.DeserializeObject(request.Message, _commandType);
+            var payload = JsonConvert.DeserializeObject(request.Message, Meta.CommandType);
 
             // TODO: Set these properties through the JSON Deserializer
             payload.GetType().GetProperty("CorrelationId").SetValue(payload, request.CorrelationId);
@@ -105,9 +94,9 @@ namespace Minor.Nijn.WebScale.Commands
 
         private string InvokeListener(params object[] payload)
         {
-            var result = _isAsyncMethod 
-                ? _method.InvokeAsync(_instance, payload).Result 
-                : _method.Invoke(_instance, payload);
+            var result = Meta.IsAsyncMethod 
+                ? Meta.Method.InvokeAsync(_instance, payload).Result 
+                : Meta.Method.Invoke(_instance, payload);
 
             return JsonConvert.SerializeObject(result);
         }

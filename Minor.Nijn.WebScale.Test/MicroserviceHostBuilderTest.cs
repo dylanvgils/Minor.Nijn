@@ -3,12 +3,16 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn.WebScale.Commands;
 using Minor.Nijn.WebScale.Test.InvalidTestClasses;
 using Minor.Nijn.WebScale.Test.TestClasses;
+using Minor.Nijn.WebScale.Test.TestClasses.Commands;
+using Minor.Nijn.WebScale.Test.TestClasses.Events;
 using Minor.Nijn.WebScale.TestClasses.Exceptions.Test;
 using Moq;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OrderCommandListener = Minor.Nijn.WebScale.Test.TestClasses.OrderCommandListener;
+using OrderEventListener = Minor.Nijn.WebScale.Test.TestClasses.OrderEventListener;
 
 namespace Minor.Nijn.WebScale.Test
 {
@@ -41,79 +45,41 @@ namespace Minor.Nijn.WebScale.Test
         }
 
         [TestMethod]
-        public void CreateHost_ShouldReturnMicroserviceHost()
+        public void UseConventions_ShouldCreateEventListeners()
         {
-            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            var result = _target.WithContext(busContextMock.Object).CreateHost();
-            Assert.IsInstanceOfType(result, typeof(MicroserviceHost));
+            _target.UseConventions();
+
+            var result = _target.EventListeners;
+            Assert.AreEqual(2, result.Count());
+            Assert.IsTrue(result.Any(l => l.QueueName == TestClassesConstants.ProductEventListenerQueueName && l.TopicExpressions.Contains(TestClassesConstants.ProductEventHandlerTopic)));
+            Assert.IsTrue(result.Any(l => l.QueueName == TestClassesConstants.OrderEventListenerQueueName && l.TopicExpressions.Contains(TestClassesConstants.OrderEventHandlerTopic)));
         }
 
         [TestMethod]
-        public void CreateHost_ShouldReturnMicroserviceHostWithOneEventListenerWhenCalledWithAddEventListener()
+        public void UseConventions_ShouldCreateCommandListeners()
         {
-            var result = _target.AddListener<ProductEventListener>().WithContext(_busContextMock.Object).CreateHost();
+            _target.UseConventions();
 
-            var listener = result.EventListeners.First();
-            Assert.AreEqual(1, result.EventListeners.Count());
-            Assert.AreEqual(TestClassesConstants.ProductEventListenerQueueName, listener.QueueName);
-            Assert.AreEqual(TestClassesConstants.ProductEventHandlerTopic, listener.TopicExpressions.First());
+            var result = _target.CommandListeners;
+            Assert.AreEqual(2, result.Count());
+            Assert.IsTrue(result.Any(l => l.QueueName == TestClassesConstants.ProductCommandListenerQueueName));
+            Assert.IsTrue(result.Any(l => l.QueueName == TestClassesConstants.OrderCommandListenerQueueName));
         }
 
         [TestMethod]
-        public void CreateHost_ShouldReturnMicroserviceHostWithOneCommandListenerWhenCalledWithAddEventListener()
+        public void ScanForExceptions_ShouldBuildExceptionTypeDictionaryForCallingAssembly()
         {
-            var result = _target.AddListener<OrderCommandListener>().WithContext(_busContextMock.Object).CreateHost();
-
-            var listener = result.CommandListeners.First();
-            Assert.AreEqual(1, result.CommandListeners.Count());
-            Assert.AreEqual(TestClassesConstants.OrderCommandListenerQueueName, listener.QueueName);
+            _target.ScanForExceptions();
+            Assert.IsTrue(_target.ExceptionTypes.Any(kv => kv.Key == typeof(TestException).Name), "Should contain TestException");
+            Assert.IsTrue(_target.ExceptionTypes.Any(kv => kv.Key == typeof(BusConfigurationException).Name), "Should contain BusConfigurationException");
         }
 
         [TestMethod]
-        public void CreateHost_ShouldReturnMicroserviceHostWithEventListenersWhenCalledWithUseConventions()
+        public void ScanForExceptions_ShouldExcludeExceptionsFromScanWhenMatchesExclusionPattern()
         {
-            var result = _target.UseConventions().WithContext(_busContextMock.Object).CreateHost();
-
-            var listeners = result.EventListeners;
-            Assert.AreEqual(2, listeners.Count());
-            Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.ProductEventListenerQueueName && l.TopicExpressions.Contains(TestClassesConstants.ProductEventHandlerTopic)));
-            Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.OrderEventListenerQueueName && l.TopicExpressions.Contains(TestClassesConstants.OrderEventHandlerTopic)));
-        }
-
-        [TestMethod]
-        public void CreateHost_ShouldReturnMicroserviceHostWithCommandListenersWhenCalledWithUseConventions()
-        {
-            var result = _target.UseConventions().WithContext(_busContextMock.Object).CreateHost();
-
-            var listeners = result.CommandListeners;
-            Assert.AreEqual(2, listeners.Count());
-            Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.ProductCommandListenerQueueName));
-            Assert.IsTrue(listeners.Any(l => l.QueueName == TestClassesConstants.OrderCommandListenerQueueName));
-        }
-
-        [TestMethod]
-        public void CreateHost_ShouldBuildExceptionTypeDictionaryForCallingAssembly()
-        {
-            _target
-                .UseConventions()
-                .ScanForExceptions()
-                .WithContext(_busContextMock.Object)
-                .CreateHost();
-
-            Assert.IsTrue(CommandPublisher.ExceptionTypes.Any(kv => kv.Key == typeof(TestException).Name), "Should contain TestException");
-            Assert.IsTrue(CommandPublisher.ExceptionTypes.Any(kv => kv.Key == typeof(BusConfigurationException).Name), "Should contain BusConfigurationException");
-        }
-
-        [TestMethod] public void CreateHost_ShouldExcludeExceptionsFromScanWhenMatchesExclusionPattern()
-        {
-            _target
-                .UseConventions()
-                .ScanForExceptions(new List<string> { "Minor.Nijn.WebScale" })
-                .WithContext(_busContextMock.Object)
-                .CreateHost();
-
-            Assert.IsFalse(CommandPublisher.ExceptionTypes.Any(kv => kv.Key == typeof(TestException).Name), "Should not contain TestException");
-            Assert.IsTrue(CommandPublisher.ExceptionTypes.Any(kv => kv.Key == typeof(BusConfigurationException).Name), "Should contain BusConfigurationException");
+            _target.ScanForExceptions(new List<string> {"Minor.Nijn.WebScale"});
+            Assert.IsFalse(_target.ExceptionTypes.Any(kv => kv.Key == typeof(TestException).Name), "Should not contain TestException");
+            Assert.IsTrue(_target.ExceptionTypes.Any(kv => kv.Key == typeof(BusConfigurationException).Name), "Should contain BusConfigurationException");
         }
 
         [TestMethod]
@@ -182,11 +148,118 @@ namespace Minor.Nijn.WebScale.Test
         }
 
         [TestMethod]
+        public void AddListener_ShouldThrowArgumentExceptionWhenAsyncEventListenerMethodHasInvalidReturnType()
+        {
+            Action action = () => { _target.AddListener<InvalidEventListenerAsyncReturnType>(); };
+            var ex = Assert.ThrowsException<ArgumentException>(action);
+            Assert.AreEqual("Invalid return type of method: InvalidAsyncReturnType, return type of async method should be Task", ex.Message);
+        }
+
+        [TestMethod]
+        public void AddListener_ShouldPassCorrectEventListenerInfoToEventListener()
+        {
+            _target.AddListener<OrderEventListener>();
+
+            var result = _target.EventListeners.First().Meta;
+            Assert.AreEqual(TestClassesConstants.OrderEventListenerQueueName, result.QueueName);
+            Assert.AreEqual(TestClassesConstants.OrderEventHandlerTopic, result.TopicExpressions.First());
+            Assert.AreEqual(typeof(OrderEventListener), result.Type);
+            Assert.AreEqual(TestClassesConstants.OrderEventHandlerMethodName, result.Method.Name);
+            Assert.AreEqual(typeof(OrderCreatedEvent), result.EventType);
+            Assert.AreEqual(false, result.IsAsyncMethod);
+        }
+
+        [TestMethod]
+        public void AddListener_ShouldPassCorrectAsyncEventListenerInfoToEventListener()
+        {
+            _target.AddListener<ProductEventListener>();
+
+            var result = _target.EventListeners.First().Meta;
+            Assert.AreEqual(TestClassesConstants.ProductEventListenerQueueName, result.QueueName);
+            Assert.AreEqual(TestClassesConstants.ProductEventHandlerTopic, result.TopicExpressions.First());
+            Assert.AreEqual(typeof(ProductEventListener), result.Type);
+            Assert.AreEqual(TestClassesConstants.ProductEventHandlerMethodName, result.Method.Name);
+            Assert.AreEqual(typeof(ProductAddedEvent), result.EventType);
+            Assert.AreEqual(true, result.IsAsyncMethod);
+        }
+
+        [TestMethod]
+        public void AddListener_ShouldPassCorrectCommandListenerInfoToCommandListener()
+        {
+            _target.AddListener<OrderCommandListener>();
+
+            var result = _target.CommandListeners.First().Meta;
+            Assert.AreEqual(TestClassesConstants.OrderCommandListenerQueueName, result.QueueName);
+            Assert.AreEqual(typeof(OrderCommandListener), result.Type);
+            Assert.AreEqual(TestClassesConstants.OrderCommandHandlerMethodName, result.Method.Name);
+            Assert.AreEqual(typeof(AddOrderCommand), result.CommandType);
+            Assert.AreEqual(false, result.IsAsyncMethod);
+        }
+
+        [TestMethod]
+        public void AddListener_ShouldPassCorrectAsyncCommandListenerInfoToCommandListener()
+        {
+            _target.AddListener<ProductCommandListener>();
+
+            var result = _target.CommandListeners.First().Meta;
+            Assert.AreEqual(TestClassesConstants.ProductCommandListenerQueueName, result.QueueName);
+            Assert.AreEqual(typeof(ProductCommandListener), result.Type);
+            Assert.AreEqual(TestClassesConstants.ProductCommandHandlerMethodName, result.Method.Name);
+            Assert.AreEqual(typeof(AddProductCommand), result.CommandType);
+            Assert.AreEqual(true, result.IsAsyncMethod);
+        }
+
+        [TestMethod]
         public void SetLoggerFactory_ShouldSetTheLoggerFactoryForTheProject()
         {
             var factory = new LoggerFactory();
             _target.SetLoggerFactory(factory);
             Assert.AreEqual(NijnWebScaleLogger.LoggerFactory, factory);
+        }
+
+        [TestMethod]
+        public void CreateHost_ShouldReturnMicroserviceHost()
+        {
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            var result = _target.WithContext(busContextMock.Object).CreateHost();
+            Assert.IsInstanceOfType(result, typeof(MicroserviceHost));
+        }
+
+        [TestMethod]
+        public void CreateHost_ShouldReturnMicroserviceHostWithOneEventListenerWhenCalledWithAddEventListener()
+        {
+            var result = _target.AddListener<ProductEventListener>().WithContext(_busContextMock.Object).CreateHost();
+
+            var listener = result.EventListeners.First();
+            Assert.AreEqual(1, result.EventListeners.Count);
+            Assert.AreEqual(TestClassesConstants.ProductEventListenerQueueName, listener.QueueName);
+            Assert.AreEqual(TestClassesConstants.ProductEventHandlerTopic, listener.TopicExpressions.First());
+        }
+
+        [TestMethod]
+        public void CreateHost_ShouldReturnMicroserviceHostWithOneCommandListenerWhenCalledWithAddEventListener()
+        {
+            var result = _target.AddListener<OrderCommandListener>().WithContext(_busContextMock.Object).CreateHost();
+
+            var listener = result.CommandListeners.First();
+            Assert.AreEqual(1, result.CommandListeners.Count);
+            Assert.AreEqual(TestClassesConstants.OrderCommandListenerQueueName, listener.QueueName);
+        }
+
+        [TestMethod]
+        public void CreateHost_ShouldReturnMicroserviceHostWhenCalledWithUseConventions()
+        {
+            var result = _target.UseConventions().WithContext(_busContextMock.Object).CreateHost();
+
+            Assert.AreEqual(2, result.CommandListeners.Count);
+            Assert.AreEqual(2, result.EventListeners.Count);
+        }
+
+        [TestMethod]
+        public void CreateHost_ShouldSetTheExceptionDictionaryInTheCommandPublisher()
+        {
+            _target.ScanForExceptions().WithContext(_busContextMock.Object).CreateHost();
+            Assert.AreEqual(3, CommandPublisher.ExceptionTypes.Count);
         }
     }
 }
