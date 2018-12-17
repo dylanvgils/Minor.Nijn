@@ -20,7 +20,7 @@ namespace Minor.Nijn.WebScale.Events
         private bool _isListening;
         private bool _disposed;
 
-        internal EventListener(EventListenerInfo meta)
+        public EventListener(EventListenerInfo meta)
         {
             Meta = meta;
             _logger = NijnWebScaleLogger.CreateLogger<EventListener>();
@@ -44,7 +44,7 @@ namespace Minor.Nijn.WebScale.Events
             _isListening = true;
         }
 
-        internal void HandleEventMessage(EventMessage message)
+        public void HandleEventMessage(EventMessage message)
         {
             if (message.Type != Meta.EventType.Name)
             {

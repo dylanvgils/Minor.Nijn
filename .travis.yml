@@ -5,14 +5,19 @@ language: csharp
 mono: none
 dotnet: 2.2
 
-services:
-  - rabbitmq
+# services:
+#  - rabbitmq
+
+before_install:
+    - echo "deb https://dl.bintray.com/rabbitmq/debian xenial main" | sudo tee /etc/apt/sources.list.d/bintray.rabbitmq.list
 
 install:
+  - sudo apt-get install rabbitmq-server
   - dotnet tool install --global dotnet-sonarscanner
   - dotnet restore
 
 before_script:
+  - sudo systemctl start rabbitmq-server
   - export PATH="$PATH:$HOME/.dotnet/tools"
 
 script:
@@ -20,8 +25,8 @@ script:
   - dotnet build
   - dotnet test Minor.Nijn.Test/Minor.Nijn.Test.csproj --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
   - dotnet test Minor.Nijn.WebScale.Test/Minor.Nijn.WebScale.Test.csproj --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+  - dotnet test Minor.Nijn.RabbitMQTest/Minor.Nijn.RabbitMQTest.csproj --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
   - dotnet test Examples/ConsoleAppExample.Test/ConsoleAppExample.Test.csproj --no-build
-#  - dotnet test Minor.Nijn.RabbitMQTest/Minor.Nijn.RabbitMQTest.csproj --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
   - dotnet sonarscanner end /d:sonar.login="$SONAR_TOKEN"
 
 cache:
