@@ -151,6 +151,7 @@ namespace Minor.Nijn.WebScale
         private void CreateCommandListener(Type type, MethodInfo method, string queueName)
         {
             CheckParameterType(type, method, typeof(DomainCommand));
+            var isAsync = IsAsyncMethod(method);
 
             if (method.ReturnType == typeof(void))
             {
@@ -158,12 +159,18 @@ namespace Minor.Nijn.WebScale
                 throw new ArgumentException($"Invalid return of method: '{method.Name}', returning a value from a CommandListener method is required");
             }
 
+            if (isAsync && !method.ReturnType.IsGenericType)
+            {
+                _logger.LogError("Invalid return type of method: {0}, return type of async CommandListener method should be of type Task<T>", method.Name);
+                throw new ArgumentException($"Invalid return type of method: {method.Name}, return type of async CommandListener method should be of type Task<T>");
+            }
+
             var meta = new CommandListenerInfo
             {
                 QueueName = queueName,
                 Type = type,
                 Method = method,
-                IsAsyncMethod = IsAsyncMethod(method),
+                IsAsyncMethod = isAsync,
                 CommandType = method.GetParameters()[0].ParameterType
             };
 
