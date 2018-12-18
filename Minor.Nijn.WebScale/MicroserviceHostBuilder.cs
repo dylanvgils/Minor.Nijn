@@ -9,6 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Minor.Nijn.WebScale.Helpers;
+using DomainEvent = Minor.Nijn.WebScale.Events.DomainEvent;
 
 namespace Minor.Nijn.WebScale
 {
@@ -186,7 +189,8 @@ namespace Minor.Nijn.WebScale
                 throw new ArgumentException($"Method: '{method.Name}' in type: '{type.Name}' has to many parameters");
             }
 
-            if (!parameters.ElementAtOrDefault(0)?.ParameterType.IsSubclassOf(derivedTypeOf) ?? true)
+            var paramType = parameters[0].ParameterType;
+            if (!(paramType == typeof(EventMessage) && derivedTypeOf == typeof(DomainEvent)) && !paramType.IsSubclassOf(derivedTypeOf))
             {
                 _logger.LogError("Invalid parameter type in method: {0}, parameter has to be derived type of {1}", method.Name, derivedTypeOf.Name);
                 throw new ArgumentException($"Invalid parameter type in method: '{method.Name}', parameter has to be derived type of {derivedTypeOf.Name}");

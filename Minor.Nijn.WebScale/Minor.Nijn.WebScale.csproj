@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <Authors>Dylan van Gils</Authors>
     <PackageId>Minor.Nijn.Bloem.WebScale</PackageId>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Company>-</Company>
     <Description>WebScale wrapper arround Minor.Nijn framework.</Description>
     <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>
@@ -13,7 +13,8 @@
     <PackageReleaseNotes>- Updated dotnet core version to 2.2
 - More checks in MicroServiceHostBuilder
 - Added exception scan methods to MicroServiceHostBuilder for creating exception type dictionary
-- Various non-breaking code improvements</PackageReleaseNotes>
+- Various non-breaking code improvements
+- Added extension method for Dependency Injection</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

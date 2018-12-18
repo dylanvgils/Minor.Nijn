@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Minor.Nijn
+﻿namespace Minor.Nijn
 {
     public abstract class CommandMessage
     {

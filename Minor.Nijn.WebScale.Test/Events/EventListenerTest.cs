@@ -9,6 +9,7 @@ using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using AuditEventListener = Minor.Nijn.WebScale.Test.TestClasses.AuditEventListener;
 using ProductAddedEvent = Minor.Nijn.WebScale.Test.TestClasses.Events.ProductAddedEvent;
 using ProductEventListener = Minor.Nijn.WebScale.Test.TestClasses.ProductEventListener;
 
@@ -49,6 +50,9 @@ namespace Minor.Nijn.WebScale.Events.Test
         {
             OrderEventListener.HandleOrderCreatedEventHasBeenCalled = false;
             OrderEventListener.HandleOrderCreatedEventHasBeenCalledWith = null;
+
+            AuditEventListener.HandleEventsHasBeenCalled = false;
+            AuditEventListener.HandleEventsHasBeenCalledWith = null;
         }
 
         [TestMethod]
@@ -246,6 +250,53 @@ namespace Minor.Nijn.WebScale.Events.Test
             _target.HandleEventMessage(eventMessage);
 
             Assert.IsFalse(OrderEventListener.HandleOrderCreatedEventHasBeenCalled);
+        }
+
+        [TestMethod]
+        public void HandleEventMessage_ShouldHandleEventMessageOfTypeEventMessage()
+        {
+            var routingKey = "a.b.c";
+            var order = new Order { Id = 1, Description = "Some Description" };
+            var orderCreatedEvent = new OrderCreatedEvent(routingKey, order);
+            var eventMessage = new EventMessage(
+                routingKey: routingKey,
+                message: JsonConvert.SerializeObject(orderCreatedEvent),
+                type: orderCreatedEvent.GetType().Name,
+                timestamp: orderCreatedEvent.Timestamp,
+                correlationId: orderCreatedEvent.CorrelationId
+            );
+
+            var type = typeof(AuditEventListener);
+            var method = type.GetMethod(TestClassesConstants.AuditEventListenerMethodName);
+            var meta = new EventListenerInfo
+            {
+                QueueName = _queueName,
+                TopicExpressions = _topicExpressions,
+                Type = type,
+                Method = method,
+                IsAsyncMethod = false,
+                EventType = method.GetParameters()[0].ParameterType
+            };
+
+            var target = new EventListener(meta);
+
+            var messageReceiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
+            messageReceiverMock.Setup(recv => recv.DeclareQueue());
+            messageReceiverMock.Setup(recv => recv.StartReceivingMessages(It.IsAny<EventMessageReceivedCallback>()));
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(_queueName, _topicExpressions))
+                .Returns(messageReceiverMock.Object);
+
+            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+            microServiceHostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+            target.StartListening(microServiceHostMock.Object);
+
+            target.HandleEventMessage(eventMessage);
+
+            Assert.IsTrue(AuditEventListener.HandleEventsHasBeenCalled);
+            Assert.AreEqual(eventMessage, AuditEventListener.HandleEventsHasBeenCalledWith);
         }
 
         [TestMethod]

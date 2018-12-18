@@ -22,6 +22,7 @@ script:
   - dotnet build
   - dotnet test Minor.Nijn.Test/Minor.Nijn.Test.csproj --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
   - dotnet test Minor.Nijn.WebScale.Test/Minor.Nijn.WebScale.Test.csproj --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+  - dotnet test Minor.Nijn.Audit.Test/Minor.Nijn.Audit.Test.csproj --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
   - dotnet test Minor.Nijn.RabbitMQTest/Minor.Nijn.RabbitMQTest.csproj --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
   - dotnet test Examples/ConsoleAppExample.Test/ConsoleAppExample.Test.csproj --no-build
   - dotnet sonarscanner end /d:sonar.login="$SONAR_TOKEN"

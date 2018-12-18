@@ -46,18 +46,24 @@ namespace Minor.Nijn.WebScale.Events
 
         public void HandleEventMessage(EventMessage message)
         {
-            if (message.Type != Meta.EventType.Name)
+            var isEventMessage = Meta.EventType == typeof(EventMessage);
+
+            if (!isEventMessage && message.Type != Meta.EventType.Name)
             {
                 _logger.LogError("Received message in invalid format, expected message to be of type {0} and got {1}", 
                     Meta.EventType.Name, message.Type);
                 return;
             }
 
-            var payload = JsonConvert.DeserializeObject(message.Message, Meta.EventType);
+            object payload = message;
+            if (!isEventMessage)
+            {
+                payload = JsonConvert.DeserializeObject(message.Message, Meta.EventType);
 
-            // TODO: Set these properties through the JSON Deserializer
-            payload.GetType().GetProperty("CorrelationId").SetValue(payload, message.CorrelationId);
-            payload.GetType().GetProperty("Timestamp").SetValue(payload, message.Timestamp);
+                // TODO: Set these properties through the JSON Deserializer
+                payload.GetType().GetProperty("CorrelationId").SetValue(payload, message.CorrelationId);
+                payload.GetType().GetProperty("Timestamp").SetValue(payload, message.Timestamp);
+            }
 
             InvokeListener(payload);
         }
