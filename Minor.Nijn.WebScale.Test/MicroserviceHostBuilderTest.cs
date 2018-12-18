@@ -156,6 +156,14 @@ namespace Minor.Nijn.WebScale.Test
         }
 
         [TestMethod]
+        public void AddListener_ShouldThrowArgumentExceptionWhenAsyncCommandListenerMethodHasInvalidReturnType()
+        {
+            Action action = () => { _target.AddListener<InvalidCommandListenerAsyncReturnType>(); };
+            var ex = Assert.ThrowsException<ArgumentException>(action);
+            Assert.AreEqual("Invalid return type of method: InvalidAsyncReturnType, return type of async CommandListener method should be of type Task<T>", ex.Message);
+        }
+
+        [TestMethod]
         public void AddListener_ShouldPassCorrectEventListenerInfoToEventListener()
         {
             _target.AddListener<OrderEventListener>();

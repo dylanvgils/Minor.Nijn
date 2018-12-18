@@ -5,11 +5,8 @@ language: csharp
 mono: none
 dotnet: 2.2
 
-# services:
-#  - rabbitmq
-
 before_install:
-    - echo "deb https://dl.bintray.com/rabbitmq/debian xenial main" | sudo tee /etc/apt/sources.list.d/bintray.rabbitmq.list
+  - echo "deb https://dl.bintray.com/rabbitmq/debian xenial main" | sudo tee /etc/apt/sources.list.d/bintray.rabbitmq.list
 
 install:
   - sudo apt-get install rabbitmq-server
