@@ -50,7 +50,7 @@ namespace Minor.Nijn.WebScale.Test
             _target.UseConventions();
 
             var result = _target.EventListeners;
-            Assert.AreEqual(2, result.Count());
+            Assert.AreEqual(3, result.Count());
             Assert.IsTrue(result.Any(l => l.QueueName == TestClassesConstants.ProductEventListenerQueueName && l.TopicExpressions.Contains(TestClassesConstants.ProductEventHandlerTopic)));
             Assert.IsTrue(result.Any(l => l.QueueName == TestClassesConstants.OrderEventListenerQueueName && l.TopicExpressions.Contains(TestClassesConstants.OrderEventHandlerTopic)));
         }
@@ -164,6 +164,14 @@ namespace Minor.Nijn.WebScale.Test
         }
 
         [TestMethod]
+        public void AddListener_ShouldThrowArgumentExceptionWhenCommandListenerHasParamTypeEventMessage()
+        {
+            Action action = () => { _target.AddListener<InvalidCommandListenerEventMessageParamType>(); };
+            var ex = Assert.ThrowsException<ArgumentException>(action); 
+            Assert.AreEqual("Invalid parameter type in method: 'ParameterTypeEventMessageInvalid', parameter has to be derived type of DomainCommand", ex.Message);
+        }
+
+        [TestMethod]
         public void AddListener_ShouldPassCorrectEventListenerInfoToEventListener()
         {
             _target.AddListener<OrderEventListener>();
@@ -260,7 +268,7 @@ namespace Minor.Nijn.WebScale.Test
             var result = _target.UseConventions().WithContext(_busContextMock.Object).CreateHost();
 
             Assert.AreEqual(2, result.CommandListeners.Count);
-            Assert.AreEqual(2, result.EventListeners.Count);
+            Assert.AreEqual(3, result.EventListeners.Count);
         }
 
         [TestMethod]

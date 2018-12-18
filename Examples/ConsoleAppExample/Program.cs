@@ -1,14 +1,12 @@
 ﻿using ConsoleAppExample.DAL;
 using Microsoft.Extensions.DependencyInjection;
-using Minor.Nijn;
+using Minor.Nijn.Helpers;
 using Minor.Nijn.RabbitMQBus;
 using Minor.Nijn.WebScale;
-using Minor.Nijn.WebScale.Commands;
-using RabbitMQ.Client;
+using Minor.Nijn.WebScale.Helpers;
 using Serilog;
 using System;
 using System.Threading.Tasks;
-using Minor.Nijn.WebScale.Events;
 using LoggerFactory = Microsoft.Extensions.Logging.LoggerFactory;
 
 namespace ConsoleAppExample
@@ -52,9 +50,8 @@ namespace ConsoleAppExample
 
             // Create the service collection for the example console application
             var services = new ServiceCollection();
-            services.AddSingleton<IBusContext<IConnection>>(busContext);
-            services.AddTransient<ICommandPublisher, CommandPublisher>();
-            services.AddTransient<IEventPublisher, EventPublisher>();
+            services.AddNijn(busContext);
+            services.AddNijnWebScale();
 
             // Create instance of controller, with ICommandPublisher injected
             var serviceProvider = services.BuildServiceProvider();

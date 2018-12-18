@@ -2,6 +2,10 @@
 {
     public class TestClassesConstants
     {
+        // Audit event constants
+        public const string AuditEventListenerQueueName = "EventBus.AuditEventQueue";
+        public const string AuditEventListenerMethodName = "HandleEvents";
+
         // Order event constants
         public const string OrderEventListenerQueueName = "EventBus.OrderEventQueue";
         public const string OrderEventHandlerTopic = "OrderService.OrderCreated";
