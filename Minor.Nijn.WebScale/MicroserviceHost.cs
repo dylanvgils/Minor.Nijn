@@ -5,6 +5,8 @@ using Minor.Nijn.WebScale.Events;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
+using Minor.Nijn.Helpers;
+using Minor.Nijn.WebScale.Helpers;
 
 namespace Minor.Nijn.WebScale
 {
@@ -57,9 +59,8 @@ namespace Minor.Nijn.WebScale
 
         private void ConfigurePublisherServices(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddSingleton(Context);
-            serviceCollection.AddTransient<IEventPublisher, EventPublisher>();
-            serviceCollection.AddTransient<ICommandPublisher, CommandPublisher>();
+            serviceCollection.AddNijn(Context);
+            serviceCollection.AddNijnWebScale();
         }
 
         private void CheckDisposed()

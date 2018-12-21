@@ -1,5 +1,6 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Minor.Nijn.RabbitMQBus;
+using System;
 using RabbitMQ.Client;
 
 namespace Minor.Nijn.Helpers
@@ -18,6 +19,23 @@ namespace Minor.Nijn.Helpers
 
             services.AddSingleton(context);
             return services;
+        }
+
+        /// <summary>
+        /// Adds and configures Minor.Nijn dependencies and returns a configures RabbitMQBusContext
+        /// </summary>
+        /// <returns>Configures RabbitMQBusContext</returns>
+        public static IRabbitMQBusContext AddNijn(this IServiceCollection services, Action<IRabbitMQContextBuilder> action)
+        {
+            var builder = new RabbitMQContextBuilder(services);
+
+            action(builder);
+            builder.CreateContextAllowed = true;
+
+            var context = builder.CreateContextWithRetry(Constants.RabbitMQRetryConnectTimes, Constants.RabbitMQRetryConnectTimeoutMs);
+            services.AddNijn(context);
+
+            return context;
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using ConsoleAppExample.DAL;
 using Microsoft.Extensions.DependencyInjection;
 using Minor.Nijn.Helpers;
-using Minor.Nijn.RabbitMQBus;
-using Minor.Nijn.WebScale;
 using Minor.Nijn.WebScale.Helpers;
 using Serilog;
 using System;
@@ -31,30 +29,27 @@ namespace ConsoleAppExample
 
             ConsoleAppExampleLogger.LoggerFactory = loggerFactory;
 
-            // Create a RabbitMQ context
-            var busContext = new RabbitMQContextBuilder()
-                .SetLoggerFactory(loggerFactory)
-                .ReadFromEnvironmentVariables()
-                .CreateContext();
-
-            // Configure the microservice host
-            var hostBuilder = new MicroserviceHostBuilder()
-                .SetLoggerFactory(loggerFactory)
-                .RegisterDependencies(nijnServices =>
-                    {
-                        nijnServices.AddTransient<IDataMapper<string, long>, SimpleDataMapper>();
-                    })
-                .WithContext(busContext)
-                .UseConventions()
-                .ScanForExceptions();
-
             // Create the service collection for the example console application
             var services = new ServiceCollection();
-            services.AddNijn(busContext);
-            services.AddNijnWebScale();
+            services.AddTransient<IDataMapper<string, long>, SimpleDataMapper>();
+
+            var busContext = services.AddNijn(options =>
+            {
+                options.SetLoggerFactory(loggerFactory);
+                options.ReadFromEnvironmentVariables();
+            });
+
+            var hostBuilder = services.AddNijnWebScale(options =>
+            {
+                options.WithContext(busContext);
+                options.SetLoggerFactory(loggerFactory);
+                options.UseConventions();
+                options.ScanForExceptions();
+            });
+
+            var serviceProvider = services.BuildServiceProvider();
 
             // Create instance of controller, with ICommandPublisher injected
-            var serviceProvider = services.BuildServiceProvider();
             var controller = ActivatorUtilities.CreateInstance<Controller>(serviceProvider);
 
             // Create the microservice host and start listening

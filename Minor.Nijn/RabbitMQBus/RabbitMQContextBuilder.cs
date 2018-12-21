@@ -2,11 +2,13 @@
 using Minor.Nijn.Helpers;
 using RabbitMQ.Client;
 using System;
+using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Minor.Nijn.RabbitMQBus
 {
-    public class RabbitMQContextBuilder
+    public class RabbitMQContextBuilder : IRabbitMQContextBuilder
     {
         private readonly IConnectionFactory _factory;
         private ILogger _logger;
@@ -20,11 +22,19 @@ namespace Minor.Nijn.RabbitMQBus
 
         public string Type { get; private set; } = Constants.DefaultRabbitMqExchangeType;
 
+        internal bool CreateContextAllowed { get; set; }
+
         public RabbitMQContextBuilder()
         {
+            CreateContextAllowed = true;
             _logger = NijnLogger.CreateLogger<RabbitMQContextBuilder>();
         }
-        
+
+        internal RabbitMQContextBuilder(IServiceCollection services) : this()
+        {
+            CreateContextAllowed = false;
+        }
+
         internal RabbitMQContextBuilder(IConnectionFactory factory) : this()
         {
             _factory = factory;
@@ -86,48 +96,72 @@ namespace Minor.Nijn.RabbitMQBus
             return this;
         }
 
+        internal IRabbitMQBusContext CreateContextWithRetry(int times, int retryAfter)
+        {
+            _logger.LogInformation("Creating RabbitMQBusContext for exchange: {0} on host {1}:{2}", ExchangeName, Hostname, Port);
+            _logger.LogDebug("Context configuration: type={1}, username={2}", Type, Username);
+
+            for (var i = 0; i < times; i++)
+            {
+                try
+                {
+                    return CreateConnection();
+                }
+                catch (Exception e)
+                {
+                    _logger.LogInformation("Unable to connect to the RabbitMQ host error message, '{0}'.Retrying...", e.Message);
+                }
+
+                Thread.Sleep(retryAfter);
+            }
+
+            throw new BusConfigurationException("Connecting to the RabbitMQ host failed");
+        }
+
         /// <summary>
         /// Creates a context with 
         ///  - an opened connection (based on HostName, Port, UserName and Password)
         ///  - a declared Topic-Exchange (based on ExchangeName)
         /// </summary>
-        /// <returns></returns>
         public IRabbitMQBusContext CreateContext()
         {
+            if (!CreateContextAllowed)
+            {
+                _logger.LogError("CreateContext is not allowed in AddNijn extension method");
+                throw new InvalidOperationException("CreateContext is not allowed in AddNijn extension method");
+            }
+
             _logger.LogInformation("Creating RabbitMQBusContext for exchange: {0} on host {1}:{2}", ExchangeName, Hostname, Port);
             _logger.LogDebug("Context configuration: type={1}, username={2}", Type, Username);
 
-            var connection = CreateConnection();
-            using (var channel = connection.CreateModel())
-            {
-                channel.ExchangeDeclare(
-                    exchange: ExchangeName, 
-                    type: Type, 
-                    durable: false, 
-                    autoDelete: false, 
-                    arguments: null
-                );
-            }
-
-            return new RabbitMQBusContext(connection, ExchangeName);
-        }
-
-        private IConnection CreateConnection()
-        {
-            IConnection connection;
-            var factory = _factory ?? new ConnectionFactory { HostName = Hostname, Port = Port };
-
             try
             {
-                connection = factory.CreateConnection();
+                return CreateConnection();
             }
             catch (Exception e)
             {
                 _logger.LogError("Unable to connect to the RabbitMQ host on address: {0}:{1}", Hostname, Port);
                 throw new BusConfigurationException("Unable to connect to the RabbitMQ host", e);
             }
+        }
 
-            return connection;
+        private IRabbitMQBusContext CreateConnection()
+        {
+            var factory = _factory ?? new ConnectionFactory { HostName = Hostname, Port = Port };
+            var connection = factory.CreateConnection();
+
+            using (var channel = connection.CreateModel())
+            {
+                channel.ExchangeDeclare(
+                    exchange: ExchangeName,
+                    type: Type,
+                    durable: false,
+                    autoDelete: false,
+                    arguments: null
+                );
+            }
+
+            return new RabbitMQBusContext(connection, ExchangeName);
         }
     }
 }
