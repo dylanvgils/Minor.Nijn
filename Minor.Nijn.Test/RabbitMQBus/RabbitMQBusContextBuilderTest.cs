@@ -1,6 +1,8 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Minor.Nijn.Helpers;
 using Moq;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
@@ -116,6 +118,27 @@ namespace Minor.Nijn.RabbitMQBus.Test
         }
 
         [TestMethod]
+        public void CreateContext_ShouldThrowExceptionWhenCalledFromExtensionMethod()
+        {
+            var loggerFactory = new LoggerFactory();
+
+            var services = new ServiceCollection();
+
+            Action action = () =>
+            {
+                services.AddNijn(options =>
+                {
+                    options
+                        .SetLoggerFactory(loggerFactory)
+                        .CreateContext();
+                });
+            };
+
+            var ex = Assert.ThrowsException<InvalidOperationException>(action);
+            Assert.AreEqual("CreateContext is not allowed in AddNijn extension method", ex.Message);
+        }
+
+        [TestMethod]
         public void SetLoggerFactory_ShouldSetTheLoggerFactoryForTheProject()
         {
             var factory = new LoggerFactory();
@@ -159,6 +182,47 @@ namespace Minor.Nijn.RabbitMQBus.Test
             Action action = () => { new RabbitMQContextBuilder().ReadFromEnvironmentVariables(); };
             var ex = Assert.ThrowsException<ArgumentException>(action);
             Assert.AreEqual($"Invalid environment variable: {Constants.EnvPort}, could not parse value to int", ex.Message);
+        }
+
+        [TestMethod]
+        public void CreateContextWithRetry_ShouldRetryToConnectWhenConnectingFailed()
+        {
+            var modelMock = new Mock<IModel>(MockBehavior.Strict);
+            modelMock.Setup(chan => chan.Dispose());
+            modelMock.Setup(chan => chan.ExchangeDeclare("exchange", "type", false, false, null));
+
+            var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
+            connectionMock.Setup(conn => conn.CreateModel()).Returns(modelMock.Object);
+
+            var factoryMock = new Mock<IConnectionFactory>(MockBehavior.Strict);
+            factoryMock.SetupSequence(fact => fact.CreateConnection())
+                .Throws(new BrokerUnreachableException(new Exception()))
+                .Returns(connectionMock.Object);
+
+            var result = new RabbitMQContextBuilder(factoryMock.Object)
+                .ReadFromEnvironmentVariables()
+                .CreateContextWithRetry(3, 500);
+
+            factoryMock.VerifyAll();
+            connectionMock.VerifyAll();
+            modelMock.VerifyAll();
+
+            Assert.IsInstanceOfType(result, typeof(RabbitMQBusContext));
+        }
+
+        [TestMethod]
+        public void CreateContextWithRetry_ShouldThrowExceptionWhenConnectingFailed()
+        {
+            var factoryMock = new Mock<IConnectionFactory>(MockBehavior.Strict);
+            factoryMock.Setup(fact => fact.CreateConnection()).Throws(new BrokerUnreachableException(new Exception()));
+
+            var target = new RabbitMQContextBuilder(factoryMock.Object).ReadFromEnvironmentVariables();
+
+            Action action = () => { target.CreateContextWithRetry(3, 500); };
+
+            var ex = Assert.ThrowsException<BusConfigurationException>(action);
+            factoryMock.Verify(fact => fact.CreateConnection(), Times.Exactly(3));
+            Assert.AreEqual("Connecting to the RabbitMQ host failed", ex.Message);
         }
     }
 }

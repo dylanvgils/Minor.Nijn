@@ -11,6 +11,8 @@ using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using Minor.Nijn.WebScale.Helpers;
 using OrderCommandListener = Minor.Nijn.WebScale.Test.TestClasses.OrderCommandListener;
 using OrderEventListener = Minor.Nijn.WebScale.Test.TestClasses.OrderEventListener;
 
@@ -172,6 +174,14 @@ namespace Minor.Nijn.WebScale.Test
         }
 
         [TestMethod]
+        public void AddListener_ShouldThrowArgumentExceptionWhenListenerMethodHasNoParameters()
+        {
+            Action action = () => { _target.AddListener<InvalidParamTypeNone>(); };
+            var ex = Assert.ThrowsException<ArgumentException>(action);
+            Assert.AreEqual("Invalid parameter type in method: 'ParamTypeInvalidNone', parameter has to be derived type of DomainEvent", ex.Message);
+        }
+
+        [TestMethod]
         public void AddListener_ShouldPassCorrectEventListenerInfoToEventListener()
         {
             _target.AddListener<OrderEventListener>();
@@ -276,6 +286,29 @@ namespace Minor.Nijn.WebScale.Test
         {
             _target.ScanForExceptions().WithContext(_busContextMock.Object).CreateHost();
             Assert.AreEqual(3, CommandPublisher.ExceptionTypes.Count);
+        }
+
+        [TestMethod]
+        public void CreateHost_ShouldThrowExceptionWhenCalledFromExtensionMethod()
+        {
+            var contextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            var services = new ServiceCollection();
+
+            Action action = () =>
+            {
+                services.AddNijnWebScale(options => { options.WithContext(contextMock.Object).CreateHost(); });
+            };
+
+            var ex = Assert.ThrowsException<InvalidOperationException>(action);
+            Assert.AreEqual("CreateHost is not allowed in AddNijnWebScale extension method", ex.Message);
+        }
+
+        [TestMethod]
+        public void CreateHost_ShouldThrowExceptionWhenContextIsNull()
+        {
+            Action action = () => { _target.CreateHost(); };
+            var ex = Assert.ThrowsException<InvalidOperationException>(action);
+            Assert.AreEqual("MicroserviceHost can not be created without context", ex.Message);
         }
     }
 }

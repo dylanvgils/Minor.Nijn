@@ -9,8 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Minor.Nijn.WebScale.Helpers;
 using DomainEvent = Minor.Nijn.WebScale.Events.DomainEvent;
 
 namespace Minor.Nijn.WebScale
@@ -27,7 +25,7 @@ namespace Minor.Nijn.WebScale
     ///             .WithBusOptions(new BusOptions(exchangeName: "MVM.TestExchange"))
     ///             .UseConventions();
     /// </summary>
-    public class MicroserviceHostBuilder
+    public class MicroserviceHostBuilder : IMicroserviceHostBuilder
     {
         private ILogger _logger;
 
@@ -38,6 +36,8 @@ namespace Minor.Nijn.WebScale
         public IServiceCollection ServiceCollection { get; }
         public IDictionary<string, Type> ExceptionTypes { get; }
 
+        internal bool CreateHostAllowed { get; set; }
+
         public MicroserviceHostBuilder()
         {
             CallingAssembly = Assembly.GetCallingAssembly();
@@ -45,8 +45,16 @@ namespace Minor.Nijn.WebScale
             CommandListeners = new List<ICommandListener>();
             ServiceCollection = new ServiceCollection();
             ExceptionTypes = new Dictionary<string, Type>();
+            CreateHostAllowed = true;
 
             _logger = NijnWebScaleLogger.CreateLogger<MicroserviceHostBuilder>();
+        }
+
+        internal MicroserviceHostBuilder(Assembly assembly, IServiceCollection services) : this()
+        {
+            CallingAssembly = assembly;
+            ServiceCollection = services;
+            CreateHostAllowed = false;
         }
 
         /// <summary>
@@ -189,8 +197,10 @@ namespace Minor.Nijn.WebScale
                 throw new ArgumentException($"Method: '{method.Name}' in type: '{type.Name}' has to many parameters");
             }
 
-            var paramType = parameters[0].ParameterType;
-            if (!(paramType == typeof(EventMessage) && derivedTypeOf == typeof(DomainEvent)) && !paramType.IsSubclassOf(derivedTypeOf))
+            var paramType = parameters.ElementAtOrDefault(0)?.ParameterType;
+            if (paramType == null
+                || !paramType.IsSubclassOf(derivedTypeOf)
+                && !(paramType == typeof(EventMessage) && derivedTypeOf == typeof(DomainEvent)))
             {
                 _logger.LogError("Invalid parameter type in method: {0}, parameter has to be derived type of {1}", method.Name, derivedTypeOf.Name);
                 throw new ArgumentException($"Invalid parameter type in method: '{method.Name}', parameter has to be derived type of {derivedTypeOf.Name}");
@@ -294,6 +304,18 @@ namespace Minor.Nijn.WebScale
         /// <returns></returns>
         public IMicroserviceHost CreateHost()
         {
+            if (!CreateHostAllowed)
+            {
+                _logger.LogError("CreateHost is not allowed in AddNijnWebScale extension method");
+                throw new InvalidOperationException("CreateHost is not allowed in AddNijnWebScale extension method");
+            }
+
+            if (Context == null)
+            {
+                _logger.LogError("MicroserviceHost can not be created without context");
+                throw new InvalidOperationException("MicroserviceHost can not be created without context");
+            }
+
             _logger.LogInformation("Creating MicroserviceHost, {0} dependencies registered", ServiceCollection.Count);
             CommandPublisher.ExceptionTypes = ExceptionTypes;
             return new MicroserviceHost(Context, EventListeners, CommandListeners, ServiceCollection);

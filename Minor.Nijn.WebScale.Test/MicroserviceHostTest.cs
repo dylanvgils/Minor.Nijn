@@ -93,11 +93,31 @@ namespace Minor.Nijn.WebScale.Test
             var eventPublisher = target.ServiceProvider.GetService<IEventPublisher>();
             var commandPublisher = target.ServiceProvider.GetService<ICommandPublisher>();
 
-            Assert.IsInstanceOfType(busContext, typeof(TestBusContext));
+            Assert.AreEqual(testBusContext, busContext);
             Assert.IsInstanceOfType(eventPublisher, typeof(EventPublisher));
             Assert.IsInstanceOfType(commandPublisher, typeof(CommandPublisher));
         }
 
+        [TestMethod]
+        public void MicroserviceHost_ShouldNotRegisterPublisherAndContextDependenciesWhenServiceCollectionIsProvided()
+        {
+            var testBusContext = new TestBusContextBuilder().CreateTestContext();
+
+            var services = new ServiceCollection();
+            services.AddSingleton<IBusContext<IConnection>>(testBusContext);
+            services.AddTransient<ICommandPublisher, CommandPublisher>();
+            services.AddTransient<IEventPublisher, EventPublisher>();
+
+            var target = new MicroserviceHost(testBusContext, new List<IEventListener>(), new List<ICommandListener>(), services);
+
+            var busContext = target.ServiceProvider.GetService<IBusContext<IConnection>>();
+            var eventPublisher = target.ServiceProvider.GetService<IEventPublisher>();
+            var commandPublisher = target.ServiceProvider.GetService<ICommandPublisher>();
+
+            Assert.AreEqual(testBusContext, busContext);
+            Assert.IsInstanceOfType(eventPublisher, typeof(EventPublisher));
+            Assert.IsInstanceOfType(commandPublisher, typeof(CommandPublisher));
+        }
 
         [TestMethod]
         public void Dispose_ShouldCallDisposeOnResources()

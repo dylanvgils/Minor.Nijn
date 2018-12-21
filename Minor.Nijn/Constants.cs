@@ -6,6 +6,9 @@
         public const string DefaultRabbitMqExchangeType = "topic";
         public const int CommandResponseTimeoutMs = 5000;
 
+        public const int RabbitMQRetryConnectTimes = 30;
+        public const int RabbitMQRetryConnectTimeoutMs = 2000;
+
         // Environment variables
         public const string EnvExchangeName = "NIJN_EXCHANGE_NAME";
         public const string EnvExchangeType = "NIJN_EXCHANGE_TYPE";

@@ -4,13 +4,13 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <Authors>Dylan van Gils, Dion de Koning, Justin Moor, Martine Mulder</Authors>
     <Company>_</Company>
-    <Version>0.2.1</Version>
+    <Version>0.2.2</Version>
     <PackageId>Minor.Nijn.Bloem</PackageId>
     <Product>Minor.Nijn</Product>
     <Description>Wrapper around RabbitMQ</Description>
-    <PackageReleaseNotes>- Updated dotnet core version to 2.2
-- Various non-breaking code improvements
-- Added extension method for Dependency Injection</PackageReleaseNotes>
+    <PackageReleaseNotes>- Various non-breaking code improvements
+- Added extension method for Dependency Injection
+- Integrate with the ServiceCollection of the main application</PackageReleaseNotes>
     <PackageTags>RabbitMQ, Wrapper, EventBus, Messages, Commands</PackageTags>
     <PackageProjectUrl>https://github.com/dylanvgils/Minor.Nijn</PackageProjectUrl>
     <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>

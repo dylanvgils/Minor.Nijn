@@ -28,7 +28,7 @@ namespace Minor.Nijn.Test.Helpers
         {
             var services = new ServiceCollection();
 
-            Action action = () => { services.AddNijn(null); };
+            Action action = () => { services.AddNijn((IBusContext<IConnection>) null); };
 
             var ex = Assert.ThrowsException<ArgumentException>(action);
             Assert.AreEqual("Context can not be null", ex.Message);

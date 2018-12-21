@@ -27,5 +27,17 @@ namespace Minor.Nijn.WebScale.Test.Helpers
                 , "should contain event publisher"
             );
         }
+
+        [TestMethod]
+        public void AddNijnWebScale_ShouldReturnMicroserviceHostBuilderWhenCalledWithAction()
+        {
+            var services = new ServiceCollection();
+
+            var result = services.AddNijnWebScale(options => { });
+
+            Assert.IsInstanceOfType(result, typeof(MicroserviceHostBuilder));
+            Assert.AreEqual(services, result.ServiceCollection);
+            Assert.AreEqual(2, result.ServiceCollection.Count);
+        }
     }
 }
