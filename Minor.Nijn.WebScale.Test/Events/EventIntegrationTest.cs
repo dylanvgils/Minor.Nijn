@@ -24,6 +24,8 @@ namespace Minor.Nijn.WebScale.Events.Test
         {
             var foo = new Foo();
 
+            var eventMessage = new EventMessage(TestClassesConstants.ProductEventHandlerTopic, "message", "type");
+
             var busContext = new TestBusContextBuilder().CreateTestContext();
             var hostBuilder = new MicroserviceHostBuilder()
                 .RegisterDependencies(services =>
@@ -36,6 +38,8 @@ namespace Minor.Nijn.WebScale.Events.Test
             using (var host = hostBuilder.CreateHost())
             {
                 host.RegisterListeners();
+                busContext.EventBus.DispatchMessage(eventMessage);
+
                 Assert.IsTrue(foo.HasBeenInstantiated);
             }
         }

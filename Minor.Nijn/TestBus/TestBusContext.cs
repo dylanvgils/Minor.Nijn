@@ -10,13 +10,14 @@ namespace Minor.Nijn.TestBus
     {
         private bool _disposed;
 
-        public IConnection Connection => throw new NotImplementedException();
+        public IConnection Connection { get; }
         public string ExchangeName => throw new NotImplementedException();
         public IEventBus EventBus { get; }
         public ICommandBus CommandBus { get; }
 
-        internal TestBusContext(IEventBus testBus, ICommandBus commandBus)
+        internal TestBusContext(IConnection connection, IEventBus testBus, ICommandBus commandBus)
         {
+            Connection = connection;
             EventBus = testBus;
             CommandBus = commandBus;
         }

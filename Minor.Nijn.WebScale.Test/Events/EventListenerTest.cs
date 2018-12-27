@@ -91,7 +91,6 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
-            microServiceHostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
 
             _target.StartListening(microServiceHostMock.Object);
 
@@ -113,7 +112,6 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
-            microServiceHostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
 
             _target.StartListening(microServiceHostMock.Object);
             Action action = () => { _target.StartListening(microServiceHostMock.Object); };

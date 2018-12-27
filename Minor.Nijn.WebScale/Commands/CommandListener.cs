@@ -13,9 +13,8 @@ namespace Minor.Nijn.WebScale.Commands
         public CommandListenerInfo Meta { get; }
         public string QueueName => Meta.QueueName;
 
-        private object _instance;
-
         private ICommandReceiver _receiver;
+        private IMicroserviceHost _host;
         private bool _isListening;
         private bool _disposed;
 
@@ -34,8 +33,7 @@ namespace Minor.Nijn.WebScale.Commands
                 throw new InvalidOperationException("Already listening for commands");
             }
 
-            _instance = host.CreateInstance(Meta.Type);
-
+            _host = host;
             _receiver = host.Context.CreateCommandReceiver(QueueName);
             _receiver.DeclareCommandQueue();
             _receiver.StartReceivingCommands(HandleCommandMessage);
@@ -45,6 +43,8 @@ namespace Minor.Nijn.WebScale.Commands
 
         public ResponseCommandMessage HandleCommandMessage(RequestCommandMessage request)
         {
+            var instance = _host.CreateInstance(Meta.Type);
+
             ResponseCommandMessage response;
 
             try
@@ -52,7 +52,7 @@ namespace Minor.Nijn.WebScale.Commands
                 CheckInputType(request);
 
                 var payload = CreatePayload(request);
-                var json = InvokeListener(payload);
+                var json = InvokeListener(instance, payload);
 
                 response = new ResponseCommandMessage(json, Meta.Method.ReturnType.Name, request.CorrelationId);
             }
@@ -93,11 +93,11 @@ namespace Minor.Nijn.WebScale.Commands
             return payload;
         }
 
-        private string InvokeListener(params object[] payload)
+        private string InvokeListener(object instance, params object[] payload)
         {
             var result = Meta.IsAsyncMethod 
-                ? Meta.Method.InvokeAsync(_instance, payload).Result 
-                : Meta.Method.Invoke(_instance, payload);
+                ? Meta.Method.InvokeAsync(instance, payload).Result 
+                : Meta.Method.Invoke(instance, payload);
 
             return JsonConvert.SerializeObject(result);
         }

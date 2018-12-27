@@ -78,7 +78,6 @@ namespace Minor.Nijn.WebScale.Commands.Test
             busContextMock.Setup(ctx => ctx.CreateCommandReceiver(_queueName)).Returns(commandReceiverMock.Object);
 
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
-            hostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
 
             _target.StartListening(hostMock.Object);
@@ -99,7 +98,6 @@ namespace Minor.Nijn.WebScale.Commands.Test
             busContextMock.Setup(ctx => ctx.CreateCommandReceiver(_queueName)).Returns(commandReceiverMock.Object);
 
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
-            hostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
 
             _target.StartListening(hostMock.Object);

@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Minor.Nijn.RabbitMQBus;
-using System;
 using RabbitMQ.Client;
+using System;
 
 namespace Minor.Nijn.Helpers
 {
@@ -17,7 +18,7 @@ namespace Minor.Nijn.Helpers
                 throw new ArgumentException("Context can not be null");
             }
 
-            services.AddSingleton(context);
+            services.TryAddSingleton(context);
             return services;
         }
 

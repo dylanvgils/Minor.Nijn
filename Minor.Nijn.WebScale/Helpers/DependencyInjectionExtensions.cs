@@ -3,6 +3,7 @@ using Minor.Nijn.WebScale.Commands;
 using Minor.Nijn.WebScale.Events;
 using System;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Minor.Nijn.WebScale.Helpers
 {
@@ -13,8 +14,8 @@ namespace Minor.Nijn.WebScale.Helpers
         /// </summary>
         public static IServiceCollection AddNijnWebScale(this IServiceCollection services)
         {
-            services.AddTransient<IEventPublisher, EventPublisher>();
-            services.AddTransient<ICommandPublisher, CommandPublisher>();
+            services.TryAddTransient<IEventPublisher, EventPublisher>();
+            services.TryAddTransient<ICommandPublisher, CommandPublisher>();
             return services;
         }
 

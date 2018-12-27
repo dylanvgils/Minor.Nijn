@@ -21,6 +21,7 @@ namespace Minor.Nijn.Audit
             var result = new AuditMessage
             {
                 RoutingKey = message.RoutingKey,
+                CorrelationId = message.CorrelationId,
                 Type = message.Type,
                 Timestamp = message.Timestamp,
                 Payload = message.Message,

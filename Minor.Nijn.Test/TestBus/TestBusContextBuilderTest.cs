@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minor.Nijn.TestBus;
-using Minor.Nijn.TestBus.CommandBus;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using RabbitMQ.Client;
 
 namespace Minor.Nijn.TestBus.Test
 {
@@ -14,6 +12,14 @@ namespace Minor.Nijn.TestBus.Test
         {
             var target = new TestBusContextBuilder().CreateTestContext();
             Assert.IsInstanceOfType(target, typeof(TestBusContext));
+        }
+
+        [TestMethod]
+        public void WithMockConnection_ShouldSetConnectionProperty()
+        {
+            var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
+            var target = new TestBusContextBuilder().WithMockConnection(connectionMock.Object);
+            Assert.AreEqual(connectionMock.Object, target.Connection);
         }
     }
 }
