@@ -14,9 +14,8 @@ namespace Minor.Nijn.WebScale.Events
         public string QueueName => Meta.QueueName;
         public IEnumerable<string> TopicExpressions => Meta.TopicExpressions;
 
-        private object _instance;
-
         private IMessageReceiver _receiver;
+        private IMicroserviceHost _host;
         private bool _isListening;
         private bool _disposed;
 
@@ -35,8 +34,7 @@ namespace Minor.Nijn.WebScale.Events
                 throw new InvalidOperationException("Already listening for events");
             }
 
-            _instance = host.CreateInstance(Meta.Type);
-
+            _host = host;
             _receiver = host.Context.CreateMessageReceiver(QueueName, TopicExpressions);
             _receiver.DeclareQueue();
             _receiver.StartReceivingMessages(HandleEventMessage);
@@ -46,6 +44,7 @@ namespace Minor.Nijn.WebScale.Events
 
         public void HandleEventMessage(EventMessage message)
         {
+            var instance = _host.CreateInstance(Meta.Type);
             var isEventMessage = Meta.EventType == typeof(EventMessage);
 
             if (!isEventMessage && message.Type != Meta.EventType.Name)
@@ -65,19 +64,19 @@ namespace Minor.Nijn.WebScale.Events
                 payload.GetType().GetProperty("Timestamp").SetValue(payload, message.Timestamp);
             }
 
-            InvokeListener(payload);
+            InvokeListener(instance, payload);
         }
 
-        private void InvokeListener(params object[] payload)
+        private void InvokeListener(object instance, params object[] payload)
         {
             if (Meta.IsAsyncMethod)
             {
-                var task = (Task) Meta.Method.Invoke(_instance, payload);
+                var task = (Task) Meta.Method.Invoke(instance, payload);
                 task.Wait();
                 return;
             }
 
-            Meta.Method.Invoke(_instance, payload);
+            Meta.Method.Invoke(instance, payload);
         }
 
         private void CheckDisposed()

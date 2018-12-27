@@ -26,6 +26,9 @@ namespace Minor.Nijn.WebScale.Commands.Test
         {
             var foo = new Foo();
 
+            var commandMessage = new RequestCommandMessage("Message", "type", "correlationId", TestClassesConstants.ProductCommandListenerQueueName);
+            var request = new TestBusCommand("", commandMessage);
+
             var busContext = new TestBusContextBuilder().CreateTestContext();
             var hostBuilder = new MicroserviceHostBuilder()
                 .RegisterDependencies(services =>
@@ -38,6 +41,8 @@ namespace Minor.Nijn.WebScale.Commands.Test
             using (var host = hostBuilder.CreateHost())
             {
                 host.RegisterListeners();
+                busContext.CommandBus.DispatchMessage(request);
+
                 Assert.IsTrue(foo.HasBeenInstantiated);
             }
         }

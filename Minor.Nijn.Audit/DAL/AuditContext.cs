@@ -3,11 +3,11 @@ using Minor.Nijn.Audit.Entities;
 
 namespace Minor.Nijn.Audit.DAL
 {
-    internal class AuditContext : DbContext
+    public class AuditContext : DbContext
     {
-        public DbSet<AuditMessage> Messages { get; set; }
+        public DbSet<AuditMessage> AuditMessages { get; set; }
 
-        public AuditContext(DbContextOptions options) : base(options) { }
+        public AuditContext(DbContextOptions<AuditContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -16,6 +16,9 @@ namespace Minor.Nijn.Audit.DAL
                 m.Property(p => p.RoutingKey)
                     .HasMaxLength(255)
                     .IsRequired();
+
+                m.Property(p => p.CorrelationId)
+                    .HasMaxLength(255);
 
                 m.Property(p => p.Type)
                     .HasMaxLength(255)

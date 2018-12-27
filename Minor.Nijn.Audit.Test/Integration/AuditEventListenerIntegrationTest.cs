@@ -6,14 +6,13 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Minor.Nijn.Audit.Test
+namespace Minor.Nijn.Audit.Test.Integration
 {
     [TestClass]
     public class AuditEventListenerIntegrationTest
     {
         private SqliteConnection _connection;
         private DbContextOptions<AuditContext> _options;
-        private IAuditMessageDataMapper _dataMapper;
 
         private AuditEventListener _target;
 
@@ -32,9 +31,9 @@ namespace Minor.Nijn.Audit.Test
                 context.Database.EnsureCreated();
             }
 
-            _dataMapper = new AuditMessageDataMapper(_options);
+            var dataMapper = new AuditMessageDataMapper(_options);
 
-            _target = new AuditEventListener(_dataMapper);
+            _target = new AuditEventListener(dataMapper);
         }
 
         [TestCleanup]
@@ -58,7 +57,7 @@ namespace Minor.Nijn.Audit.Test
 
             using (var context = new AuditContext(_options))
             {
-                var result = context.Messages.SingleOrDefault(m => m.Id == 1);
+                var result = context.AuditMessages.SingleOrDefault(m => m.Id == 1);
 
                 Assert.IsNotNull(result, "Result should not be null");
                 Assert.AreEqual(message.RoutingKey, result.RoutingKey);

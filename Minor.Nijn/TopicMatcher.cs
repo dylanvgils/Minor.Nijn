@@ -5,12 +5,21 @@ using System.Text.RegularExpressions;
 
 namespace Minor.Nijn
 {
-    internal static class TopicMatcher
+    /// <summary>
+    /// Matcher for checking and matching RabbitMQ topic patterns
+    /// </summary>
+    public static class TopicMatcher
     {
         private const string ValidTopicExpression = @"^(?:(?:\w+|\*|\#)\.)*(?:\w+|\*|\#)$";
         private const string AsteriskCaptureGroup = @"(?:\w+)";
         private const string HashTagCaptureGroup  = @"(?:\w+\.?)+";
 
+        /// <summary>
+        /// Checks if the provided topic expressions are valid and if the provided topic matches one of the expressions
+        /// </summary>
+        /// <param name="topicExpressions">Topic expressions to check for</param>
+        /// <param name="topic">The topic to match</param>
+        /// <returns></returns>
         public static bool IsMatch(IEnumerable<string> topicExpressions, string topic)
         {
             if (topicExpressions.Contains(topic))
