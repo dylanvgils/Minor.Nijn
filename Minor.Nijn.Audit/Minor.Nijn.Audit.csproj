@@ -2,6 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
+    <PackageId>Minor.Nijn.Bloem.Audit</PackageId>
+    <Description>Auditlog extensions for minor.nijn.webscale</Description>
+    <Authors>Dylan van Gils</Authors>
+    <Company>-</Company>
+    <PackageProjectUrl>https://github.com/dylanvgils/Minor.Nijn</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>
+    <PackageTags>RabbitMQ, Messages, Commands, Auditlog</PackageTags>
+    <PackageReleaseNotes />
+    <Version>0.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

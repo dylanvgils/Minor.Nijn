@@ -4,16 +4,14 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <Authors>Dylan van Gils</Authors>
     <PackageId>Minor.Nijn.Bloem.WebScale</PackageId>
-    <Version>0.2.2</Version>
+    <Version>0.2.3</Version>
     <Company>-</Company>
     <Description>WebScale wrapper arround Minor.Nijn framework.</Description>
     <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>
     <PackageProjectUrl>https://github.com/dylanvgils/Minor.Nijn</PackageProjectUrl>
     <PackageTags>RabbitMQ, Wrapper, EventBus, Messages, Commands, Attributes</PackageTags>
-    <PackageReleaseNotes>- More checks in MicroServiceHostBuilder
-- Various non-breaking code improvements
-- Added extension method for Dependency Injection
-- Use the ServiceCollection of the main application</PackageReleaseNotes>
+    <PackageReleaseNotes>- Various non-breaking code improvements
+- Create new instance of listener class on every request</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
