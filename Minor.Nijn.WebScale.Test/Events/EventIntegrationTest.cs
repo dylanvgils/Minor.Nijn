@@ -37,7 +37,7 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             using (var host = hostBuilder.CreateHost())
             {
-                host.RegisterListeners();
+                host.StartListening();
                 busContext.EventBus.DispatchMessage(eventMessage);
 
                 Assert.IsTrue(foo.HasBeenInstantiated);
@@ -66,10 +66,9 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             using (var host = hostBuilder.CreateHost())
             {
-                host.RegisterListeners();
+                host.StartListening();
                 messageSender.SendMessage(eventMessage);
 
-                Assert.IsTrue(host.ListenersRegistered);
                 Assert.IsTrue(OrderEventListener.HandleOrderCreatedEventHasBeenCalled);
 
                 var result = OrderEventListener.HandleOrderCreatedEventHasBeenCalledWith;
@@ -96,11 +95,10 @@ namespace Minor.Nijn.WebScale.Events.Test
             using (var host = hostBuilder.CreateHost())
             using(var publisher = new EventPublisher(busContext))
             {
-                host.RegisterListeners();
+                host.StartListening();
 
                 publisher.Publish(orderCreatedEvent);
 
-                Assert.IsTrue(host.ListenersRegistered);
                 Assert.IsTrue(OrderEventListener.HandleOrderCreatedEventHasBeenCalled);
 
                 var result = OrderEventListener.HandleOrderCreatedEventHasBeenCalledWith;

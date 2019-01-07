@@ -40,7 +40,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
 
             using (var host = hostBuilder.CreateHost())
             {
-                host.RegisterListeners();
+                host.StartListening();
                 busContext.CommandBus.DispatchMessage(request);
 
                 Assert.IsTrue(foo.HasBeenInstantiated);
@@ -71,10 +71,9 @@ namespace Minor.Nijn.WebScale.Commands.Test
 
             using (var host = hostBuilder.CreateHost())
             {
-                host.RegisterListeners();
+                host.StartListening();
                 busContext.CommandBus.DispatchMessage(command);
 
-                Assert.IsTrue(host.ListenersRegistered, "Listeners are registered");
                 Assert.IsTrue(OrderCommandListener.HandleOrderCreatedEventHasBeenCalled, "Event listener has been called");
 
                 var result = OrderCommandListener.HandleOrderCreatedEventHasBeenCalledWith;
@@ -104,11 +103,10 @@ namespace Minor.Nijn.WebScale.Commands.Test
             using (var host = hostBuilder.CreateHost())
             using (var publisher = new CommandPublisher(busContext))
             {
-                host.RegisterListeners();
+                host.StartListening();
  
                 var result = await publisher.Publish<Order>(addOrderCommand);
                 
-                Assert.IsTrue(host.ListenersRegistered, "Listeners are registered");
                 Assert.IsTrue(OrderCommandListener.HandleOrderCreatedEventHasBeenCalled, "Command listener has been called");
                 Assert.AreEqual(replyOrder.Id, result.Id);
                 Assert.AreEqual(replyOrder.Description, result.Description);

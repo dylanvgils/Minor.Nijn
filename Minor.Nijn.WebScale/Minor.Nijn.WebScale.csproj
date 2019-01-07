@@ -1,22 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <Authors>Dylan van Gils</Authors>
     <PackageId>Minor.Nijn.Bloem.WebScale</PackageId>
-    <Version>0.2.3</Version>
+    <Version>0.1.7</Version>
     <Company>-</Company>
     <Description>WebScale wrapper arround Minor.Nijn framework.</Description>
     <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>
     <PackageProjectUrl>https://github.com/dylanvgils/Minor.Nijn</PackageProjectUrl>
     <PackageTags>RabbitMQ, Wrapper, EventBus, Messages, Commands, Attributes</PackageTags>
-    <PackageReleaseNotes>- Various non-breaking code improvements
-- Create new instance of listener class on every request</PackageReleaseNotes>
+    <PackageReleaseNotes />
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="Serilog" Version="2.7.1" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />

@@ -21,6 +21,11 @@ namespace Minor.Nijn.WebScale.Commands
         /// Registers the command listener to the Minor.Nijn command listener
         /// </summary>
         /// <param name="host">Microservice host containing the preferred Minor.Nijn context</param>
-        void StartListening(IMicroserviceHost host);
+        void RegisterListener(IMicroserviceHost host);
+
+        /// <summary>
+        /// Starts listening for commands
+        /// </summary>
+        void StartListening();
     }
 }

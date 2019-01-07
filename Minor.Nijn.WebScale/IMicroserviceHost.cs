@@ -10,11 +10,11 @@ namespace Minor.Nijn.WebScale
     {
         IBusContext<IConnection> Context { get; }
         List<IEventListener> EventListeners { get; }
-        bool ListenersRegistered { get; }
         List<ICommandListener> CommandListeners { get; }
         IServiceProvider ServiceProvider { get; }
 
         void RegisterListeners();
+        void StartListening();
         object CreateInstance(Type type);
     }
 }
