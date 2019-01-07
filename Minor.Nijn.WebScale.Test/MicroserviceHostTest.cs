@@ -36,10 +36,10 @@ namespace Minor.Nijn.WebScale.Test
         }
 
         [TestMethod]
-        public void RegisterEventListeners_ShouldCreateMessageReceivers()
+        public void RegisterListeners_ShouldCreateMessageReceivers()
         {
-            _eventListenerMock.Setup(l => l.StartListening(_target));
-            _commandListenerMock.Setup(c => c.StartListening(_target));
+            _eventListenerMock.Setup(l => l.RegisterListener(_target));
+            _commandListenerMock.Setup(c => c.RegisterListener(_target));
 
             _target.RegisterListeners();
 
@@ -49,10 +49,26 @@ namespace Minor.Nijn.WebScale.Test
         }
 
         [TestMethod]
-        public void RegisterEventListeners_ShouldThrowExceptionWhenCalledForTheSecondTime()
+        public void StartListening_ShouldCreateMessageReceivers()
         {
-            _eventListenerMock.Setup(l => l.StartListening(_target));
-            _commandListenerMock.Setup(c => c.StartListening(_target));
+            _eventListenerMock.Setup(l => l.RegisterListener(_target));
+            _eventListenerMock.Setup(l => l.StartListening());
+
+            _commandListenerMock.Setup(c => c.RegisterListener(_target));
+            _commandListenerMock.Setup(c => c.StartListening());
+
+            _target.StartListening();
+
+            _busContextMock.VerifyAll();
+            _eventListenerMock.VerifyAll();
+            _commandListenerMock.VerifyAll();
+        }
+
+        [TestMethod]
+        public void RegisterListeners_ShouldThrowExceptionWhenCalledForTheSecondTime()
+        {
+            _eventListenerMock.Setup(l => l.RegisterListener(_target));
+            _commandListenerMock.Setup(c => c.RegisterListener(_target));
 
             _target.RegisterListeners();
             Action action = () =>
@@ -61,7 +77,26 @@ namespace Minor.Nijn.WebScale.Test
             };
 
             var ex = Assert.ThrowsException<InvalidOperationException>(action);
-            Assert.AreEqual("Event listeners already registered", ex.Message);
+            Assert.AreEqual("Listeners already registered", ex.Message);
+        }
+
+        [TestMethod]
+        public void StartListening_ShouldThrowExceptionWhenCalledForTheSecondTime()
+        {
+            _eventListenerMock.Setup(l => l.RegisterListener(_target));
+            _eventListenerMock.Setup(l => l.StartListening());
+
+            _commandListenerMock.Setup(c => c.RegisterListener(_target));
+            _commandListenerMock.Setup(c => c.StartListening());
+
+            _target.StartListening();
+            Action action = () =>
+            {
+                _target.StartListening();
+            };
+
+            var ex = Assert.ThrowsException<InvalidOperationException>(action);
+            Assert.AreEqual("Listeners already listening", ex.Message);
         }
 
         [TestMethod, ExpectedException(typeof(ObjectDisposedException))]

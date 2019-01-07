@@ -16,6 +16,7 @@ namespace Minor.Nijn.WebScale.Events
 
         private IMessageReceiver _receiver;
         private IMicroserviceHost _host;
+        private bool _isDeclared;
         private bool _isListening;
         private bool _disposed;
 
@@ -25,20 +26,38 @@ namespace Minor.Nijn.WebScale.Events
             _logger = NijnWebScaleLogger.CreateLogger<EventListener>();
         }
 
-        public void StartListening(IMicroserviceHost host)
+        public void RegisterListener(IMicroserviceHost host)
         {
             CheckDisposed();
-            if (_isListening)
+            if (_isDeclared)
             {
-                _logger.LogDebug("Event listener already listening for events");
-                throw new InvalidOperationException("Already listening for events");
+                _logger.LogError("Event listener already registered");
+                throw new InvalidOperationException("Event listener already registered");
             }
 
             _host = host;
             _receiver = host.Context.CreateMessageReceiver(QueueName, TopicExpressions);
             _receiver.DeclareQueue();
-            _receiver.StartReceivingMessages(HandleEventMessage);
 
+            _isDeclared = true;
+        }
+
+        public void StartListening()
+        {
+            CheckDisposed();
+            if (!_isDeclared)
+            {
+                _logger.LogError("Event listener is not declared");
+                throw new InvalidOperationException("Event listener is not declared");
+            }
+
+            if (_isListening)
+            {
+                _logger.LogError("Event listener already listening");
+                throw new InvalidOperationException("Event listener already listening");
+            }
+
+            _receiver.StartReceivingMessages(HandleEventMessage);
             _isListening = true;
         }
 

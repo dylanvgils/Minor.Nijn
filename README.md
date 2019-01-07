@@ -93,7 +93,8 @@ var hostBuilder = new MicroserviceHostBuilder()
 // Create the microservice host and start listening
 using (var host = hostBuilder.CreateHost())
 {
-    host.RegisterListeners();
+	host.RegisterListeners(); // Optional: Only declare queues on RabbitMQ
+    host.StartListening();
     Console.ReadKey();
 }
 ```

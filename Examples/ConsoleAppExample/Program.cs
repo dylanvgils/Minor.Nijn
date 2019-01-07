@@ -55,7 +55,7 @@ namespace ConsoleAppExample
             // Create the microservice host and start listening
             using (var host = hostBuilder.CreateHost())
             {
-                host.RegisterListeners();
+                host.StartListening();
 
                 await controller.SayHello("John");
                 await controller.WhoopsExceptionThrown();

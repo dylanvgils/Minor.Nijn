@@ -27,6 +27,11 @@ namespace Minor.Nijn.WebScale.Events
         /// Registers the event listener to the Minor.Nijn event listener
         /// </summary>
         /// <param name="host">Microservice host containing the preferred Minor.Nijn context</param>
-        void StartListening(IMicroserviceHost host);
+        void RegisterListener(IMicroserviceHost host);
+
+        /// <summary>
+        /// Starts listening for messages
+        /// </summary>
+        void StartListening();
     }
 }

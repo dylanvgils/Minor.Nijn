@@ -16,12 +16,13 @@ namespace Minor.Nijn.WebScale
     public class MicroserviceHost : IMicroserviceHost
     {
         private readonly ILogger _logger;
+        private bool _isRegistered;
+        private bool _isListening;
         private bool _disposed;
 
         public IBusContext<IConnection> Context { get; }
         public List<IEventListener> EventListeners { get; }
         public List<ICommandListener> CommandListeners { get; }
-        public bool ListenersRegistered { get; private set; }
         public IServiceProvider ServiceProvider { get;  }
 
         public MicroserviceHost(IBusContext<IConnection> context, List<IEventListener> eventListeners, List<ICommandListener> commandListeners, IServiceCollection serviceCollection)
@@ -39,17 +40,38 @@ namespace Minor.Nijn.WebScale
         public void RegisterListeners()
         {
             CheckDisposed();
-            if (ListenersRegistered)
+            if (_isRegistered)
             {
-                _logger.LogError("Event listeners already created");
-                throw new InvalidOperationException("Event listeners already registered");
+                _logger.LogError("Listeners already created");
+                throw new InvalidOperationException("Listeners already registered");
             }
 
             _logger.LogInformation("Registering {0} EventListeners and {1} CommandListeners", EventListeners.Count, CommandListeners.Count);
-            EventListeners.ForEach(e => e.StartListening(this));
-            CommandListeners.ForEach(c => c.StartListening(this));
 
-            ListenersRegistered = true;
+            EventListeners.ForEach(e => e.RegisterListener(this));
+            CommandListeners.ForEach(c => c.RegisterListener(this));
+
+            _isRegistered = true;
+        }
+
+        public void StartListening()
+        {
+            CheckDisposed();
+            if (_isListening)
+            {
+                _logger.LogError("Listeners already listening");
+                throw new InvalidOperationException("Listeners already listening");
+            }
+
+            if (!_isRegistered)
+            {
+                RegisterListeners();
+            }
+
+            EventListeners.ForEach(e => e.StartListening());
+            CommandListeners.ForEach(c => c.StartListening());
+
+            _isListening = true;
         }
 
         public virtual object CreateInstance(Type type)

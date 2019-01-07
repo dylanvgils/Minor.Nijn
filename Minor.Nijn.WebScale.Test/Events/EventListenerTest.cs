@@ -79,6 +79,38 @@ namespace Minor.Nijn.WebScale.Events.Test
         }
 
         [TestMethod]
+        public void RegisterListener_ShouldThrowExceptionWhenAlreadyRegistered()
+        {
+            var messageReceiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
+            messageReceiverMock.Setup(recv => recv.DeclareQueue());
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(_queueName, _topicExpressions))
+                .Returns(messageReceiverMock.Object);
+
+            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+
+            _target.RegisterListener(microServiceHostMock.Object);
+            Action action = () => { _target.RegisterListener(microServiceHostMock.Object); };
+
+            microServiceHostMock.VerifyAll();
+            messageReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+
+            var ex = Assert.ThrowsException<InvalidOperationException>(action);
+            Assert.AreEqual("Event listener already registered", ex.Message);
+        }
+
+        [TestMethod, ExpectedException(typeof(ObjectDisposedException))]
+        public void RegisterListener_ShouldThrowExceptionWhenDisposed()
+        {
+            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            _target.Dispose();
+            _target.RegisterListener(microServiceHostMock.Object);
+        }
+
+        [TestMethod]
         public void StartListening_ShouldStartListeningForMessages()
         {
             var messageReceiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
@@ -92,7 +124,8 @@ namespace Minor.Nijn.WebScale.Events.Test
             var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
 
-            _target.StartListening(microServiceHostMock.Object);
+            _target.RegisterListener(microServiceHostMock.Object);
+            _target.StartListening();
 
             microServiceHostMock.VerifyAll();
             messageReceiverMock.VerifyAll();
@@ -113,23 +146,32 @@ namespace Minor.Nijn.WebScale.Events.Test
             var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
 
-            _target.StartListening(microServiceHostMock.Object);
-            Action action = () => { _target.StartListening(microServiceHostMock.Object); };
+            _target.RegisterListener(microServiceHostMock.Object);
+            _target.StartListening();
+            Action action = () => { _target.StartListening(); };
         
             microServiceHostMock.VerifyAll();
             messageReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
 
             var ex = Assert.ThrowsException<InvalidOperationException>(action);
-            Assert.AreEqual("Already listening for events", ex.Message);
+            Assert.AreEqual("Event listener already listening", ex.Message);
+        }
+
+        [TestMethod]
+        public void StartListening_ShouldThrowInvalidOperationExceptionWhenListenerNotDeclared()
+        {
+            Action action = () => { _target.StartListening(); };
+
+            var ex = Assert.ThrowsException<InvalidOperationException>(action);
+            Assert.AreEqual("Event listener is not declared", ex.Message);
         }
 
         [TestMethod, ExpectedException(typeof(ObjectDisposedException))]
         public void StartListening_ShouldThrowExceptionWhenDisposed()
         {
-            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             _target.Dispose();
-            _target.StartListening(microServiceHostMock.Object);
+            _target.StartListening();
         }
 
         [TestMethod]
@@ -157,7 +199,9 @@ namespace Minor.Nijn.WebScale.Events.Test
             var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
             microServiceHostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
-            _target.StartListening(microServiceHostMock.Object);
+
+            _target.RegisterListener(microServiceHostMock.Object);
+            _target.StartListening();
 
             _target.HandleEventMessage(eventMessage);
 
@@ -208,7 +252,9 @@ namespace Minor.Nijn.WebScale.Events.Test
             var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
             microServiceHostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type, new object[] { new Foo() }));
-            target.StartListening(microServiceHostMock.Object);
+
+            target.RegisterListener(microServiceHostMock.Object);
+            target.StartListening();
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -243,7 +289,9 @@ namespace Minor.Nijn.WebScale.Events.Test
             var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
             microServiceHostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
-            _target.StartListening(microServiceHostMock.Object);
+
+            _target.RegisterListener(microServiceHostMock.Object);
+            _target.StartListening();
 
             _target.HandleEventMessage(eventMessage);
 
@@ -289,7 +337,9 @@ namespace Minor.Nijn.WebScale.Events.Test
             var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
             microServiceHostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
-            target.StartListening(microServiceHostMock.Object);
+
+            target.RegisterListener(microServiceHostMock.Object);
+            target.StartListening();
 
             target.HandleEventMessage(eventMessage);
 
@@ -312,7 +362,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
             microServiceHostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
 
-            _target.StartListening(microServiceHostMock.Object);
+            _target.RegisterListener(microServiceHostMock.Object);
             _target.Dispose();
             _target.Dispose(); // Don't call dispose the second time
 
