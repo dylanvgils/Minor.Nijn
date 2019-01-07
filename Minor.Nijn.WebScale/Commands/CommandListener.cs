@@ -15,7 +15,6 @@ namespace Minor.Nijn.WebScale.Commands
 
         private ICommandReceiver _receiver;
         private IMicroserviceHost _host;
-        private bool _isDeclared;
         private bool _isListening;
         private bool _disposed;
 
@@ -25,38 +24,20 @@ namespace Minor.Nijn.WebScale.Commands
             _logger = NijnWebScaleLogger.CreateLogger<CommandListener>();
         }
 
-        public void RegisterListener(IMicroserviceHost host)
+        public void StartListening(IMicroserviceHost host)
         {
             CheckDisposed();
-            if (_isDeclared)
-            {
-                _logger.LogError("Command listener already registered");
-                throw new InvalidOperationException("Command listener already registered");
-            }
-
-            _host = host;
-            _receiver = host.Context.CreateCommandReceiver(QueueName);
-            _receiver.DeclareCommandQueue();
-
-            _isDeclared = true;
-        }
-
-        public void StartListening()
-        {
-            CheckDisposed();
-            if (!_isDeclared)
-            {
-                _logger.LogError("Command listener is not declared");
-                throw new InvalidOperationException("Command listener is not declared");
-            }
-
             if (_isListening)
             {
                 _logger.LogError("Command listener already listening");
                 throw new InvalidOperationException("Command listener already listening");
             }
 
+            _host = host;
+            _receiver = host.Context.CreateCommandReceiver(QueueName);
+            _receiver.DeclareCommandQueue();
             _receiver.StartReceivingCommands(HandleCommandMessage);
+
             _isListening = true;
         }
 

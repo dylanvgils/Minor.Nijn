@@ -93,7 +93,7 @@ var hostBuilder = new MicroserviceHostBuilder()
 // Create the microservice host and start listening
 using (var host = hostBuilder.CreateHost())
 {
-	host.RegisterListeners(); // Optional: Only declare queues on RabbitMQ
+    host.RegisterListeners(); // Optional: Only declare queues on RabbitMQ
     host.StartListening();
     Console.ReadKey();
 }
@@ -113,7 +113,7 @@ private ManualResetEvent flag = new ManualResetEvent(false);
 ThreadPool.QueueUserWorkItem(args => {
     using (var host = hostBuilder.CreateHost())
     {
-        host.RegisterListeners();
+        host.StartListening();
         flag.WaitOne();
     }
 });

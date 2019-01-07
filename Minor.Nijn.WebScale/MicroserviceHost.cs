@@ -42,14 +42,13 @@ namespace Minor.Nijn.WebScale
             CheckDisposed();
             if (_isRegistered)
             {
-                _logger.LogError("Listeners already created");
-                throw new InvalidOperationException("Listeners already registered");
+                _logger.LogError("EventListeners already created");
+                throw new InvalidOperationException("EventListeners already registered");
             }
 
-            _logger.LogInformation("Registering {0} EventListeners and {1} CommandListeners", EventListeners.Count, CommandListeners.Count);
+            _logger.LogInformation("Registering {0} EventListeners", EventListeners.Count);
 
             EventListeners.ForEach(e => e.RegisterListener(this));
-            CommandListeners.ForEach(c => c.RegisterListener(this));
 
             _isRegistered = true;
         }
@@ -68,8 +67,10 @@ namespace Minor.Nijn.WebScale
                 RegisterListeners();
             }
 
+            _logger.LogInformation("Registering {0} CommandListeners", CommandListeners.Count);
+
             EventListeners.ForEach(e => e.StartListening());
-            CommandListeners.ForEach(c => c.StartListening());
+            CommandListeners.ForEach(c => c.StartListening(this));
 
             _isListening = true;
         }

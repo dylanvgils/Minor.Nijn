@@ -43,7 +43,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
         [TestMethod]
         public void DeclareCommandQueue_ShouldDeclareNewCommandQueue()
         {
-            channelMock.Setup(chan => chan.QueueDeclare(queueName, false, false, false, null))
+            channelMock.Setup(chan => chan.QueueDeclare(queueName, false, false, true, null))
                 .Returns(new QueueDeclareOk(queueName, 0, 0));
 
             channelMock.Setup(chan => chan.BasicQos(0, 1, false));
@@ -56,7 +56,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
         [TestMethod]
         public void DeclareCommandQueue_ShouldThrowExceptionWhenAlreadyDeclared()
         {
-            channelMock.Setup(chan => chan.QueueDeclare(queueName, false, false, false, null))
+            channelMock.Setup(chan => chan.QueueDeclare(queueName, false, false, true, null))
                 .Returns(new QueueDeclareOk(queueName, 0, 0));
 
             channelMock.Setup(chan => chan.BasicQos(0, 1, false));
@@ -106,7 +106,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
             channelMock.Setup(chan =>
                     chan.BasicConsume(queueName, false, "", false, false, null, consumer))
                 .Returns("Ok");
-            channelMock.Setup(chan => chan.QueueDeclare(queueName, false, false, false, null)).Returns(new QueueDeclareOk(queueName, 0, 0));
+            channelMock.Setup(chan => chan.QueueDeclare(queueName, false, false, true, null)).Returns(new QueueDeclareOk(queueName, 0, 0));
             channelMock.Setup(chan => chan.BasicQos(0, 1, false));
 
             channelMock.Setup(chan => chan.BasicPublish(
@@ -171,7 +171,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
             channelMock.Setup(chan =>
                     chan.BasicConsume(queueName, false, "", false, false, null, consumer))
                 .Returns("Ok");
-            channelMock.Setup(chan => chan.QueueDeclare(queueName, false, false, false, null)).Returns(new QueueDeclareOk(queueName, 0, 0));
+            channelMock.Setup(chan => chan.QueueDeclare(queueName, false, false, true, null)).Returns(new QueueDeclareOk(queueName, 0, 0));
             channelMock.Setup(chan => chan.BasicQos(0, 1, false));
 
             channelMock.Setup(chan => chan.BasicPublish(
