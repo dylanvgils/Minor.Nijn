@@ -10,7 +10,7 @@
     <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>
     <PackageTags>RabbitMQ, Messages, Commands, Auditlog</PackageTags>
     <PackageReleaseNotes />
-    <Version>0.1.2</Version>
+    <Version>0.1.3</Version>
   </PropertyGroup>
 
   <ItemGroup>

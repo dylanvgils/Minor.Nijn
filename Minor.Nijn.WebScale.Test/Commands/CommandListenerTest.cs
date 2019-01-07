@@ -68,40 +68,6 @@ namespace Minor.Nijn.WebScale.Commands.Test
         }
 
         [TestMethod]
-        public void RegisterListener_ShouldThrowExceptionWhenAlreadyRegistered()
-        {
-            var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
-            commandReceiverMock.Setup(recv => recv.DeclareCommandQueue());
-            commandReceiverMock.Setup(recv => recv.StartReceivingCommands(It.IsAny<CommandReceivedCallback>()));
-
-            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(_queueName)).Returns(commandReceiverMock.Object);
-
-            var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
-            hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
-
-            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
-            microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
-
-            _target.RegisterListener(microServiceHostMock.Object);
-            Action action = () => { _target.RegisterListener(microServiceHostMock.Object); };
-
-            microServiceHostMock.VerifyAll();
-            busContextMock.VerifyAll();
-
-            var ex = Assert.ThrowsException<InvalidOperationException>(action);
-            Assert.AreEqual("Command listener already registered", ex.Message);
-        }
-
-        [TestMethod, ExpectedException(typeof(ObjectDisposedException))]
-        public void RegisterListener_ShouldThrowExceptionWhenDisposed()
-        {
-            var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
-            _target.Dispose();
-            _target.RegisterListener(hostMock.Object);
-        }
-
-        [TestMethod]
         public void StartListening_ShouldStartListeningForCommand()
         {
             var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
@@ -113,9 +79,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
 
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
-
-            _target.RegisterListener(hostMock.Object);
-            _target.StartListening();
+            _target.StartListening(hostMock.Object);
 
             commandReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
@@ -134,11 +98,9 @@ namespace Minor.Nijn.WebScale.Commands.Test
 
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+            _target.StartListening(hostMock.Object);
 
-            _target.RegisterListener(hostMock.Object);
-            _target.StartListening();
-
-            Action action = () => { _target.StartListening(); };
+            Action action = () => { _target.StartListening(hostMock.Object); };
 
             commandReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
@@ -148,20 +110,12 @@ namespace Minor.Nijn.WebScale.Commands.Test
             Assert.AreEqual("Command listener already listening", ex.Message);
         }
 
-        [TestMethod]
-        public void StartListening_ShouldThrowInvalidOperationExceptionWhenListenerNotDeclared()
-        {
-            Action action = () => { _target.StartListening(); };
-
-            var ex = Assert.ThrowsException<InvalidOperationException>(action);
-            Assert.AreEqual("Command listener is not declared", ex.Message);
-        }
-
         [TestMethod, ExpectedException(typeof(ObjectDisposedException))]
         public void StartListening_ShouldThrowExceptionWhenDisposed()
         {
+            var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             _target.Dispose();
-            _target.StartListening();
+            _target.StartListening(hostMock.Object);
         }
 
         [TestMethod]
@@ -188,9 +142,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             hostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
-
-            _target.RegisterListener(hostMock.Object);
-            _target.StartListening();
+            _target.StartListening(hostMock.Object);
 
             OrderCommandListener.ReplyWith = order;
             var response = _target.HandleCommandMessage(commandMessage);
@@ -251,9 +203,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             hostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type, new object[] { new Foo() }));
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
-
-            target.RegisterListener(hostMock.Object);
-            target.StartListening();
+            target.StartListening(hostMock.Object);
 
             var response = target.HandleCommandMessage(commandMessage);
 
@@ -288,9 +238,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             hostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
-
-            _target.RegisterListener(hostMock.Object);
-            _target.StartListening();
+            _target.StartListening(hostMock.Object);
 
             var result = _target.HandleCommandMessage(commandMessage);
 
@@ -340,9 +288,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             hostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
-
-            target.RegisterListener(hostMock.Object);
-            target.StartListening();
+            target.StartListening(hostMock.Object);
 
             var result = target.HandleCommandMessage(commandMessage);
 
@@ -369,7 +315,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
             hostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
 
-            _target.RegisterListener(hostMock.Object);
+            _target.StartListening(hostMock.Object);
             _target.Dispose();
             _target.Dispose(); // Don't call dispose the second time
 

@@ -39,7 +39,6 @@ namespace Minor.Nijn.WebScale.Test
         public void RegisterListeners_ShouldCreateMessageReceivers()
         {
             _eventListenerMock.Setup(l => l.RegisterListener(_target));
-            _commandListenerMock.Setup(c => c.RegisterListener(_target));
 
             _target.RegisterListeners();
 
@@ -54,8 +53,7 @@ namespace Minor.Nijn.WebScale.Test
             _eventListenerMock.Setup(l => l.RegisterListener(_target));
             _eventListenerMock.Setup(l => l.StartListening());
 
-            _commandListenerMock.Setup(c => c.RegisterListener(_target));
-            _commandListenerMock.Setup(c => c.StartListening());
+            _commandListenerMock.Setup(c => c.StartListening(_target));
 
             _target.StartListening();
 
@@ -68,7 +66,6 @@ namespace Minor.Nijn.WebScale.Test
         public void RegisterListeners_ShouldThrowExceptionWhenCalledForTheSecondTime()
         {
             _eventListenerMock.Setup(l => l.RegisterListener(_target));
-            _commandListenerMock.Setup(c => c.RegisterListener(_target));
 
             _target.RegisterListeners();
             Action action = () =>
@@ -77,7 +74,7 @@ namespace Minor.Nijn.WebScale.Test
             };
 
             var ex = Assert.ThrowsException<InvalidOperationException>(action);
-            Assert.AreEqual("Listeners already registered", ex.Message);
+            Assert.AreEqual("EventListeners already registered", ex.Message);
         }
 
         [TestMethod]
@@ -86,8 +83,7 @@ namespace Minor.Nijn.WebScale.Test
             _eventListenerMock.Setup(l => l.RegisterListener(_target));
             _eventListenerMock.Setup(l => l.StartListening());
 
-            _commandListenerMock.Setup(c => c.RegisterListener(_target));
-            _commandListenerMock.Setup(c => c.StartListening());
+            _commandListenerMock.Setup(c => c.StartListening(_target));
 
             _target.StartListening();
             Action action = () =>

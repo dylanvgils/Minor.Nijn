@@ -45,7 +45,7 @@ namespace Minor.Nijn.RabbitMQBus
                 queue: QueueName, 
                 durable: false,
                 exclusive: false,
-                autoDelete: false, 
+                autoDelete: true, 
                 arguments: null
             );
 
