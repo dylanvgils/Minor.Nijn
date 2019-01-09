@@ -12,6 +12,7 @@ namespace Minor.Nijn.TestBus
 
         public IConnection Connection { get; }
         public string ExchangeName => throw new NotImplementedException();
+        public DateTime LastMessageReceivedTime => DateTime.Now;
         public IEventBus EventBus { get; }
         public ICommandBus CommandBus { get; }
 
@@ -39,11 +40,16 @@ namespace Minor.Nijn.TestBus
             CheckDisposed();
             return new TestCommandReceiver(this, queueName);
         }
-        
+
         public ICommandSender CreateCommandSender()
         {
             CheckDisposed();
             return new TestCommandSender(this);
+        }
+
+        public bool IsConnectionIdle()
+        {
+            return false;
         }
 
         private void CheckDisposed()

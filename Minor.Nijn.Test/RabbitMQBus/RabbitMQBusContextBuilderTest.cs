@@ -54,6 +54,17 @@ namespace Minor.Nijn.RabbitMQBus.Test
             Assert.AreEqual("guest", connectionBuilder.Username);
             Assert.AreEqual("password", connectionBuilder.Password);
         }
+
+        [TestMethod]
+        public void ContextHasRightIdleAfter()
+        {
+            var connectionBuilder = new RabbitMQContextBuilder();
+
+            connectionBuilder.WithConnectionTimeout(5000, true);
+
+            Assert.AreEqual(5000, connectionBuilder.ConnectionTimeoutAfterMs);
+            Assert.IsTrue(connectionBuilder.AutoDisconnectEnabled, "AutoDisconnectEnabled should be true");
+        }
         
         [TestMethod]
         public void BuildingWithMethodChainingWorks()
@@ -91,12 +102,17 @@ namespace Minor.Nijn.RabbitMQBus.Test
                 .WithAddress(hostName: "localhost", port: 5642)
                 .WithCredentials(userName: "username", password: "password")
                 .WithType("type")
+                .WithConnectionTimeout(2000)
                 .CreateContext();
             
             factoryMock.VerifyAll();
             connectionMock.VerifyAll();
             modelMock.VerifyAll();
+
             Assert.IsInstanceOfType(result, typeof(RabbitMQBusContext));
+            Assert.AreEqual("ExchangeName", result.ExchangeName);
+            Assert.AreEqual(2000, result.ConnectionTimeoutMs);
+            Assert.IsFalse(result.AutoDisconnectEnabled, "AutoDisconnectEnabled should be false");
         }
 
         [TestMethod]

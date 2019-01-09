@@ -6,6 +6,7 @@
         public const string DefaultRabbitMqExchangeType = "topic";
         public const int CommandResponseTimeoutMs = 5000;
 
+        public const int RabbitMQConnectionTimeoutAfterMs = 5000;
         public const int RabbitMQRetryConnectTimes = 30;
         public const int RabbitMQRetryConnectTimeoutMs = 2000;
 

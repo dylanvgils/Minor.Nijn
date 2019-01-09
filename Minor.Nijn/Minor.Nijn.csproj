@@ -4,11 +4,11 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <Authors>Dylan van Gils, Dion de Koning, Justin Moor, Martine Mulder</Authors>
     <Company>_</Company>
-    <Version>0.1.10</Version>
+    <Version>0.1.11</Version>
     <PackageId>Minor.Nijn.Bloem</PackageId>
     <Product>Minor.Nijn</Product>
     <Description>Wrapper around RabbitMQ</Description>
-    <PackageReleaseNotes>- Improved TopicMatcher</PackageReleaseNotes>
+    <PackageReleaseNotes>- Add timeout option to Minor.Nijn for event replay</PackageReleaseNotes>
     <PackageTags>RabbitMQ, Wrapper, EventBus, Messages, Commands</PackageTags>
     <PackageProjectUrl>https://github.com/dylanvgils/Minor.Nijn</PackageProjectUrl>
     <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>

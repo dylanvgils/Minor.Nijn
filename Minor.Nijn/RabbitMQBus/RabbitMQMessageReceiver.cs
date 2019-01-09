@@ -90,6 +90,8 @@ namespace Minor.Nijn.RabbitMQBus
                     timestamp: ea.BasicProperties.Timestamp.UnixTime,
                     correlationId: ea.BasicProperties.CorrelationId
                 ));
+
+                _context.UpdateLastMessageReceived();
             };
 
             Channel.BasicConsume(

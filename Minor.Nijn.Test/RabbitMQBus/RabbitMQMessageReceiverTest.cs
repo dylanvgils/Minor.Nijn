@@ -123,6 +123,7 @@ namespace Minor.Nijn.RabbitMQBus.Test
             propsMock.SetupGet(props => props.CorrelationId).Returns(correlationId);
 
             contextMock.SetupGet(ctx => ctx.ExchangeName).Returns(exchangeName);
+            contextMock.Setup(ctx => ctx.UpdateLastMessageReceived());
 
             channelMock.Setup(chan =>
                     chan.BasicConsume(queueName, true, "", false, false, null, consumer))

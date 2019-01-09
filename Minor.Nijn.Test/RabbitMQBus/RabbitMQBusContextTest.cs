@@ -1,47 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using RabbitMQ.Client;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace Minor.Nijn.RabbitMQBus.Test
 {
     [TestClass]
     public class RabbitMQbusContextTest
     {
-        private string exchangeName = "ExchangeName";
+        private string _exchangeName = "ExchangeName";
 
-        private Mock<IConnection> connectionMock;
-        private Mock<IModel> channelMock;
+        private Mock<IConnection> _connectionMock;
+        private Mock<IModel> _channelMock;
 
-        private RabbitMQBusContext target;
+        private RabbitMQBusContext _target;
 
         [TestInitialize]
         public void BeforeEach()
         {
-            connectionMock = new Mock<IConnection>(MockBehavior.Strict);
-            channelMock = new Mock<IModel>(MockBehavior.Strict);
+            _connectionMock = new Mock<IConnection>(MockBehavior.Strict);
+            _channelMock = new Mock<IModel>(MockBehavior.Strict);
 
-            connectionMock.Setup(conn => conn.CreateModel()).Returns(channelMock.Object);
+            _connectionMock.Setup(conn => conn.CreateModel()).Returns(_channelMock.Object);
 
-            target = new RabbitMQBusContext(connectionMock.Object, exchangeName);
+            _target = new RabbitMQBusContext(_connectionMock.Object, _exchangeName, Constants.RabbitMQConnectionTimeoutAfterMs, false);
         }
         
         [TestMethod]
         public void CreateMessageSender_ShouldReturnIMessageSender()
         {            
-            var result = target.CreateMessageSender();
+            var result = _target.CreateMessageSender();
             
-            connectionMock.VerifyAll();
+            _connectionMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(IMessageSender));
         }
 
         [TestMethod]
         public void CreateMessageSender_ShouldThrowExceptionWhenDisposed()
         {
-            connectionMock.Setup(conn => conn.Dispose());
-            target.Dispose();
-            Assert.ThrowsException<ObjectDisposedException>(() => target.CreateMessageSender());
+            _connectionMock.Setup(conn => conn.Dispose());
+            _target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => _target.CreateMessageSender());
         }
 
         [TestMethod]
@@ -50,61 +51,103 @@ namespace Minor.Nijn.RabbitMQBus.Test
             var queueName = "queueName";
             IEnumerable<string> topicExpressions = new List<string> { "a.b.c" };
             
-            var result = target.CreateMessageReceiver(queueName, topicExpressions);
+            var result = _target.CreateMessageReceiver(queueName, topicExpressions);
             
-            connectionMock.VerifyAll();
+            _connectionMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(IMessageReceiver));
         }
 
         [TestMethod]
         public void CreateMessageReceiver_ShouldThrowExceptionWhenDisposed()
         {
-            connectionMock.Setup(conn => conn.Dispose());
-            target.Dispose();
-            Assert.ThrowsException<ObjectDisposedException>(() => target.CreateMessageReceiver("Queue", new List<string>()));
+            _connectionMock.Setup(conn => conn.Dispose());
+            _target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => _target.CreateMessageReceiver("Queue", new List<string>()));
         }
         
         [TestMethod]
         public void CreateCommandSender_ShouldReturnICommandSender()
         {
-            var result = target.CreateCommandSender();
+            var result = _target.CreateCommandSender();
 
-            connectionMock.VerifyAll();
+            _connectionMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(ICommandSender));
         }
 
         [TestMethod]
         public void CreateCommandSender_ShouldThrowExceptionWhenDisposed()
         {
-            connectionMock.Setup(conn => conn.Dispose());
-            target.Dispose();
-            Assert.ThrowsException<ObjectDisposedException>(() => target.CreateCommandSender());
+            _connectionMock.Setup(conn => conn.Dispose());
+            _target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => _target.CreateCommandSender());
         }
 
         [TestMethod]
         public void CreateCommandReceiver_ShouldReturnICommandReceiver()
         {
-            var result = target.CreateCommandReceiver("queueName");
+            var result = _target.CreateCommandReceiver("queueName");
 
-            connectionMock.VerifyAll();
+            _connectionMock.VerifyAll();
             Assert.IsInstanceOfType(result, typeof(ICommandReceiver));
         }
 
         [TestMethod]
         public void CreateCommandReceiver_ShouldThrowExceptionWhenDisposed()
         {
+            _connectionMock.Setup(conn => conn.Dispose());
+            _target.Dispose();
+            Assert.ThrowsException<ObjectDisposedException>(() => _target.CreateCommandReceiver("QueueName"));
+        }
+
+        [TestMethod]
+        public void IsConnectionIdle_ShouldReturnTrueWhenTimeoutExceeded()
+        {
+            var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
             connectionMock.Setup(conn => conn.Dispose());
-            target.Dispose();
-            Assert.ThrowsException<ObjectDisposedException>(() => target.CreateCommandReceiver("QueueName"));
+
+            var target = new RabbitMQBusContext(connectionMock.Object, _exchangeName, 200, true);
+            Thread.Sleep(500);
+
+            Assert.IsTrue(target.IsConnectionIdle(), "ConnectionIdle should be true");
+        }
+
+        [TestMethod]
+        public void IsConnectionIdle_ShouldReturnFalseWhenTimeoutNotExceeded()
+        {
+            var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
+            connectionMock.Setup(conn => conn.Dispose());
+
+            var target = new RabbitMQBusContext(connectionMock.Object, _exchangeName, 200, true);
+            target.UpdateLastMessageReceived();
+
+            Assert.IsFalse(target.IsConnectionIdle(), "1: ConnectionIdle should be false");
+
+            target.UpdateLastMessageReceived();
+            Assert.IsFalse(target.IsConnectionIdle(), "2: ConnectionIdle should be false");
+
+            target.UpdateLastMessageReceived();
+            Assert.IsFalse(target.IsConnectionIdle(), "3: ConnectionIdle should be false");
         }
 
         [TestMethod]
         public void Dispose_ShouldCallDisposeOnResources()
         {
+            _connectionMock.Setup(conn => conn.Dispose());
+
+            _target.Dispose();
+            _target.Dispose(); // Don't call dispose for second time
+
+            _connectionMock.Verify(conn => conn.Dispose(), Times.Once);
+        }
+
+        [TestMethod]
+        public void RabbitMQBusContext_ShouldCallDisposeWhenIdleTimeExceededAndAutoDisconnectEnabled()
+        {
+            var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
             connectionMock.Setup(conn => conn.Dispose());
 
-            target.Dispose();
-            target.Dispose(); // Don't call dispose for second time
+            new RabbitMQBusContext(connectionMock.Object, _exchangeName, 200, true);
+            Thread.Sleep(500);
 
             connectionMock.Verify(conn => conn.Dispose(), Times.Once);
         }

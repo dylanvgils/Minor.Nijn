@@ -17,6 +17,9 @@ namespace Minor.Nijn.RabbitMQBus
         public string Hostname{ get; private set; }
         public int Port { get; private set; }
 
+        public int ConnectionTimeoutAfterMs { get; private set; } = Constants.RabbitMQConnectionTimeoutAfterMs;
+        public bool AutoDisconnectEnabled { get; private set; } 
+
         public string Username { get; private set; }
         public string Password { get; private set; }
 
@@ -50,6 +53,13 @@ namespace Minor.Nijn.RabbitMQBus
         {
             Hostname = hostName;
             Port = port;
+            return this;
+        }
+
+        public RabbitMQContextBuilder WithConnectionTimeout(int timeoutAfterMs, bool autoDisconnect = false)
+        {
+            ConnectionTimeoutAfterMs = timeoutAfterMs;
+            AutoDisconnectEnabled = autoDisconnect;
             return this;
         }
 
@@ -99,6 +109,7 @@ namespace Minor.Nijn.RabbitMQBus
         internal IRabbitMQBusContext CreateContextWithRetry(int times, int retryAfter)
         {
             _logger.LogInformation("Creating RabbitMQBusContext for exchange: {0} on host {1}:{2}", ExchangeName, Hostname, Port);
+            _logger.LogInformation("RabbitMQ connection timeout after: {0} ms, auto disconnect enabled: {1}", ConnectionTimeoutAfterMs, AutoDisconnectEnabled);
             _logger.LogDebug("Context configuration: type={1}, username={2}", Type, Username);
 
             for (var i = 0; i < times; i++)
@@ -161,7 +172,7 @@ namespace Minor.Nijn.RabbitMQBus
                 );
             }
 
-            return new RabbitMQBusContext(connection, ExchangeName);
+            return new RabbitMQBusContext(connection, ExchangeName, ConnectionTimeoutAfterMs, AutoDisconnectEnabled);
         }
     }
 }
