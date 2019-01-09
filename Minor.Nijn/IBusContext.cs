@@ -21,6 +21,11 @@ namespace Minor.Nijn
         string ExchangeName { get; }
 
         /// <summary>
+        /// DateTime representing the last time a message was received
+        /// </summary>
+        DateTime LastMessageReceivedTime { get; }
+
+        /// <summary>
         /// Creates a new message sender
         /// </summary>
         /// <returns>Message sender implementation</returns>
@@ -46,5 +51,11 @@ namespace Minor.Nijn
         /// <param name="queueName">Name of the queue the command listener should listen to</param>
         /// <returns></returns>
         ICommandReceiver CreateCommandReceiver(string queueName);
+
+        /// <summary>
+        /// Returns boolean indicating if the timeout is exceeded
+        /// </summary>
+        /// <returns></returns>
+        bool IsConnectionIdle();
     }
 }
