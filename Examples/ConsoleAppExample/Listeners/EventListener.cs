@@ -41,7 +41,7 @@ namespace ConsoleAppExample.Listeners
                 stopwatch.ElapsedMilliseconds);
         }
 
-        [Topic("SpamMeQueue")]
+        [Topic("SpamMeQueue", "AnotherQueueBinding")]
         public void HandleEventMessage(EventMessage message)
         {
             _logger.LogInformation("Received EventMessage with body: {0}", message.Message);

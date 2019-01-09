@@ -16,6 +16,8 @@ namespace Minor.Nijn.WebScale.Events
         public string QueueName => Meta.QueueName;
         public IEnumerable<string> TopicExpressions => Meta.Methods.SelectMany(m => m.TopicExpressions);
 
+        private object _instance;
+
         private IMessageReceiver _receiver;
         private IMicroserviceHost _host;
         private bool _isDeclared;
@@ -59,13 +61,14 @@ namespace Minor.Nijn.WebScale.Events
                 throw new InvalidOperationException("Event listener already listening");
             }
 
+            _instance = Meta.IsSingleton ? _host.CreateInstance(Meta.Type) : null;
             _receiver.StartReceivingMessages(HandleEventMessage);
             _isListening = true;
         }
 
         public void HandleEventMessage(EventMessage message)
         {
-            var instance = _host.CreateInstance(Meta.Type);
+            var instance = Meta.IsSingleton ? _instance : _host.CreateInstance(Meta.Type);
             var methods = Meta.Methods.Where(m => TopicMatcher.IsMatch(m.TopicExpressions, message.RoutingKey));
 
             foreach (var method in methods)
@@ -93,16 +96,16 @@ namespace Minor.Nijn.WebScale.Events
             }
         }
 
-        private void InvokeListener(object instance, EventListenerMethodInfo info, params object[] payload)
+        private static void InvokeListener(object instance, EventListenerMethodInfo methodInfo, params object[] payload)
         {
-            if (info.IsAsync)
+            if (methodInfo.IsAsync)
             {
-                var task = (Task) info.Method.Invoke(instance, payload);
+                var task = (Task)methodInfo.Method.Invoke(instance, payload);
                 task.Wait();
                 return;
             }
 
-            info.Method.Invoke(instance, payload);
+            methodInfo.Method.Invoke(instance, payload);
         }
 
         private void CheckDisposed()

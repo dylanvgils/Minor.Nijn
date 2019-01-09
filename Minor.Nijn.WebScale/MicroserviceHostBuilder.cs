@@ -101,17 +101,17 @@ namespace Minor.Nijn.WebScale
             var eventAttribute = type.GetCustomAttribute<EventListenerAttribute>();
             if (eventAttribute != null)
             {
-                ParseTopics(type, eventAttribute.QueueName);
+                ParseTopics(type, eventAttribute.QueueName, eventAttribute);
             }
 
             var commandAttribute = type.GetCustomAttribute<CommandListenerAttribute>();
             if (commandAttribute != null)
             {
-                ParseCommand(type);
+                ParseCommand(type, commandAttribute);
             }
         }
 
-        private void ParseTopics(Type type, string queueName)
+        private void ParseTopics(Type type, string queueName, EventListenerAttribute attribute)
         {
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
 
@@ -120,19 +120,27 @@ namespace Minor.Nijn.WebScale
                 .Where(m => m.attribute != null)
                 .Select(m => CreateEventListenerMethodInfo(type, m.method, m.attribute)).ToList();
 
-            var meta = new EventListenerInfo { Type = type, QueueName = queueName, Methods = listenerMethods};
+            var meta = new EventListenerInfo
+            {
+                Type = type,
+                QueueName = queueName,
+                IsSingleton = attribute.Singleton,
+                Methods = listenerMethods
+            };
+
+
             EventListeners.Add(new EventListener(meta));
         }
 
-        private void ParseCommand(Type type)
+        private void ParseCommand(Type type, CommandListenerAttribute attribute)
         {
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
             foreach (var method in methods)
             {
-                var attribute = method.GetCustomAttribute<CommandAttribute>();
-                if (attribute != null)
+                var commandAttribute = method.GetCustomAttribute<CommandAttribute>();
+                if (commandAttribute != null)
                 {
-                    CreateCommandListener(type, method, attribute.QueueName);
+                    CreateCommandListener(type, method, commandAttribute.QueueName, attribute);
                 }
             }
         }
@@ -157,7 +165,7 @@ namespace Minor.Nijn.WebScale
             };
         }
 
-        private void CreateCommandListener(Type type, MethodInfo method, string queueName)
+        private void CreateCommandListener(Type type, MethodInfo method, string queueName, CommandListenerAttribute attribute)
         {
             CheckParameterType(type, method, typeof(DomainCommand));
             var isAsync = IsAsyncMethod(method);
@@ -178,6 +186,7 @@ namespace Minor.Nijn.WebScale
             {
                 QueueName = queueName,
                 Type = type,
+                IsSingleton = attribute.Singleton,
                 Method = method,
                 IsAsyncMethod = isAsync,
                 CommandType = method.GetParameters()[0].ParameterType

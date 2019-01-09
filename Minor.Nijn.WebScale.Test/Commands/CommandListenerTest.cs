@@ -31,6 +31,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
             {
                 QueueName = _queueName,
                 Type = _type,
+                IsSingleton = false,
                 Method = method,
                 IsAsyncMethod = false,
                 CommandType = method.GetParameters()[0].ParameterType
@@ -80,6 +81,40 @@ namespace Minor.Nijn.WebScale.Commands.Test
             var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
             _target.StartListening(hostMock.Object);
+
+            commandReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+            hostMock.VerifyAll();
+        }
+
+        [TestMethod]
+        public void StartListening_ShouldCreateInstanceWhenClassMarkedSingleton()
+        {
+            var type = typeof(OrderEventListener);
+            var method = type.GetMethod(TestClassesConstants.OrderEventHandlerMethodName);
+            var meta = new CommandListenerInfo
+            {
+                QueueName = _queueName,
+                Type = type,
+                IsSingleton = true,
+                Method = method,
+                IsAsyncMethod = true,
+                CommandType = method.GetParameters()[0].ParameterType
+            };
+
+            var target = new CommandListener(meta);
+
+            var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
+            commandReceiverMock.Setup(recv => recv.DeclareCommandQueue());
+            commandReceiverMock.Setup(recv => recv.StartReceivingCommands(It.IsAny<CommandReceivedCallback>()));
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(_queueName)).Returns(commandReceiverMock.Object);
+
+            var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+            hostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+            target.StartListening(hostMock.Object);
 
             commandReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
@@ -186,6 +221,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
             {
                 QueueName = _queueName,
                 Type = type,
+                IsSingleton = false,
                 Method = method,
                 IsAsyncMethod = true,
                 CommandType = method.GetParameters()[0].ParameterType
@@ -271,6 +307,7 @@ namespace Minor.Nijn.WebScale.Commands.Test
             {
                 QueueName = queueName,
                 Type = type,
+                IsSingleton = false,
                 Method = method,
                 IsAsyncMethod = false,
                 CommandType = method.GetParameters()[0].ParameterType
@@ -298,6 +335,53 @@ namespace Minor.Nijn.WebScale.Commands.Test
 
             Assert.AreEqual("NullReferenceException", result.Type);
             Assert.AreEqual(command.CorrelationId, result.CorrelationId);
+        }
+
+        [TestMethod]
+        public void HandleCommandMessage_ShouldNotCreteInstanceWhenClassMarkedSingleton()
+        {
+            var command = new AddProductCommand(_queueName, 42);
+
+            var commandMessage = new RequestCommandMessage(
+                message: JsonConvert.SerializeObject(command),
+                type: command.GetType().Name,
+                correlationId: command.CorrelationId,
+                routingKey: _queueName,
+                timestamp: command.Timestamp
+            );
+
+
+            var type = typeof(ProductCommandListener);
+            var method = type.GetMethod(TestClassesConstants.ProductCommandHandlerMethodName);
+            var meta = new CommandListenerInfo
+            {
+                QueueName = _queueName,
+                Type = type,
+                IsSingleton = true,
+                Method = method,
+                IsAsyncMethod = true,
+                CommandType = method.GetParameters()[0].ParameterType
+            };
+
+            var target = new CommandListener(meta);
+
+            var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
+            commandReceiverMock.Setup(recv => recv.DeclareCommandQueue());
+            commandReceiverMock.Setup(recv => recv.StartReceivingCommands(It.IsAny<CommandReceivedCallback>()));
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateCommandReceiver(_queueName)).Returns(commandReceiverMock.Object);
+
+            var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            hostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type, new object[] { new Foo() }));
+            hostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+            target.StartListening(hostMock.Object);
+
+            target.HandleCommandMessage(commandMessage);
+
+            commandReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+            hostMock.Verify(host => host.CreateInstance(type), Times.Once);
         }
 
         [TestMethod]

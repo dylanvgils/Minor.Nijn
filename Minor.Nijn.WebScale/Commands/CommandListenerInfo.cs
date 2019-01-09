@@ -16,6 +16,11 @@ namespace Minor.Nijn.WebScale.Commands
         public Type Type { get; internal set; }
 
         /// <summary>
+        /// Boolean indicating if the CommandListener should be declared singleton
+        /// </summary>
+        public bool IsSingleton { get; set; }
+
+        /// <summary>
         /// Handle to CommandListener method
         /// </summary>
         public MethodInfo Method { get; internal set; }
