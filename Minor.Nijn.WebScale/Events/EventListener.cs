@@ -2,6 +2,8 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Minor.Nijn.WebScale.Events
@@ -12,7 +14,7 @@ namespace Minor.Nijn.WebScale.Events
 
         public EventListenerInfo Meta { get; }
         public string QueueName => Meta.QueueName;
-        public IEnumerable<string> TopicExpressions => Meta.TopicExpressions;
+        public IEnumerable<string> TopicExpressions => Meta.Methods.SelectMany(m => m.TopicExpressions);
 
         private IMessageReceiver _receiver;
         private IMicroserviceHost _host;
@@ -64,38 +66,43 @@ namespace Minor.Nijn.WebScale.Events
         public void HandleEventMessage(EventMessage message)
         {
             var instance = _host.CreateInstance(Meta.Type);
-            var isEventMessage = Meta.EventType == typeof(EventMessage);
+            var methods = Meta.Methods.Where(m => TopicMatcher.IsMatch(m.TopicExpressions, message.RoutingKey));
 
-            if (!isEventMessage && message.Type != Meta.EventType.Name)
+            foreach (var method in methods)
             {
-                _logger.LogError("Received message in invalid format, expected message to be of type {0} and got {1}", 
-                    Meta.EventType.Name, message.Type);
-                return;
+                var isEventMessage = method.EventType == typeof(EventMessage);
+                if (!isEventMessage && message.Type != method.EventType.Name)
+                {
+                    _logger.LogError(
+                        "Received message in invalid format, expected message to be of type {0} and got {1}",
+                        method.EventType.Name, message.Type);
+                    return;
+                }
+
+                object payload = message;
+                if (!isEventMessage)
+                {
+                    payload = JsonConvert.DeserializeObject(message.Message, method.EventType);
+
+                    // TODO: Set these properties through the JSON Deserializer
+                    payload.GetType().GetProperty("CorrelationId").SetValue(payload, message.CorrelationId);
+                    payload.GetType().GetProperty("Timestamp").SetValue(payload, message.Timestamp);
+                }
+
+                InvokeListener(instance, method, payload);
             }
-
-            object payload = message;
-            if (!isEventMessage)
-            {
-                payload = JsonConvert.DeserializeObject(message.Message, Meta.EventType);
-
-                // TODO: Set these properties through the JSON Deserializer
-                payload.GetType().GetProperty("CorrelationId").SetValue(payload, message.CorrelationId);
-                payload.GetType().GetProperty("Timestamp").SetValue(payload, message.Timestamp);
-            }
-
-            InvokeListener(instance, payload);
         }
 
-        private void InvokeListener(object instance, params object[] payload)
+        private void InvokeListener(object instance, EventListenerMethodInfo info, params object[] payload)
         {
-            if (Meta.IsAsyncMethod)
+            if (info.IsAsync)
             {
-                var task = (Task) Meta.Method.Invoke(instance, payload);
+                var task = (Task) info.Method.Invoke(instance, payload);
                 task.Wait();
                 return;
             }
 
-            Meta.Method.Invoke(instance, payload);
+            info.Method.Invoke(instance, payload);
         }
 
         private void CheckDisposed()

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using ClassLibraryExample;
 using ConsoleAppExample.Domain;
 using Microsoft.Extensions.Logging;
+using Minor.Nijn;
 using Minor.Nijn.WebScale.Commands;
-using System.Threading.Tasks;
-using ClassLibraryExample;
 using Minor.Nijn.WebScale.Events;
+using RabbitMQ.Client;
+using System.Threading.Tasks;
 
 namespace ConsoleAppExample
 {
@@ -13,11 +14,13 @@ namespace ConsoleAppExample
         private readonly ILogger _logger;
         private readonly ICommandPublisher _commandPublisher;
         private readonly IEventPublisher _eventPublisher;
+        private readonly IBusContext<IConnection> _busContext;
 
-        public Controller(ICommandPublisher commandPublisher, IEventPublisher eventPublisher)
+        public Controller(ICommandPublisher commandPublisher, IEventPublisher eventPublisher, IBusContext<IConnection> busContext)
         {
             _commandPublisher = commandPublisher;
             _eventPublisher = eventPublisher;
+            _busContext = busContext;
 
             _logger = ConsoleAppExampleLogger.CreateLogger<Controller>();
         }
@@ -76,6 +79,18 @@ namespace ConsoleAppExample
         {
             var request = new SaidHelloEvent("Hello hello", "SaidHelloAsync");
             _eventPublisher.Publish(request);
+        }
+
+        public void SpamEvents(int number)
+        {
+            using (var sender = _busContext.CreateMessageSender())
+            {
+                for (var i = 0; i < number; i++)
+                {
+                    var request = new EventMessage("SpamMeQueue", $"message: {i}!", typeof(string).Name);
+                    sender.SendMessage(request);
+                }
+            }
         }
     }
 }

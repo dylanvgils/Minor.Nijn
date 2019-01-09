@@ -1,9 +1,11 @@
 using System.Threading.Tasks;
 using ConsoleAppExample.Domain;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Minor.Nijn;
 using Minor.Nijn.WebScale.Commands;
 using Minor.Nijn.WebScale.Events;
 using Moq;
+using RabbitMQ.Client;
 
 namespace ConsoleAppExample.Test
 {
@@ -12,6 +14,7 @@ namespace ConsoleAppExample.Test
     {
         private Mock<ICommandPublisher> _commandPublisherMock;
         private Mock<IEventPublisher> _eventPublisherMock;
+        private Mock<IBusContext<IConnection>> _busContextMock;
 
         private Controller _target;
 
@@ -20,8 +23,9 @@ namespace ConsoleAppExample.Test
         {
             _commandPublisherMock = new Mock<ICommandPublisher>(MockBehavior.Strict);
             _eventPublisherMock = new Mock<IEventPublisher>(MockBehavior.Strict);
+            _busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
 
-            _target = new Controller(_commandPublisherMock.Object, _eventPublisherMock.Object);
+            _target = new Controller(_commandPublisherMock.Object, _eventPublisherMock.Object, _busContextMock.Object);
         }
 
         [TestMethod]

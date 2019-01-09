@@ -23,7 +23,7 @@ namespace ConsoleAppExample.Test.Integration
             var commandPublisher = new CommandPublisher(_context);
             var eventPublisher = new EventPublisher(_context);
 
-            _target = new Controller(commandPublisher, eventPublisher);
+            _target = new Controller(commandPublisher, eventPublisher, _context);
         }
 
         [TestMethod]

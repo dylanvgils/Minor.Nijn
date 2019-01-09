@@ -9,6 +9,7 @@ using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using AuditEventListener = Minor.Nijn.WebScale.Test.TestClasses.AuditEventListener;
 using ProductAddedEvent = Minor.Nijn.WebScale.Test.TestClasses.Events.ProductAddedEvent;
 using ProductEventListener = Minor.Nijn.WebScale.Test.TestClasses.ProductEventListener;
@@ -35,11 +36,17 @@ namespace Minor.Nijn.WebScale.Events.Test
             var meta = new EventListenerInfo
             {
                 QueueName = _queueName,
-                TopicExpressions = _topicExpressions,
                 Type = _type,
-                Method = method,
-                IsAsyncMethod = false,
-                EventType = method.GetParameters()[0].ParameterType
+                Methods = new List<EventListenerMethodInfo>
+                {
+                    new EventListenerMethodInfo
+                    {
+                        Method = method,
+                        IsAsync = false,
+                        EventType = method.GetParameters()[0].ParameterType,
+                        TopicExpressions = _topicExpressions
+                    }
+                },
             };
 
             _target = new EventListener(meta);
@@ -61,21 +68,27 @@ namespace Minor.Nijn.WebScale.Events.Test
             var type = typeof(OrderEventListener);
             var method = type.GetMethod(TestClassesConstants.OrderEventHandlerMethodName);
             var queueName = "queueName";
-            var topicExpressions = new List<string> {"a.b.c"};
+
             var meta = new EventListenerInfo
             {
                 QueueName = queueName,
-                TopicExpressions = topicExpressions,
                 Type = type,
-                Method = method,
-                IsAsyncMethod = false,
-                EventType = method.GetParameters()[0].ParameterType
+                Methods = new List<EventListenerMethodInfo>
+                {
+                    new EventListenerMethodInfo
+                    {
+                        Method = method,
+                        IsAsync = false,
+                        EventType = method.GetParameters()[0].ParameterType,
+                        TopicExpressions = _topicExpressions
+                    }
+                },
             };
 
             var listener = new EventListener(meta);
 
             Assert.AreEqual(queueName, listener.QueueName);
-            Assert.AreEqual(topicExpressions, listener.TopicExpressions);
+            CollectionAssert.AreEqual(meta.Methods.SelectMany(m => m.TopicExpressions).ToList(), listener.TopicExpressions.ToList());
         }
 
         [TestMethod]
@@ -229,14 +242,21 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             var type = typeof(ProductEventListener);
             var method = type.GetMethod(TestClassesConstants.ProductEventHandlerMethodName);
+
             var meta = new EventListenerInfo
             {
                 QueueName = _queueName,
-                TopicExpressions = _topicExpressions,
                 Type = type,
-                Method = method,
-                IsAsyncMethod = true,
-                EventType = method.GetParameters()[0].ParameterType
+                Methods = new List<EventListenerMethodInfo>
+                {
+                    new EventListenerMethodInfo
+                    {
+                        Method = method,
+                        IsAsync = true,
+                        EventType = method.GetParameters()[0].ParameterType,
+                        TopicExpressions = _topicExpressions
+                    }
+                },
             };
 
             var target = new EventListener(meta);
@@ -314,14 +334,21 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             var type = typeof(AuditEventListener);
             var method = type.GetMethod(TestClassesConstants.AuditEventListenerMethodName);
+
             var meta = new EventListenerInfo
             {
                 QueueName = _queueName,
-                TopicExpressions = _topicExpressions,
                 Type = type,
-                Method = method,
-                IsAsyncMethod = false,
-                EventType = method.GetParameters()[0].ParameterType
+                Methods = new List<EventListenerMethodInfo>
+                {
+                    new EventListenerMethodInfo
+                    {
+                        Method = method,
+                        IsAsync = false,
+                        EventType = method.GetParameters()[0].ParameterType,
+                        TopicExpressions = _topicExpressions
+                    }
+                },
             };
 
             var target = new EventListener(meta);
@@ -356,7 +383,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             messageReceiverMock.Setup(recv => recv.Dispose());
 
             var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(It.IsAny<string>(), It.IsAny<List<string>>())).Returns(messageReceiverMock.Object);
+            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(It.IsAny<string>(), It.IsAny<IEnumerable<string>>())).Returns(messageReceiverMock.Object);
 
             var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
             microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);

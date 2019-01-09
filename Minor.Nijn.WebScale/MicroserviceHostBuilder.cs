@@ -10,6 +10,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using DomainEvent = Minor.Nijn.WebScale.Events.DomainEvent;
+using EventListenerMethodInfo = Minor.Nijn.WebScale.Events.EventListenerMethodInfo;
+using TopicAttribute = Minor.Nijn.WebScale.Attributes.TopicAttribute;
 
 namespace Minor.Nijn.WebScale
 {
@@ -112,14 +114,14 @@ namespace Minor.Nijn.WebScale
         private void ParseTopics(Type type, string queueName)
         {
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var method in methods)
-            {
-                var attribute = method.GetCustomAttribute<TopicAttribute>();
-                if (attribute != null)
-                {
-                    CreateEventListener(type, method, queueName, attribute.TopicExpressions);
-                }
-            }
+
+            var listenerMethods = methods
+                .Select(m => new { method = m, attribute = m.GetCustomAttribute<TopicAttribute>() })
+                .Where(m => m.attribute != null)
+                .Select(m => CreateEventListenerMethodInfo(type, m.method, m.attribute)).ToList();
+
+            var meta = new EventListenerInfo { Type = type, QueueName = queueName, Methods = listenerMethods};
+            EventListeners.Add(new EventListener(meta));
         }
 
         private void ParseCommand(Type type)
@@ -135,7 +137,7 @@ namespace Minor.Nijn.WebScale
             }
         }
 
-        private void CreateEventListener(Type type, MethodInfo method, string queueName, IEnumerable<string> topicExpressions)
+        private EventListenerMethodInfo CreateEventListenerMethodInfo(Type type, MethodInfo method, TopicAttribute topicAttribute)
         {
             CheckParameterType(type, method, typeof(DomainEvent));
             var isAsync = IsAsyncMethod(method);
@@ -146,17 +148,13 @@ namespace Minor.Nijn.WebScale
                 throw new ArgumentException($"Invalid return type of method: {method.Name}, return type of async method should be Task");
             }
 
-            var meta = new EventListenerInfo
+            return new EventListenerMethodInfo()
             {
-                QueueName = queueName,
-                TopicExpressions = topicExpressions,
-                Type = type,
                 Method = method,
-                IsAsyncMethod = isAsync,
-                EventType = method.GetParameters()[0].ParameterType
+                IsAsync = isAsync,
+                EventType = method.GetParameters()[0].ParameterType,
+                TopicExpressions = topicAttribute.TopicExpressions
             };
-
-            EventListeners.Add(new EventListener(meta));
         }
 
         private void CreateCommandListener(Type type, MethodInfo method, string queueName)

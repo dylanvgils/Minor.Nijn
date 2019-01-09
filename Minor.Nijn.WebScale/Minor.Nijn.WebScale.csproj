@@ -4,14 +4,13 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <Authors>Dylan van Gils</Authors>
     <PackageId>Minor.Nijn.Bloem.WebScale</PackageId>
-    <Version>0.1.8</Version>
+    <Version>0.1.9</Version>
     <Company>-</Company>
     <Description>WebScale wrapper arround Minor.Nijn framework.</Description>
     <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>
     <PackageProjectUrl>https://github.com/dylanvgils/Minor.Nijn</PackageProjectUrl>
     <PackageTags>RabbitMQ, Wrapper, EventBus, Messages, Commands, Attributes</PackageTags>
-    <PackageReleaseNotes>- Add method for registering EventListeners
-- Add method for starting Listeners</PackageReleaseNotes>
+    <PackageReleaseNotes>- Bugfixes and code improvements</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
