@@ -5,6 +5,7 @@ using Minor.Nijn.WebScale.Helpers;
 using Serilog;
 using System;
 using System.Threading.Tasks;
+using Minor.Nijn;
 using LoggerFactory = Microsoft.Extensions.Logging.LoggerFactory;
 
 namespace ConsoleAppExample
@@ -62,6 +63,7 @@ namespace ConsoleAppExample
                 await controller.WhoopsExternalExceptionThrown();
                 await controller.AsyncCommandListenerMethod();
                 controller.AsyncEventListenerMethod();
+                controller.SpamEvents(10);
 
                 Console.ReadKey();
             }

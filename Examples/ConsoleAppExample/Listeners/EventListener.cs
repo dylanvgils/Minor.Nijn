@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using ConsoleAppExample.DAL;
 using ConsoleAppExample.Domain;
 using Microsoft.Extensions.Logging;
+using Minor.Nijn;
 using Minor.Nijn.WebScale.Attributes;
 
 namespace ConsoleAppExample.Listeners
@@ -36,7 +37,14 @@ namespace ConsoleAppExample.Listeners
             await Task.Run(() => { Thread.Sleep(1000); });
             stopwatch.Stop();
 
-            _logger.LogInformation("Hi from async EventListener method, time elapsed is: {0} ms", stopwatch.ElapsedMilliseconds);
+            _logger.LogInformation("Hi from async EventListener method, time elapsed is: {0} ms",
+                stopwatch.ElapsedMilliseconds);
+        }
+
+        [Topic("SpamMeQueue")]
+        public void HandleEventMessage(EventMessage message)
+        {
+            _logger.LogInformation("Received EventMessage with body: {0}", message.Message);
         }
     }
 }

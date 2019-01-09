@@ -22,12 +22,18 @@ namespace Minor.Nijn
         /// <returns></returns>
         public static bool IsMatch(IEnumerable<string> topicExpressions, string topic)
         {
-            if (topicExpressions.Contains(topic))
-            {
-                return true;
-            }
+            return topicExpressions.Any(expr => IsMatch(expr, topic));
+        }
 
-            return topicExpressions.Any(expr => MatchTopicExpressions(expr, topic));
+        /// <summary>
+        /// Checks if the provided topic expression is valid and if the provided topic matches the expression
+        /// </summary>
+        /// <param name="topicExpression">Topic expression to check for</param>
+        /// <param name="topic">The topic to match</param>
+        /// <returns></returns>
+        public static bool IsMatch(string topicExpression, string topic)
+        {
+            return topicExpression == topic || MatchTopicExpression(topicExpression, topic);
         }
 
         /// <summary>
@@ -45,7 +51,7 @@ namespace Minor.Nijn
             return true;
         }
 
-        private static bool MatchTopicExpressions(string expression, string topic)
+        private static bool MatchTopicExpression(string expression, string topic)
         {
             IsValidTopic(expression);
 
@@ -58,7 +64,7 @@ namespace Minor.Nijn
                 builder.Append(ParseExpressionPart(expressionPart, isLast));
             }
 
-            string pattern = "^" + builder.ToString() + "$";
+            string pattern = "^" + builder + "$";
             Regex regex = new Regex(pattern);
             return regex.IsMatch(topic.Trim());
         }

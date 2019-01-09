@@ -188,11 +188,13 @@ namespace Minor.Nijn.WebScale.Test
 
             var result = _target.EventListeners.First().Meta;
             Assert.AreEqual(TestClassesConstants.OrderEventListenerQueueName, result.QueueName);
-            Assert.AreEqual(TestClassesConstants.OrderEventHandlerTopic, result.TopicExpressions.First());
             Assert.AreEqual(typeof(OrderEventListener), result.Type);
-            Assert.AreEqual(TestClassesConstants.OrderEventHandlerMethodName, result.Method.Name);
-            Assert.AreEqual(typeof(OrderCreatedEvent), result.EventType);
-            Assert.AreEqual(false, result.IsAsyncMethod);
+
+            var methodInfo = result.Methods.First();
+            Assert.AreEqual(TestClassesConstants.OrderEventHandlerTopic, methodInfo.TopicExpressions.First());
+            Assert.AreEqual(TestClassesConstants.OrderEventHandlerMethodName, methodInfo.Method.Name);
+            Assert.AreEqual(typeof(OrderCreatedEvent), methodInfo.EventType);
+            Assert.AreEqual(false, methodInfo.IsAsync);
         }
 
         [TestMethod]
@@ -202,11 +204,13 @@ namespace Minor.Nijn.WebScale.Test
 
             var result = _target.EventListeners.First().Meta;
             Assert.AreEqual(TestClassesConstants.ProductEventListenerQueueName, result.QueueName);
-            Assert.AreEqual(TestClassesConstants.ProductEventHandlerTopic, result.TopicExpressions.First());
             Assert.AreEqual(typeof(ProductEventListener), result.Type);
-            Assert.AreEqual(TestClassesConstants.ProductEventHandlerMethodName, result.Method.Name);
-            Assert.AreEqual(typeof(ProductAddedEvent), result.EventType);
-            Assert.AreEqual(true, result.IsAsyncMethod);
+
+            var methodInfo = result.Methods.First();
+            Assert.AreEqual(TestClassesConstants.ProductEventHandlerTopic, methodInfo.TopicExpressions.First());
+            Assert.AreEqual(TestClassesConstants.ProductEventHandlerMethodName, methodInfo.Method.Name);
+            Assert.AreEqual(typeof(ProductAddedEvent), methodInfo.EventType);
+            Assert.AreEqual(true, methodInfo.IsAsync);
         }
 
         [TestMethod]
