@@ -13,6 +13,8 @@ namespace Minor.Nijn.WebScale.Commands
         public CommandListenerInfo Meta { get; }
         public string QueueName => Meta.QueueName;
 
+        private object _instance;
+
         private ICommandReceiver _receiver;
         private IMicroserviceHost _host;
         private bool _isListening;
@@ -34,6 +36,7 @@ namespace Minor.Nijn.WebScale.Commands
             }
 
             _host = host;
+            _instance = Meta.IsSingleton ? _host.CreateInstance(Meta.Type) : null;
             _receiver = host.Context.CreateCommandReceiver(QueueName);
             _receiver.DeclareCommandQueue();
             _receiver.StartReceivingCommands(HandleCommandMessage);
@@ -43,7 +46,7 @@ namespace Minor.Nijn.WebScale.Commands
 
         public ResponseCommandMessage HandleCommandMessage(RequestCommandMessage request)
         {
-            var instance = _host.CreateInstance(Meta.Type);
+            var instance = Meta.IsSingleton ? _instance : _host.CreateInstance(Meta.Type);
 
             ResponseCommandMessage response;
 

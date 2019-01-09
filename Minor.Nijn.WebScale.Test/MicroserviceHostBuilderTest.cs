@@ -189,6 +189,7 @@ namespace Minor.Nijn.WebScale.Test
             var result = _target.EventListeners.First().Meta;
             Assert.AreEqual(TestClassesConstants.OrderEventListenerQueueName, result.QueueName);
             Assert.AreEqual(typeof(OrderEventListener), result.Type);
+            Assert.IsFalse(result.IsSingleton, "Listener should not be singleton");
 
             var methodInfo = result.Methods.First();
             Assert.AreEqual(TestClassesConstants.OrderEventHandlerTopic, methodInfo.TopicExpressions.First());
@@ -205,6 +206,7 @@ namespace Minor.Nijn.WebScale.Test
             var result = _target.EventListeners.First().Meta;
             Assert.AreEqual(TestClassesConstants.ProductEventListenerQueueName, result.QueueName);
             Assert.AreEqual(typeof(ProductEventListener), result.Type);
+            Assert.IsFalse(result.IsSingleton, "Listener should not be singleton");
 
             var methodInfo = result.Methods.First();
             Assert.AreEqual(TestClassesConstants.ProductEventHandlerTopic, methodInfo.TopicExpressions.First());
@@ -221,6 +223,7 @@ namespace Minor.Nijn.WebScale.Test
             var result = _target.CommandListeners.First().Meta;
             Assert.AreEqual(TestClassesConstants.OrderCommandListenerQueueName, result.QueueName);
             Assert.AreEqual(typeof(OrderCommandListener), result.Type);
+            Assert.IsFalse(result.IsSingleton, "Listener should not be singleton");
             Assert.AreEqual(TestClassesConstants.OrderCommandHandlerMethodName, result.Method.Name);
             Assert.AreEqual(typeof(AddOrderCommand), result.CommandType);
             Assert.AreEqual(false, result.IsAsyncMethod);
@@ -234,6 +237,7 @@ namespace Minor.Nijn.WebScale.Test
             var result = _target.CommandListeners.First().Meta;
             Assert.AreEqual(TestClassesConstants.ProductCommandListenerQueueName, result.QueueName);
             Assert.AreEqual(typeof(ProductCommandListener), result.Type);
+            Assert.IsFalse(result.IsSingleton, "Listener should not be singleton");
             Assert.AreEqual(TestClassesConstants.ProductCommandHandlerMethodName, result.Method.Name);
             Assert.AreEqual(typeof(AddProductCommand), result.CommandType);
             Assert.AreEqual(true, result.IsAsyncMethod);

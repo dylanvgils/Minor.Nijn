@@ -16,6 +16,11 @@ namespace Minor.Nijn.WebScale.Events
         public Type Type { get; internal set; }
 
         /// <summary>
+        /// Boolean indicating if the EventListener class should be created as singleton
+        /// </summary>
+        public bool IsSingleton { get; internal set; }
+
+        /// <summary>
         /// List containing meta data about the EventListener methods
         /// </summary>
         public List<EventListenerMethodInfo> Methods { get; internal set; }

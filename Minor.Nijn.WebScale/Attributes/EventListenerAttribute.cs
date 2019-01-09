@@ -13,10 +13,12 @@ namespace Minor.Nijn.WebScale.Attributes
     public class EventListenerAttribute : Attribute
     {
         public string QueueName { get; set; }
+        public bool Singleton { get; set; }
 
         public EventListenerAttribute(string queueName)
         {
             QueueName = queueName;
+            Singleton = false;
         }
     }
 }

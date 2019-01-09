@@ -37,6 +37,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             {
                 QueueName = _queueName,
                 Type = _type,
+                IsSingleton = false,
                 Methods = new List<EventListenerMethodInfo>
                 {
                     new EventListenerMethodInfo
@@ -73,6 +74,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             {
                 QueueName = queueName,
                 Type = type,
+                IsSingleton = false,
                 Methods = new List<EventListenerMethodInfo>
                 {
                     new EventListenerMethodInfo
@@ -188,6 +190,51 @@ namespace Minor.Nijn.WebScale.Events.Test
         }
 
         [TestMethod]
+        public void StartListening_ShouldCreateInstanceIfListenerClassIsMarkedSingleton()
+        {
+            var type = typeof(OrderEventListener);
+            var method = type.GetMethod(TestClassesConstants.OrderEventHandlerMethodName);
+
+            var meta = new EventListenerInfo
+            {
+                QueueName = _queueName,
+                Type = type,
+                IsSingleton = true,
+                Methods = new List<EventListenerMethodInfo>
+                {
+                    new EventListenerMethodInfo
+                    {
+                        Method = method,
+                        IsAsync = true,
+                        EventType = method.GetParameters()[0].ParameterType,
+                        TopicExpressions = _topicExpressions
+                    }
+                },
+            };
+
+            var target = new EventListener(meta);
+
+            var messageReceiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
+            messageReceiverMock.Setup(recv => recv.DeclareQueue());
+            messageReceiverMock.Setup(recv => recv.StartReceivingMessages(It.IsAny<EventMessageReceivedCallback>()));
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(_queueName, _topicExpressions))
+                .Returns(messageReceiverMock.Object);
+
+            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+            microServiceHostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
+
+            target.RegisterListener(microServiceHostMock.Object);
+            target.StartListening();
+
+            microServiceHostMock.VerifyAll();
+            messageReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+        }
+
+        [TestMethod]
         public void HandleEventMessage_ShouldHandleEventMessageAndReturnCastedType()
         {
             var routingKey = "a.b.c";
@@ -218,6 +265,10 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             _target.HandleEventMessage(eventMessage);
 
+            messageReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+            microServiceHostMock.VerifyAll();
+
             var result = OrderEventListener.HandleOrderCreatedEventHasBeenCalledWith;
             Assert.IsTrue(OrderEventListener.HandleOrderCreatedEventHasBeenCalled);
             Assert.AreEqual(orderCreatedEvent.RoutingKey, result.RoutingKey);
@@ -247,6 +298,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             {
                 QueueName = _queueName,
                 Type = type,
+                IsSingleton = false,
                 Methods = new List<EventListenerMethodInfo>
                 {
                     new EventListenerMethodInfo
@@ -280,6 +332,10 @@ namespace Minor.Nijn.WebScale.Events.Test
             stopwatch.Start();
             target.HandleEventMessage(eventMessage);
             stopwatch.Stop();
+
+            messageReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+            microServiceHostMock.VerifyAll();
 
             Assert.IsTrue(stopwatch.ElapsedMilliseconds >= 1500, "Execution should at least take 1500ms");
         }
@@ -315,6 +371,10 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             _target.HandleEventMessage(eventMessage);
 
+            messageReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+            microServiceHostMock.VerifyAll();
+
             Assert.IsFalse(OrderEventListener.HandleOrderCreatedEventHasBeenCalled);
         }
 
@@ -339,6 +399,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             {
                 QueueName = _queueName,
                 Type = type,
+                IsSingleton = false,
                 Methods = new List<EventListenerMethodInfo>
                 {
                     new EventListenerMethodInfo
@@ -370,8 +431,66 @@ namespace Minor.Nijn.WebScale.Events.Test
 
             target.HandleEventMessage(eventMessage);
 
+            messageReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+            microServiceHostMock.VerifyAll();
+
             Assert.IsTrue(AuditEventListener.HandleEventsHasBeenCalled);
             Assert.AreEqual(eventMessage, AuditEventListener.HandleEventsHasBeenCalledWith);
+        }
+
+        [TestMethod]
+        public void HandleEventMessage_ShouldNotCreateInstanceWhenListenerMarkedSingleton()
+        {
+            var routingKey = "x.y.z  ";
+            var order = new Order { Id = 1, Description = "Some Description" };
+            var orderCreatedEvent = new OrderCreatedEvent(routingKey, order);
+            var eventMessage = new EventMessage(
+                routingKey: routingKey,
+                message: JsonConvert.SerializeObject(orderCreatedEvent),
+                type: orderCreatedEvent.GetType().Name,
+                timestamp: orderCreatedEvent.Timestamp,
+                correlationId: orderCreatedEvent.CorrelationId
+            );
+
+            var type = typeof(AuditEventListener);
+            var method = type.GetMethod(TestClassesConstants.AuditEventListenerMethodName);
+
+            var meta = new EventListenerInfo
+            {
+                QueueName = _queueName,
+                Type = type,
+                IsSingleton = true,
+                Methods = new List<EventListenerMethodInfo>
+                {
+                    new EventListenerMethodInfo
+                    {
+                        Method = method,
+                        IsAsync = false,
+                        EventType = method.GetParameters()[0].ParameterType,
+                        TopicExpressions = _topicExpressions
+                    }
+                },
+            };
+
+            var target = new EventListener(meta);
+
+            var messageReceiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
+            messageReceiverMock.Setup(recv => recv.DeclareQueue());
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(_queueName, _topicExpressions))
+                .Returns(messageReceiverMock.Object);
+
+            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+
+            target.RegisterListener(microServiceHostMock.Object);
+            target.HandleEventMessage(eventMessage);
+
+            messageReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+            microServiceHostMock.VerifyAll();
         }
 
         [TestMethod]
