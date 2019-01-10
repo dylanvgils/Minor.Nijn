@@ -51,11 +51,26 @@ namespace Minor.Nijn.WebScale.Test
         public void StartListening_ShouldCreateMessageReceivers()
         {
             _eventListenerMock.Setup(l => l.RegisterListener(_target));
-            _eventListenerMock.Setup(l => l.StartListening());
+            _eventListenerMock.Setup(l => l.StartListening(0));
 
             _commandListenerMock.Setup(c => c.StartListening(_target));
 
             _target.StartListening();
+
+            _busContextMock.VerifyAll();
+            _eventListenerMock.VerifyAll();
+            _commandListenerMock.VerifyAll();
+        }
+
+        [TestMethod]
+        public void StartListening_ShouldPassTimestampToEventListenersWhenCalledWithFromTimestamp()
+        {
+            _eventListenerMock.Setup(l => l.RegisterListener(_target));
+            _eventListenerMock.Setup(l => l.StartListening(200));
+
+            _commandListenerMock.Setup(c => c.StartListening(_target));
+
+            _target.StartListening(200);
 
             _busContextMock.VerifyAll();
             _eventListenerMock.VerifyAll();
@@ -81,7 +96,7 @@ namespace Minor.Nijn.WebScale.Test
         public void StartListening_ShouldThrowExceptionWhenCalledForTheSecondTime()
         {
             _eventListenerMock.Setup(l => l.RegisterListener(_target));
-            _eventListenerMock.Setup(l => l.StartListening());
+            _eventListenerMock.Setup(l => l.StartListening(0));
 
             _commandListenerMock.Setup(c => c.StartListening(_target));
 

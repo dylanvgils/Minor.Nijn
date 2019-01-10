@@ -11,6 +11,7 @@ namespace Minor.Nijn.WebScale.Events
     internal class EventListener : IEventListener
     {
         private readonly ILogger _logger;
+        private long _listeningFromTimestamp;
 
         public EventListenerInfo Meta { get; }
         public string QueueName => Meta.QueueName;
@@ -46,7 +47,7 @@ namespace Minor.Nijn.WebScale.Events
             _isDeclared = true;
         }
 
-        public void StartListening()
+        public void StartListening(long fromTimestamp)
         {
             CheckDisposed();
             if (!_isDeclared)
@@ -63,11 +64,19 @@ namespace Minor.Nijn.WebScale.Events
 
             _instance = Meta.IsSingleton ? _host.CreateInstance(Meta.Type) : null;
             _receiver.StartReceivingMessages(HandleEventMessage);
+
+            _listeningFromTimestamp = fromTimestamp;
             _isListening = true;
         }
 
         public void HandleEventMessage(EventMessage message)
         {
+            if (message.Timestamp < _listeningFromTimestamp)
+            {
+                _logger.LogInformation("Skip EventMessage with correlationId: {0}, timestamp was before provided timestamp.", message.CorrelationId);
+                return;
+            }
+
             var instance = Meta.IsSingleton ? _instance : _host.CreateInstance(Meta.Type);
             var methods = Meta.Methods.Where(m => TopicMatcher.IsMatch(m.TopicExpressions, message.RoutingKey));
 

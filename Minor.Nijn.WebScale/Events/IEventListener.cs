@@ -32,6 +32,7 @@ namespace Minor.Nijn.WebScale.Events
         /// <summary>
         /// Starts listening for messages
         /// </summary>
-        void StartListening();
+        /// <param name="fromTimestamp">Timestamp from which time messages should be accepted</param>
+        void StartListening(long fromTimestamp);
     }
 }

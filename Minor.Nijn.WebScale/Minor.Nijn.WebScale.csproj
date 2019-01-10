@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <Authors>Dylan van Gils</Authors>
     <PackageId>Minor.Nijn.Bloem.WebScale</PackageId>
-    <Version>0.1.11</Version>
+    <Version>0.1.12</Version>
     <Company>-</Company>
     <Description>WebScale wrapper arround Minor.Nijn framework.</Description>
     <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>

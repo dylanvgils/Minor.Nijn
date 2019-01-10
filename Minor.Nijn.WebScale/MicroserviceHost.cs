@@ -16,6 +16,8 @@ namespace Minor.Nijn.WebScale
     public class MicroserviceHost : IMicroserviceHost
     {
         private readonly ILogger _logger;
+
+        private long _listeningFromTimestamp;
         private bool _isRegistered;
         private bool _isListening;
         private bool _disposed;
@@ -27,6 +29,8 @@ namespace Minor.Nijn.WebScale
 
         public MicroserviceHost(IBusContext<IConnection> context, List<IEventListener> eventListeners, List<ICommandListener> commandListeners, IServiceCollection serviceCollection)
         {
+            _listeningFromTimestamp = 0;
+
             Context = context;
             EventListeners = eventListeners;
             CommandListeners = commandListeners;
@@ -69,10 +73,16 @@ namespace Minor.Nijn.WebScale
 
             _logger.LogInformation("Registering {0} CommandListeners", CommandListeners.Count);
 
-            EventListeners.ForEach(e => e.StartListening());
+            EventListeners.ForEach(e => e.StartListening(_listeningFromTimestamp));
             CommandListeners.ForEach(c => c.StartListening(this));
 
             _isListening = true;
+        }
+
+        public void StartListening(long fromTimestamp)
+        {
+            _listeningFromTimestamp = fromTimestamp;
+            StartListening();
         }
 
         public virtual object CreateInstance(Type type)
