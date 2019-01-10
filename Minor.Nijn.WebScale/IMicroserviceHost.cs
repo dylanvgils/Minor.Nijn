@@ -15,6 +15,7 @@ namespace Minor.Nijn.WebScale
 
         void RegisterListeners();
         void StartListening();
+        void StartListening(long fromTimestamp);
         object CreateInstance(Type type);
     }
 }

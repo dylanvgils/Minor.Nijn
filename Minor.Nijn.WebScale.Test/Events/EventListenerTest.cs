@@ -140,7 +140,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
 
             _target.RegisterListener(microServiceHostMock.Object);
-            _target.StartListening();
+            _target.StartListening(0);
 
             microServiceHostMock.VerifyAll();
             messageReceiverMock.VerifyAll();
@@ -162,8 +162,8 @@ namespace Minor.Nijn.WebScale.Events.Test
             microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
 
             _target.RegisterListener(microServiceHostMock.Object);
-            _target.StartListening();
-            Action action = () => { _target.StartListening(); };
+            _target.StartListening(0);
+            Action action = () => { _target.StartListening(0); };
         
             microServiceHostMock.VerifyAll();
             messageReceiverMock.VerifyAll();
@@ -176,7 +176,7 @@ namespace Minor.Nijn.WebScale.Events.Test
         [TestMethod]
         public void StartListening_ShouldThrowInvalidOperationExceptionWhenListenerNotDeclared()
         {
-            Action action = () => { _target.StartListening(); };
+            Action action = () => { _target.StartListening(0); };
 
             var ex = Assert.ThrowsException<InvalidOperationException>(action);
             Assert.AreEqual("Event listener is not declared", ex.Message);
@@ -186,7 +186,7 @@ namespace Minor.Nijn.WebScale.Events.Test
         public void StartListening_ShouldThrowExceptionWhenDisposed()
         {
             _target.Dispose();
-            _target.StartListening();
+            _target.StartListening(0);
         }
 
         [TestMethod]
@@ -227,7 +227,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             microServiceHostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
 
             target.RegisterListener(microServiceHostMock.Object);
-            target.StartListening();
+            target.StartListening(0);
 
             microServiceHostMock.VerifyAll();
             messageReceiverMock.VerifyAll();
@@ -261,7 +261,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             microServiceHostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
 
             _target.RegisterListener(microServiceHostMock.Object);
-            _target.StartListening();
+            _target.StartListening(0);
 
             _target.HandleEventMessage(eventMessage);
 
@@ -326,7 +326,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             microServiceHostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type, new object[] { new Foo() }));
 
             target.RegisterListener(microServiceHostMock.Object);
-            target.StartListening();
+            target.StartListening(0);
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -343,7 +343,7 @@ namespace Minor.Nijn.WebScale.Events.Test
         [TestMethod]
         public void HandleEventMessage_ShouldHandleEventMessageWithWrongType()
         {
-            var routingKey = "a.b.c";
+            var routingKey = TestClassesConstants.OrderEventHandlerTopic;
             var order = new Order { Id = 1, Description = "Some Description" };
             var orderCreatedEvent = new OrderCreatedEvent(routingKey, order);
             var eventMessage = new EventMessage(
@@ -367,7 +367,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             microServiceHostMock.Setup(host => host.CreateInstance(_type)).Returns(Activator.CreateInstance(_type));
 
             _target.RegisterListener(microServiceHostMock.Object);
-            _target.StartListening();
+            _target.StartListening(0);
 
             _target.HandleEventMessage(eventMessage);
 
@@ -427,7 +427,7 @@ namespace Minor.Nijn.WebScale.Events.Test
             microServiceHostMock.Setup(host => host.CreateInstance(type)).Returns(Activator.CreateInstance(type));
 
             target.RegisterListener(microServiceHostMock.Object);
-            target.StartListening();
+            target.StartListening(0);
 
             target.HandleEventMessage(eventMessage);
 
@@ -442,7 +442,7 @@ namespace Minor.Nijn.WebScale.Events.Test
         [TestMethod]
         public void HandleEventMessage_ShouldNotCreateInstanceWhenListenerMarkedSingleton()
         {
-            var routingKey = "x.y.z  ";
+            var routingKey = "x.y.z";
             var order = new Order { Id = 1, Description = "Some Description" };
             var orderCreatedEvent = new OrderCreatedEvent(routingKey, order);
             var eventMessage = new EventMessage(
@@ -491,6 +491,45 @@ namespace Minor.Nijn.WebScale.Events.Test
             messageReceiverMock.VerifyAll();
             busContextMock.VerifyAll();
             microServiceHostMock.VerifyAll();
+        }
+
+        [TestMethod]
+        public void HandleEventMessage_ShouldSkipEventMessageWhenBeforeProvidedTimestamp()
+        {
+            var routingKey = TestClassesConstants.OrderEventHandlerTopic;
+            var order = new Order { Id = 1, Description = "Some Description" };
+            var orderCreatedEvent = new OrderCreatedEvent(routingKey, order);
+            var eventMessage = new EventMessage(
+                routingKey: orderCreatedEvent.RoutingKey,
+                message: JsonConvert.SerializeObject(orderCreatedEvent),
+                type: orderCreatedEvent.GetType().Name,
+                timestamp: DateTime.Now.AddMilliseconds(-100).Ticks,
+                correlationId: orderCreatedEvent.CorrelationId
+            );
+
+            var messageReceiverMock = new Mock<IMessageReceiver>(MockBehavior.Strict);
+            messageReceiverMock.Setup(recv => recv.DeclareQueue());
+            messageReceiverMock.Setup(recv => recv.StartReceivingMessages(It.IsAny<EventMessageReceivedCallback>()));
+
+            var busContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            busContextMock.Setup(ctx => ctx.CreateMessageReceiver(_queueName, _topicExpressions))
+                .Returns(messageReceiverMock.Object);
+
+            var microServiceHostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            microServiceHostMock.SetupGet(host => host.Context).Returns(busContextMock.Object);
+
+            _target.RegisterListener(microServiceHostMock.Object);
+            _target.StartListening(DateTime.Now.Ticks);
+
+            _target.HandleEventMessage(eventMessage);
+
+            messageReceiverMock.VerifyAll();
+            busContextMock.VerifyAll();
+            microServiceHostMock.VerifyAll();
+
+            var result = OrderEventListener.HandleOrderCreatedEventHasBeenCalledWith;
+            Assert.IsFalse(OrderEventListener.HandleOrderCreatedEventHasBeenCalled, "OrderEventListener should not be called");
+            Assert.IsNull(result, "Result should be null");
         }
 
         [TestMethod]
