@@ -13,10 +13,10 @@ namespace ConsoleAppExample
     {
         static void Main(string[] args)
         {
-            new Program().Run();
+            new Program().Run().Wait();
         }
 
-        private async void Run()
+        private async Task Run()
         {
             // Create and configure logger factory
             var loggerFactory = new LoggerFactory()

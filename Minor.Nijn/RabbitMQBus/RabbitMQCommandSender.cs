@@ -1,10 +1,10 @@
-using System;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using RabbitMQ.Client.Events;
 
 namespace Minor.Nijn.RabbitMQBus
 {
@@ -41,7 +41,7 @@ namespace Minor.Nijn.RabbitMQBus
             props.CorrelationId = request.CorrelationId;
             props.Type = request.Type;
             props.Timestamp = request.Timestamp == 0
-                ? new AmqpTimestamp(DateTime.Now.Ticks)
+                ? new AmqpTimestamp(DateTimeOffset.Now.ToUnixTimeMilliseconds())
                 : new AmqpTimestamp(request.Timestamp);
 
             var task = SubscribeToResponseQueue(replyQueueName, request.CorrelationId);

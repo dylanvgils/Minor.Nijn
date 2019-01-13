@@ -35,7 +35,7 @@ namespace Minor.Nijn.WebScale.Commands
         protected DomainCommand(string routingKey)
         {
             RoutingKey = routingKey;
-            Timestamp = DateTime.Now.Ticks;
+            Timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             CorrelationId = Guid.NewGuid().ToString();
         }
     }

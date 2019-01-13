@@ -1,8 +1,8 @@
-using System;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System;
 using System.Text;
-using Microsoft.Extensions.Logging;
 
 namespace Minor.Nijn.RabbitMQBus
 {
@@ -108,7 +108,7 @@ namespace Minor.Nijn.RabbitMQBus
             replyProps.CorrelationId = args.BasicProperties.CorrelationId;
             replyProps.Type = replyMessage.Type ?? "";
             replyProps.Timestamp = replyMessage.Timestamp == 0
-                ? new AmqpTimestamp(DateTime.Now.Ticks)
+                ? new AmqpTimestamp(DateTimeOffset.Now.ToUnixTimeMilliseconds())
                 : new AmqpTimestamp(replyMessage.Timestamp);
 
             Channel.BasicPublish(
