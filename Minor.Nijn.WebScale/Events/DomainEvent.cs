@@ -34,7 +34,7 @@ namespace Minor.Nijn.WebScale.Events
         protected DomainEvent(string routingKey)
         {
             RoutingKey = routingKey;
-            Timestamp = DateTime.Now.Ticks;
+            Timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             CorrelationId = Guid.NewGuid().ToString();
         }
     }

@@ -1,6 +1,6 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
+using System;
 using System.Text;
 
 namespace Minor.Nijn.RabbitMQBus
@@ -30,7 +30,7 @@ namespace Minor.Nijn.RabbitMQBus
             props.Type = message.Type ?? "";
             props.CorrelationId = message?.CorrelationId ?? Guid.NewGuid().ToString();
             props.Timestamp = message.Timestamp == 0 
-                ? new AmqpTimestamp(DateTime.Now.Ticks) 
+                ? new AmqpTimestamp(DateTimeOffset.Now.ToUnixTimeMilliseconds()) 
                 : new AmqpTimestamp(message.Timestamp);
 
             Channel.BasicPublish(
