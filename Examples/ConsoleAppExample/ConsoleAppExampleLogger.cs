@@ -2,7 +2,7 @@
 
 namespace ConsoleAppExample
 {
-    internal class ConsoleAppExampleLogger
+    internal static class ConsoleAppExampleLogger
     {
         public static ILoggerFactory LoggerFactory { get; set; } = new LoggerFactory();
 

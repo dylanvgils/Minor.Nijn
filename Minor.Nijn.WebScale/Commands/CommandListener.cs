@@ -89,7 +89,6 @@ namespace Minor.Nijn.WebScale.Commands
         {
             var payload = JsonConvert.DeserializeObject(request.Message, Meta.CommandType);
 
-            // TODO: Set these properties through the JSON Deserializer
             payload.GetType().GetProperty("CorrelationId").SetValue(payload, request.CorrelationId);
             payload.GetType().GetProperty("Timestamp").SetValue(payload, request.Timestamp);
 

@@ -11,13 +11,13 @@ namespace ConsoleAppExample.Test.Listeners
     [TestClass]
     public class EventListenerTest
     {
-        private Mock<IDataMapper<string, long>> _dataMapperMock;
+        private Mock<IDataMapper<string>> _dataMapperMock;
         private EventListener _target;
 
         [TestInitialize]
         public void BeforeEach()
         {
-            _dataMapperMock = new Mock<IDataMapper<string, long>>(MockBehavior.Strict);
+            _dataMapperMock = new Mock<IDataMapper<string>>(MockBehavior.Strict);
             _target = new EventListener(_dataMapperMock.Object);
         }
 

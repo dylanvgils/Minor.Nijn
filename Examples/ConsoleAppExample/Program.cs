@@ -5,7 +5,6 @@ using Minor.Nijn.WebScale.Helpers;
 using Serilog;
 using System;
 using System.Threading.Tasks;
-using Minor.Nijn;
 using LoggerFactory = Microsoft.Extensions.Logging.LoggerFactory;
 
 namespace ConsoleAppExample
@@ -17,7 +16,7 @@ namespace ConsoleAppExample
             new Program().Run();
         }
 
-        private async Task Run()
+        private async void Run()
         {
             // Create and configure logger factory
             var loggerFactory = new LoggerFactory()
@@ -32,7 +31,7 @@ namespace ConsoleAppExample
 
             // Create the service collection for the example console application
             var services = new ServiceCollection();
-            services.AddTransient<IDataMapper<string, long>, SimpleDataMapper>();
+            services.AddTransient<IDataMapper<string>, SimpleDataMapper>();
 
             var busContext = services.AddNijn(options =>
             {
