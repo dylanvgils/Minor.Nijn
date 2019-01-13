@@ -8,7 +8,7 @@ The Minor.Nijn framework consists of two parts (Minor.Nijn and Minor.Nijn.WebSca
 
 The second part of the framework is Minor.Nijn.WebScale, which is an abstraction around Minor.Nijn, and provides a set of Attributes to annotate your classes and methods with.
 
-## Minor.Nijn
+## Minor.Nijn [![Nuget](https://img.shields.io/nuget/v/Minor.Nijn.Bloem.svg)](https://www.nuget.org/packages/Minor.Nijn.Bloem)
 The first thing you have to do is create a `BusContext`, this can be done by using the `RabbitMQContextBuilder`. An example:
 
 ```cs
@@ -64,8 +64,8 @@ context.EventBus.DispatchMessage(message);
 
 **note:** The EventBus property can be replaced with the CommandBus property to access or send a message to the command queues.
 
-## Minor.Nijn.WebScale
-The Minor.Nijn.WebScale framework is an abstraction built on top of the Minor.Nijn framework. It provides you with a set of attributes to annotate your classes and methods with, under the hood, this attributes will be translated into event or command listeners bound to a queue on the RabbitMQ host. Creating an instance can be done by using the `MicroserviceHostBuilder`.
+## Minor.Nijn.WebScale [![Nuget](https://img.shields.io/nuget/v/Minor.Nijn.Bloem.WebScale.svg)](https://www.nuget.org/packages/Minor.Nijn.Bloem.WebScale)
+The Minor.Nijn.WebScale framework is an abstraction built on top of the Minor.Nijn framework. It provides you with a set of attributes to annotate your classes and methods with, under the hood, these attributes will be translated into event or command listeners bound to a queue on the RabbitMQ host. Creating an instance can be done by using the `MicroserviceHostBuilder`.
 
 ```cs
 // Optional: creating logger factory using Microsoft Extension Logging
@@ -245,3 +245,21 @@ When using the `MicroserviceHostBuilder` you have the option to scan for excepti
 When the exception couldn't be created an `InvalidCastException` will be thrown.
 
 To exclude exceptions from the exception scanning process pass a list of type `List<string>` to the `ScanForExceptions(exclusions)` method, the `MicroserviceHostBuilder` will use this list to match the namespace prefixes. For example `new list<string> { "Minor.Nijn" }` will exclude all exceptions located in namespaces starting with `Minor.Nijn`. 
+
+### Start listening from a given timestamp
+It's possible to only accept messages from a given timestamp. This can be done by using the `StartListening(long fromTimestamp)` method of the `MicroserviceHost`, for example:
+
+```cs
+... // Create a microservice host, see example above
+
+// Start the microservice host
+long fromTimestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+
+using (var host = hostBuilder.CreateHost())
+{
+    host.StartListening(fromTimestamp);
+    Console.ReadLine();
+}
+```
+
+**Note:** When using the `StartListening(long fromTimestamp)` method it's is important that you use a `long` representing the unix timestamp in milliseconds.
