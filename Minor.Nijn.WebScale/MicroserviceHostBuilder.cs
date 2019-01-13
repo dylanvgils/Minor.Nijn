@@ -107,7 +107,7 @@ namespace Minor.Nijn.WebScale
             var commandAttribute = type.GetCustomAttribute<CommandListenerAttribute>();
             if (commandAttribute != null)
             {
-                ParseCommand(type, commandAttribute);
+                ParseCommands(type, commandAttribute);
             }
         }
 
@@ -120,29 +120,7 @@ namespace Minor.Nijn.WebScale
                 .Where(m => m.attribute != null)
                 .Select(m => CreateEventListenerMethodInfo(type, m.method, m.attribute)).ToList();
 
-            var meta = new EventListenerInfo
-            {
-                Type = type,
-                QueueName = queueName,
-                IsSingleton = attribute.Singleton,
-                Methods = listenerMethods
-            };
-
-
-            EventListeners.Add(new EventListener(meta));
-        }
-
-        private void ParseCommand(Type type, CommandListenerAttribute attribute)
-        {
-            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var method in methods)
-            {
-                var commandAttribute = method.GetCustomAttribute<CommandAttribute>();
-                if (commandAttribute != null)
-                {
-                    CreateCommandListener(type, method, commandAttribute.QueueName, attribute);
-                }
-            }
+            CreateEventListener(type, attribute, queueName, listenerMethods);
         }
 
         private EventListenerMethodInfo CreateEventListenerMethodInfo(Type type, MethodInfo method, TopicAttribute topicAttribute)
@@ -163,6 +141,38 @@ namespace Minor.Nijn.WebScale
                 EventType = method.GetParameters()[0].ParameterType,
                 TopicExpressions = topicAttribute.TopicExpressions
             };
+        }
+
+        private void CreateEventListener(Type type, EventListenerAttribute attribute, string queueName, List<EventListenerMethodInfo> listenerMethods)
+        {
+            if (EventListeners.Any(l => l.QueueName == queueName))
+            {
+                _logger.LogError("invalid queue name: {0}, there is already declared a listener with the same name");
+                throw new ArgumentException($"Invalid queue name: {queueName}, there is already declared a listener with the same name");
+            }
+
+            var meta = new EventListenerInfo
+            {
+                Type = type,
+                QueueName = queueName,
+                IsSingleton = attribute.Singleton,
+                Methods = listenerMethods
+            };
+
+            EventListeners.Add(new EventListener(meta));
+        }
+
+        private void ParseCommands(Type type, CommandListenerAttribute attribute)
+        {
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var method in methods)
+            {
+                var commandAttribute = method.GetCustomAttribute<CommandAttribute>();
+                if (commandAttribute != null)
+                {
+                    CreateCommandListener(type, method, commandAttribute.QueueName, attribute);
+                }
+            }
         }
 
         private void CreateCommandListener(Type type, MethodInfo method, string queueName, CommandListenerAttribute attribute)
