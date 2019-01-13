@@ -243,6 +243,18 @@ namespace Minor.Nijn.WebScale.Test
             Assert.AreEqual(true, result.IsAsyncMethod);
         }
 
+
+        [TestMethod]
+        public void AddListener_ShouldThrowExceptionWhenThereIsAlreadyAListenerDeclaredWithTheSameName()
+        {
+            _target.AddListener<OrderEventListener>();
+
+            Action action = () => { _target.AddListener<OrderEventListener>(); };
+
+            var ex = Assert.ThrowsException<ArgumentException>(action);
+            Assert.AreEqual("Invalid queue name: EventBus.OrderEventQueue, there is already declared a listener with the same name", ex.Message);
+        }
+
         [TestMethod]
         public void SetLoggerFactory_ShouldSetTheLoggerFactoryForTheProject()
         {

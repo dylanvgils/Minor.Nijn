@@ -1,15 +1,14 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minor.Nijn;
+using Minor.Nijn.Helpers;
 using Minor.Nijn.RabbitMQBus;
+using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Minor.Nijn.Helpers;
-using RabbitMQ.Client;
-using Serilog.Core;
 
 namespace RabbitMQ
 {
