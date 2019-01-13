@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Minor.Nijn.Helpers;
 using Minor.Nijn.WebScale.Commands;
 using Minor.Nijn.WebScale.Events;
+using Minor.Nijn.WebScale.Helpers;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
-using Minor.Nijn.Helpers;
-using Minor.Nijn.WebScale.Helpers;
 
 namespace Minor.Nijn.WebScale
 {
@@ -23,11 +23,11 @@ namespace Minor.Nijn.WebScale
         private bool _disposed;
 
         public IBusContext<IConnection> Context { get; }
-        public List<IEventListener> EventListeners { get; }
-        public List<ICommandListener> CommandListeners { get; }
+        public IReadOnlyList<IEventListener> EventListeners { get; }
+        public IReadOnlyList<ICommandListener> CommandListeners { get; }
         public IServiceProvider ServiceProvider { get;  }
 
-        public MicroserviceHost(IBusContext<IConnection> context, List<IEventListener> eventListeners, List<ICommandListener> commandListeners, IServiceCollection serviceCollection)
+        public MicroserviceHost(IBusContext<IConnection> context, IReadOnlyList<IEventListener> eventListeners, IReadOnlyList<ICommandListener> commandListeners, IServiceCollection serviceCollection)
         {
             _listeningFromTimestamp = 0;
 
@@ -89,6 +89,8 @@ namespace Minor.Nijn.WebScale
         {
             return ActivatorUtilities.CreateInstance(ServiceProvider, type);
         }
+
+        public bool IsConnectionIdle() => Context.IsConnectionIdle();
 
         private void ConfigurePublisherServices(IServiceCollection serviceCollection)
         {

@@ -130,6 +130,17 @@ namespace Minor.Nijn.WebScale.Test
         }
 
         [TestMethod]
+        public void IsConnectionIdle_ShouldCallIsConnectionIdleMethodOnTheContext()
+        {
+            _busContextMock.Setup(ctx => ctx.IsConnectionIdle()).Returns(true);
+
+            var result = _target.IsConnectionIdle();
+
+            _busContextMock.VerifyAll();
+            Assert.IsTrue(result, "IsConnectionIdle should return true");
+        }
+
+        [TestMethod]
         public void MicroserviceHost_ShouldRegisterPublisherAndContextDependenciesByDefault()
         {
             var testBusContext = new TestBusContextBuilder().CreateTestContext();
