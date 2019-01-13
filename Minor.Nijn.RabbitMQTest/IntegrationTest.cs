@@ -3,8 +3,13 @@ using Minor.Nijn;
 using Minor.Nijn.RabbitMQBus;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Minor.Nijn.Helpers;
+using RabbitMQ.Client;
+using Serilog.Core;
 
 namespace RabbitMQ
 {
@@ -138,6 +143,23 @@ namespace RabbitMQ
                 Assert.AreEqual(responseCommand.Timestamp, response.Timestamp);
                 Assert.AreEqual(responseCommand.Type, response.Type);
                 Assert.AreEqual(responseCommand.Message, response.Message);
+            }
+        }
+
+        [TestMethod]
+        public void CanBeIntegratedWithTheApplicationDependencyServiceCollection()
+        {
+            var services = new ServiceCollection();
+
+            Environment.SetEnvironmentVariable("NIJN_EXCHANGE_NAME", "MVM.EventExchange");
+            Environment.SetEnvironmentVariable("NIJN_HOSTNAME", "localhost");
+            Environment.SetEnvironmentVariable("NIJN_PORT", "5672");
+            Environment.SetEnvironmentVariable("NIJN_USERNAME", "guest");
+            Environment.SetEnvironmentVariable("NIJN_PASSWORD", "guest");
+
+            using (var context = services.AddNijn(options => { options.ReadFromEnvironmentVariables(); }))
+            {
+                Assert.IsTrue(services.Any(s => s.ServiceType == typeof(IBusContext<IConnection>)));
             }
         }
     }
