@@ -7,7 +7,7 @@ namespace Minor.Nijn.RabbitMQBus
         RabbitMQContextBuilder WithExchange(string exchangeName);
         RabbitMQContextBuilder WithAddress(string hostName, int port);
         RabbitMQContextBuilder WithCredentials(string userName, string password);
-        RabbitMQContextBuilder WithConnectionTimeout(int timeout, bool autoDisconnect = false);
+        RabbitMQContextBuilder WithConnectionTimeout(int timeoutAfterMs, bool autoDisconnect = false);
         RabbitMQContextBuilder SetLoggerFactory(ILoggerFactory loggerFactory);
         RabbitMQContextBuilder ReadFromEnvironmentVariables();
         RabbitMQContextBuilder WithType(string type);

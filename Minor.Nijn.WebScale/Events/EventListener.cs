@@ -96,7 +96,6 @@ namespace Minor.Nijn.WebScale.Events
                 {
                     payload = JsonConvert.DeserializeObject(message.Message, method.EventType);
 
-                    // TODO: Set these properties through the JSON Deserializer
                     payload.GetType().GetProperty("CorrelationId").SetValue(payload, message.CorrelationId);
                     payload.GetType().GetProperty("Timestamp").SetValue(payload, message.Timestamp);
                 }

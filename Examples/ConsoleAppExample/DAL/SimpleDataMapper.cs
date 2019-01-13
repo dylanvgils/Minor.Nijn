@@ -2,7 +2,7 @@
 
 namespace ConsoleAppExample.DAL
 {
-    public class SimpleDataMapper : IDataMapper<string, long>
+    public class SimpleDataMapper : IDataMapper<string>
     {
         private readonly ILogger logger;
 

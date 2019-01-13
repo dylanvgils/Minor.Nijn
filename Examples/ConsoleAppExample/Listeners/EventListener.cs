@@ -13,9 +13,9 @@ namespace ConsoleAppExample.Listeners
     public class EventListener
     {
         private readonly ILogger _logger;
-        private readonly IDataMapper<string, long> _dataMapper;
+        private readonly IDataMapper<string> _dataMapper;
 
-        public EventListener(IDataMapper<string, long> dataMapper)
+        public EventListener(IDataMapper<string> dataMapper)
         {
             _dataMapper = dataMapper;
             _logger = ConsoleAppExampleLogger.CreateLogger<EventListener>();
