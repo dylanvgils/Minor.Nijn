@@ -61,10 +61,10 @@ namespace Minor.Nijn.WebScale.Events
                 throw new InvalidOperationException("Event listener already listening");
             }
 
+            _listeningFromTimestamp = fromTimestamp;
             _instance = Meta.IsSingleton ? _host.CreateInstance(Meta.Type) : null;
             _receiver.StartReceivingMessages(HandleEventMessage);
 
-            _listeningFromTimestamp = fromTimestamp;
             _isListening = true;
         }
 
