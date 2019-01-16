@@ -49,7 +49,7 @@ namespace Minor.Nijn.TestBus
 
         public bool IsConnectionIdle()
         {
-            return false;
+            return true;
         }
 
         private void CheckDisposed()

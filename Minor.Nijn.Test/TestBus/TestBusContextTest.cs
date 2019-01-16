@@ -86,10 +86,10 @@ namespace Minor.Nijn.TestBus.Test
         }
 
         [TestMethod]
-        public void IsConnectionIdle_ShouldReturnFalse()
+        public void IsConnectionIdle_ShouldReturnTrue()
         {
             Assert.IsNotNull(target.LastMessageReceivedTime);
-            Assert.IsFalse(target.IsConnectionIdle(), "IsConnectionIdle should be false");
+            Assert.IsTrue(target.IsConnectionIdle(), "IsConnectionIdle should be true");
         }
 
         [TestMethod]
