@@ -108,7 +108,7 @@ namespace Minor.Nijn.RabbitMQBus
             replyProps.CorrelationId = args.BasicProperties.CorrelationId;
             replyProps.Type = replyMessage.Type ?? "";
             replyProps.Timestamp = replyMessage.Timestamp == 0
-                ? new AmqpTimestamp(DateTimeOffset.Now.ToUnixTimeMilliseconds())
+                ? new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds())
                 : new AmqpTimestamp(replyMessage.Timestamp);
 
             Channel.BasicPublish(
