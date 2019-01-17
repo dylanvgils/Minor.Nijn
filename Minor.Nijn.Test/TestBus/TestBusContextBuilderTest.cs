@@ -21,5 +21,12 @@ namespace Minor.Nijn.TestBus.Test
             var target = new TestBusContextBuilder().WithMockConnection(connectionMock.Object);
             Assert.AreEqual(connectionMock.Object, target.Connection);
         }
+
+        [TestMethod]
+        public void WithMockConnection_ShouldSetConnectionTimeout()
+        {
+            var target = new TestBusContextBuilder().WithConnectionTimeout(500);
+            Assert.AreEqual(500, target.ConnectionTimeoutAfterMs);
+        }
     }
 }

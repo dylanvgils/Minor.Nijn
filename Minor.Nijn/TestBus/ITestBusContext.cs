@@ -8,5 +8,8 @@ namespace Minor.Nijn.TestBus
     {
         IEventBus EventBus { get; }
         ICommandBus CommandBus { get; }
+        int ConnectionTimeoutMs { get; }
+
+        void UpdateLastMessageReceived();
     }
 }

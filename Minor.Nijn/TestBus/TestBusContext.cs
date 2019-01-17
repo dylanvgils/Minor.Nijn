@@ -12,15 +12,19 @@ namespace Minor.Nijn.TestBus
 
         public IConnection Connection { get; }
         public string ExchangeName => throw new NotImplementedException();
-        public DateTime LastMessageReceivedTime => DateTime.Now;
+
+        public DateTime LastMessageReceivedTime { get; private set; } = DateTime.Now;
+        public int ConnectionTimeoutMs { get; }
+
         public IEventBus EventBus { get; }
         public ICommandBus CommandBus { get; }
 
-        internal TestBusContext(IConnection connection, IEventBus testBus, ICommandBus commandBus)
+        internal TestBusContext(IConnection connection, IEventBus testBus, ICommandBus commandBus, int idleAfterMs)
         {
             Connection = connection;
             EventBus = testBus;
             CommandBus = commandBus;
+            ConnectionTimeoutMs = idleAfterMs;
         }
 
         public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
@@ -46,10 +50,14 @@ namespace Minor.Nijn.TestBus
             CheckDisposed();
             return new TestCommandSender(this);
         }
+        public void UpdateLastMessageReceived()
+        {
+            LastMessageReceivedTime = DateTime.Now;
+        }
 
         public bool IsConnectionIdle()
         {
-            return true;
+            return DateTime.Now - LastMessageReceivedTime > TimeSpan.FromMilliseconds(ConnectionTimeoutMs);
         }
 
         private void CheckDisposed()
