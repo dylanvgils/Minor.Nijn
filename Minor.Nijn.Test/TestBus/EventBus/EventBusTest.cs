@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Linq;
 using Minor.Nijn.TestBus.Mocks.Test;
 
 namespace Minor.Nijn.TestBus.EventBus.Test
@@ -76,9 +77,16 @@ namespace Minor.Nijn.TestBus.EventBus.Test
         [TestMethod]
         public void DeclareQueue_WhenCalledWithSameQueueNameTwiceLengthShouldBe_1()
         {
-            target.DeclareQueue("TestQueue1", new List<string> { "a.b.c" });
-            target.DeclareQueue("TestQueue1", new List<string> { "a.b.c" });
+            var queueName = "TestQueue1";
+            var topic1 = "a.b.c";
+            var topic2 = "x.y.z";
+
+            target.DeclareQueue(queueName, new List<string> { topic1 });
+            target.DeclareQueue(queueName, new List<string> { topic2 });
+
             Assert.AreEqual(target.QueueCount, 1);
+            Assert.IsTrue(target.Queues[queueName].TopicExpressions.Contains(topic1), "Should contain topic1");
+            Assert.IsTrue(target.Queues[queueName].TopicExpressions.Contains(topic2), "should contain topic2");
         }
     }
 }

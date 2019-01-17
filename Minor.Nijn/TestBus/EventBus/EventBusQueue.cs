@@ -4,7 +4,7 @@ namespace Minor.Nijn.TestBus.EventBus
 {
     public class EventBusQueue : TestBusQueue<EventMessage> 
     {
-        public IEnumerable<string> TopicExpressions { get; }
+        public IEnumerable<string> TopicExpressions { get; internal set; }
 
         internal EventBusQueue(string name, IEnumerable<string> topicExpressions) : base(name)
         {
