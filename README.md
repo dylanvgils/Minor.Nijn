@@ -253,7 +253,7 @@ It's possible to only accept messages from a given timestamp. This can be done b
 ... // Create a microservice host, see example above
 
 // Start the microservice host
-long fromTimestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+long fromTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
 using (var host = hostBuilder.CreateHost())
 {

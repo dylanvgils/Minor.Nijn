@@ -20,7 +20,7 @@ namespace RabbitMQ
         {
             var queue = "testQueue";
             var topics = new List<string> { "topic1", "topic2" };
-            var message = new EventMessage("topic1", "Message 1", "string", DateTimeOffset.Now.ToUnixTimeMilliseconds(), "correlationId");
+            var message = new EventMessage("topic1", "Message 1", "string", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), "correlationId");
 
             var connectionBuilder = new RabbitMQContextBuilder()
                 .WithExchange("MVM.EventExchange")
@@ -59,8 +59,8 @@ namespace RabbitMQ
         {
             var queue = "testQueue";
             var topics = new List<string> { "topic1", "topic2" };
-            var message1 = new EventMessage("topic1", "Message 1", "string", DateTimeOffset.Now.ToUnixTimeMilliseconds(), "correlationId");
-            var message2 = new EventMessage("topic2", "Message 2", "string", DateTimeOffset.Now.ToUnixTimeMilliseconds(), "anotherCorrelationId");
+            var message1 = new EventMessage("topic1", "Message 1", "string", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), "correlationId");
+            var message2 = new EventMessage("topic2", "Message 2", "string", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), "anotherCorrelationId");
 
             var connectionBuilder = new RabbitMQContextBuilder()
                 .WithExchange("MVM.EventExchange")
@@ -108,8 +108,8 @@ namespace RabbitMQ
         public async Task CommandCanBeSentAndReceived()
         {
             var queueName = "TestCommandQueue";
-            var requestCommand = new RequestCommandMessage("Request message", "type", "correlationId",  queueName, DateTimeOffset.Now.ToUnixTimeMilliseconds());
-            var responseCommand = new ResponseCommandMessage("Reply message", "type", requestCommand.CorrelationId, DateTimeOffset.Now.ToUnixTimeMilliseconds());
+            var requestCommand = new RequestCommandMessage("Request message", "type", "correlationId",  queueName, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+            var responseCommand = new ResponseCommandMessage("Reply message", "type", requestCommand.CorrelationId, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
             
             var connectionBuilder = new RabbitMQContextBuilder()
                 .WithExchange("MVM.EventExchange")

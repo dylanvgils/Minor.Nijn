@@ -41,7 +41,7 @@ namespace Minor.Nijn.RabbitMQBus
             props.CorrelationId = request.CorrelationId;
             props.Type = request.Type;
             props.Timestamp = request.Timestamp == 0
-                ? new AmqpTimestamp(DateTimeOffset.Now.ToUnixTimeMilliseconds())
+                ? new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds())
                 : new AmqpTimestamp(request.Timestamp);
 
             var task = SubscribeToResponseQueue(replyQueueName, request.CorrelationId);
