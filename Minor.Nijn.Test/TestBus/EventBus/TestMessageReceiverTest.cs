@@ -66,6 +66,7 @@ namespace Minor.Nijn.TestBus.EventBus.Test
 
             EventMessage message = new EventMessage("a.b.c", "TestMessage");
             var queue = new EventBusQueue(queueName, topicExpressions);
+            contextMock.Setup(context => context.UpdateLastMessageReceived());
             contextMock.Setup(context => context.EventBus.DeclareQueue(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
                 .Returns(queue);
 
@@ -73,6 +74,7 @@ namespace Minor.Nijn.TestBus.EventBus.Test
             target.StartReceivingMessages(callbackMock.Object);
             queue.Enqueue(message);
 
+            contextMock.VerifyAll();
             callbackMock.Verify(callback => callback(message));
         }
 

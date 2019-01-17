@@ -40,7 +40,11 @@ namespace Minor.Nijn.TestBus.EventBus
                 throw new BusConfigurationException($"Queue with name: {QueueName} is not declared");
             }
 
-            _queue.Subscribe((sender, args) => callback(args.Message));
+            _queue.Subscribe((sender, args) =>
+            {
+                callback(args.Message);
+                _context.UpdateLastMessageReceived();
+            });
         }
 
         private void CheckDisposed()
