@@ -9,10 +9,11 @@ namespace Minor.Nijn.TestBus
         private event EventHandler<MessageAddedEventArgs<T>> MessageAdded;
         private readonly Queue<T> _messageQueue;
 
-        public T this[int n] => FindItemInQueue(n);
         public string QueueName { get; }
         public int MessageQueueLength => _messageQueue.Count;
         public int SubscriberCount => MessageAdded?.GetInvocationList().Length ?? 0;
+
+        public T this[int n] => FindItemInQueue(n);
 
         protected TestBusQueue(string name)
         {
@@ -49,7 +50,7 @@ namespace Minor.Nijn.TestBus
 
         private T FindItemInQueue(int index)
         {
-            return _messageQueue.ToList().ElementAtOrDefault(index);
+            return _messageQueue.AsEnumerable().ElementAtOrDefault(index);
         }
     }
 }
