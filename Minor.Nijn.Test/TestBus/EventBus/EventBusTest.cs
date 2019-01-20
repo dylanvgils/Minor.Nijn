@@ -27,6 +27,7 @@ namespace Minor.Nijn.TestBus.EventBus.Test
             target.DispatchMessage(message);
 
             Assert.IsTrue(mock.HandledMessageAddedHasBeenCalled);
+            Assert.AreEqual(1, queue.CalledTimes);
             Assert.AreEqual(message, mock.Args.Message);
         }
 

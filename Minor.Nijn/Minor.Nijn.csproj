@@ -4,14 +4,16 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <Authors>Dylan van Gils, Dion de Koning, Justin Moor, Martine Mulder</Authors>
     <Company>_</Company>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <PackageId>Minor.Nijn.Bloem</PackageId>
     <Product>Minor.Nijn</Product>
     <Description>Wrapper around RabbitMQ</Description>
-    <PackageReleaseNotes>- Implement timeout check into TestBus
+    <PackageReleaseNotes>- Add called times to TestBus queue
+- Implement timeout check into TestBus
 - Use DateTimeOffset instead of DateTime for timestamps
 - Use utc time instad of local time
-- Add Indexer to TestBus queue</PackageReleaseNotes>
+- Add Indexer to TestBus queue
+    </PackageReleaseNotes>
     <PackageTags>RabbitMQ, Wrapper, EventBus, Messages, Commands</PackageTags>
     <PackageProjectUrl>https://github.com/dylanvgils/Minor.Nijn</PackageProjectUrl>
     <RepositoryUrl>https://github.com/dylanvgils/Minor.Nijn</RepositoryUrl>

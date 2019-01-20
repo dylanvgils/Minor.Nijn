@@ -12,6 +12,7 @@ namespace Minor.Nijn.TestBus
         public string QueueName { get; }
         public int MessageQueueLength => _messageQueue.Count;
         public int SubscriberCount => MessageAdded?.GetInvocationList().Length ?? 0;
+        public int CalledTimes { get; private set; }
 
         public T this[int n] => FindItemInQueue(n);
 
@@ -23,6 +24,7 @@ namespace Minor.Nijn.TestBus
 
         public virtual void Enqueue(T message)
         {
+            CalledTimes++;
             OnMessageAdded(new MessageAddedEventArgs<T>(message));
         }
 
